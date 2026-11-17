@@ -1,0 +1,41 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-window",
+  "description": "Permissions for the trusted Vaalytics main window. Remote/browser webviews must never receive this capability.",
+  "windows": [
+    "main"
+  ],
+  "local": true,
+  "permissions": [
+    "core:default",
+    "log:default",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close",
+    "core:window:allow-start-dragging",
+    "core:window:allow-internal-toggle-maximize",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://www.pathofexile.com/*"
+        },
+        {
+          "url": "https://pathofexile2.com/*"
+        },
+        {
+          "url": "https://poe.ninja/*"
+        },
+        {
+          "url": "https://github.com/PathOfBuildingCommunity/*"
+        },
+        {
+          "url": "https://pathofbuilding.community/*"
+        },
+        {
+          "url": "https://github.com/SnosMe/awakened-poe-trade*"
+        }
+      ]
+    }
+  ]
+}

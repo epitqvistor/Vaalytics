@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice">
+  <!-- Original Vaalytics illustration: "Eclipse Over the Stepped Temple" — a moonlit
+       stepped pyramid beneath an eclipsed sun, jungle mist below.
+       Not derived from Grinding Gear Games artwork. -->
+  <defs>
+    <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#05080c"/>
+      <stop offset="0.4" stop-color="#0c1a22"/>
+      <stop offset="0.62" stop-color="#173a42"/>
+      <stop offset="0.74" stop-color="#21454a"/>
+      <stop offset="1" stop-color="#05080a"/>
+    </linearGradient>
+    <radialGradient id="corona" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffb466" stop-opacity="0"/>
+      <stop offset="0.28" stop-color="#ffb466" stop-opacity="0"/>
+      <stop offset="0.31" stop-color="#ffcf8a" stop-opacity="0.95"/>
+      <stop offset="0.38" stop-color="#f28c38" stop-opacity="0.45"/>
+      <stop offset="0.6" stop-color="#a04a1a" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="haze" cx="0.5" cy="0.72" r="0.6">
+      <stop offset="0" stop-color="#5fb3b0" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#5fb3b0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="temple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1a1e"/>
+      <stop offset="1" stop-color="#060c0e"/>
+    </linearGradient>
+    <linearGradient id="templeLit" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2f5f60" stop-opacity="0.0"/>
+      <stop offset="0.5" stop-color="#2f5f60" stop-opacity="0.0"/>
+      <stop offset="1" stop-color="#4d8f8a" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="mist2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fc4c0" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#7fc4c0" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#7fc4c0" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+
+  <rect width="600" height="800" fill="url(#sky2)"/>
+  <rect width="600" height="800" fill="url(#haze)"/>
+
+  <!-- eclipse -->
+  <circle cx="300" cy="216" r="150" fill="url(#corona)"/>
+  <circle cx="300" cy="216" r="56" fill="#ffcf8a" opacity="0.5" filter="url(#soft2)"/>
+  <circle cx="300" cy="216" r="47" fill="#06090c"/>
+  <path d="M262 196 A47 47 0 0 1 300 169" fill="none" stroke="#ffe2b0" stroke-width="1.4" opacity="0.7"/>
+
+  <!-- stars -->
+  <g fill="#cfe6e6">
+    <circle cx="70" cy="80" r="1" opacity="0.6"/><circle cx="140" cy="140" r="0.8" opacity="0.4"/>
+    <circle cx="520" cy="96" r="1.1" opacity="0.6"/><circle cx="470" cy="170" r="0.7" opacity="0.45"/>
+    <circle cx="90" cy="250" r="0.8" opacity="0.35"/><circle cx="560" cy="260" r="0.9" opacity="0.4"/>
+    <circle cx="210" cy="60" r="0.7" opacity="0.5"/><circle cx="410" cy="48" r="0.8" opacity="0.5"/>
+  </g>
+
+  <!-- distant ridges -->
+  <path d="M0 470 L60 446 L120 458 L180 432 L240 448 L300 424 L360 446 L420 430 L480 452 L540 436 L600 450 L600 520 L0 520Z" fill="#0f2228" opacity="0.9"/>
+  <path d="M0 500 L80 486 L150 498 L230 480 L300 494 L380 478 L460 496 L530 484 L600 494 L600 560 L0 560Z" fill="#0b1a1f"/>
+
+  <!-- stepped temple -->
+  <g>
+    <path d="M150 600 L162 600 L162 572 L182 572 L182 546 L204 546 L204 520 L226 520 L226 494 L248 494 L248 468 L268 468 L268 446 L332 446 L332 468 L352 468 L352 494 L374 494 L374 520 L396 520 L396 546 L418 546 L418 572 L438 572 L438 600 L450 600 L450 640 L150 640Z" fill="url(#temple)"/>
+    <path d="M150 600 L162 600 L162 572 L182 572 L182 546 L204 546 L204 520 L226 520 L226 494 L248 494 L248 468 L268 468 L268 446 L332 446 L332 468 L352 468 L352 494 L374 494 L374 520 L396 520 L396 546 L418 546 L418 572 L438 572 L438 600 L450 600 L450 640 L150 640Z" fill="url(#templeLit)"/>
+    <!-- shrine on top -->
+    <path d="M282 446 L282 418 L292 410 L308 410 L318 418 L318 446Z" fill="#081114"/>
+    <path d="M296 446 L296 428 L304 428 L304 446Z" fill="#f28c38" opacity="0.75"/>
+    <!-- central stair -->
+    <path d="M286 446 L314 446 L340 640 L260 640Z" fill="#0a1518"/>
+    <g stroke="#2a4c50" stroke-width="1" opacity="0.5">
+      <line x1="282" y1="470" x2="318" y2="470"/><line x1="279" y1="494" x2="321" y2="494"/>
+      <line x1="276" y1="520" x2="324" y2="520"/><line x1="272" y1="546" x2="328" y2="546"/>
+      <line x1="269" y1="572" x2="331" y2="572"/><line x1="265" y1="600" x2="335" y2="600"/>
+    </g>
+    <!-- lit step edges -->
+    <g stroke="#6fb0aa" stroke-width="1.2" opacity="0.45">
+      <line x1="332" y1="446" x2="332" y2="468"/><line x1="352" y1="468" x2="352" y2="494"/>
+      <line x1="374" y1="494" x2="374" y2="520"/><line x1="396" y1="520" x2="396" y2="546"/>
+      <line x1="418" y1="546" x2="418" y2="572"/><line x1="438" y1="572" x2="438" y2="600"/>
+    </g>
+  </g>
+
+  <!-- jungle canopy silhouettes -->
+  <path d="M0 640 C30 610 60 628 80 604 C100 584 130 600 150 616 C170 596 200 612 210 640 L210 800 L0 800Z" fill="#050b0c"/>
+  <path d="M600 630 C570 600 540 622 520 598 C500 578 470 596 452 612 C432 596 404 614 396 640 L396 800 L600 800Z" fill="#050b0c"/>
+  <rect y="636" width="600" height="164" fill="#04090a"/>
+
+  <!-- mist band -->
+  <rect y="590" width="600" height="80" fill="url(#mist2)"/>
+
+  <radialGradient id="vig2" cx="0.5" cy="0.5" r="0.75">
+    <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+    <stop offset="1" stop-color="#000" stop-opacity="0.65"/>
+  </radialGradient>
+  <rect width="600" height="800" fill="url(#vig2)"/>
+</svg>

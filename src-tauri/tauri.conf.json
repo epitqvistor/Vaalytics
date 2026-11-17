@@ -1,0 +1,73 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Vaalytics",
+  "version": "0.4.0",
+  "identifier": "app.vaalytics.desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Vaalytics",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 1024,
+        "minHeight": 640,
+        "center": true,
+        "backgroundColor": "#101114",
+        "visible": true,
+        "decorations": false,
+        "shadow": true
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' asset: http://asset.localhost data: blob: https://web.poecdn.com",
+        "font-src": "'self' data:",
+        "connect-src": "'self' ipc: http://ipc.localhost"
+      },
+      "freezePrototype": true
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "installerIcon": "icons/icon.ico",
+        "displayLanguageSelector": false,
+        "languages": [
+          "English"
+        ],
+        "startMenuFolder": "Vaalytics"
+      }
+    },
+    "publisher": "Vaalytics",
+    "copyright": "\u00a9 2026 Vaalytics. Path of Exile is a trademark of Grinding Gear Games; Vaalytics is not affiliated with Grinding Gear Games.",
+    "category": "Utility",
+    "shortDescription": "Desktop companion for Path of Exile 1 and 2",
+    "longDescription": "Vaalytics: price checks via the official Trade API, poe.ninja market data and Path of Building integration for Path of Exile 1 and Path of Exile 2."
+  }
+}

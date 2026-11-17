@@ -1,0 +1,51 @@
+[package]
+name = "vaalytics"
+version = "0.4.0"
+description = "Vaalytics — desktop companion for Path of Exile 1 and Path of Exile 2"
+edition = "2021"
+rust-version = "1.85"
+publish = false
+
+[lib]
+# The `_lib` suffix avoids a name clash with the binary on Windows (cargo#8519).
+name = "vaalytics_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["unstable"] }
+tauri-plugin-log = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-dialog = "2"
+log = "0.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+rusqlite = { version = "0.43", features = ["bundled"] }
+sysinfo = { version = "0.40", default-features = false, features = ["system"] }
+reqwest = { version = "0.13", default-features = false, features = ["native-tls", "gzip", "charset", "json"] }
+tokio = { version = "1", features = ["time", "sync"] }
+arboard = { version = "3", default-features = false }
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56"
+windows = { version = "0.62", features = [
+  "Win32_Foundation",
+  "Win32_UI_Accessibility",
+  "Win32_UI_WindowsAndMessaging",
+  "Win32_UI_Input_KeyboardAndMouse",
+] }
+
+[dev-dependencies]
+tempfile = "3"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "sync"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
