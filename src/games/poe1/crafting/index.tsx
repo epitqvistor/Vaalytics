@@ -114,7 +114,7 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
 
   // Emulator start: the pasted item (fractured + recognised mods), else a normal base.
   const emuStart = useMemo(() => {
-    if (!pasted) return { item: { rarity: "normal" as const, mods: [] }, implicits: null, dropped: [] as string[] };
+    if (!pasted) return { item: { rarity: "normal" as const, mods: [] }, implicits: null, dropped: [] as string[], unknown: [] as string[] };
     const r = emuFromPaste(idx, spec, pasted);
     return { ...r, implicits: pasted.mods.filter((m) => m.kind === "implicit").map((m) => m.text) };
   }, [idx, spec, pasted]);
@@ -322,14 +322,22 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
         </div>
       </section>
 
-      {(warnings.length > 0 || emuStart.dropped.length > 0) && (
+      {(warnings.length > 0 || emuStart.dropped.length > 0 || emuStart.unknown.length > 0) && (
         <div className="flex gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3.5 py-2.5 text-xs text-fg-muted">
           <Icon name="warning" size={14} className="mt-px shrink-0 text-warning" />
           <ul className="space-y-0.5">
             {warnings.map((w) => (
               <li key={w}>{w}</li>
             ))}
-            {emuStart.dropped.length > 0 && <li>Not carried into the emulator (crafted or unrecognised): {emuStart.dropped.join("; ")}</li>}
+            {emuStart.unknown.length > 0 && (
+              <li>Kept as unknown modifiers (they hold their prefix/suffix slot but aren't in the game data): {emuStart.unknown.map((t) => t.replace(/\n/g, " / ")).join("; ")}</li>
+            )}
+            {emuStart.dropped.length > 0 && (
+              <li>
+                Not recognised and left out: {emuStart.dropped.join("; ")}. Copy the item with <span className="font-mono">Ctrl+Alt+C</span> so Vaalytics
+                knows their prefix/suffix and keeps their slots.
+              </li>
+            )}
           </ul>
         </div>
       )}

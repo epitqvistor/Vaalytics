@@ -17,7 +17,7 @@ use std::time::Duration;
 const SOURCE_BASE: &str = "https://repoe-fork.github.io/";
 const FILES: [&str; 6] = ["mods", "base_items", "fossils", "essences", "item_classes", "crafting_bench_options"];
 /// Bump when the compact format changes; older caches are rebuilt.
-const FORMAT_VERSION: u32 = 3;
+const FORMAT_VERSION: u32 = 5;
 const MAX_AGE_SECS: i64 = 24 * 3600;
 
 /// Item classes the calculator supports (standard 3 prefix / 3 suffix gear).
@@ -64,6 +64,10 @@ pub struct ModDef {
     pub gen_weights: TagWeights,
     pub text: String,
     pub essence_only: bool,
+    /// Lines RePoE has no text for ("Socketed Gems are Supported by Level X …",
+    /// "Grants Level X … Skill"), as keys like "support:reduced duration".
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub display: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -138,6 +142,9 @@ pub struct CraftingData {
     pub bench: Vec<BenchDef>,
     /// Crafted modifiers referenced by `bench`.
     pub crafted_mods: Vec<ModDef>,
+    /// Veiled (unveiled at Jun) and Delve-only mods: used to recognise pasted
+    /// items, never rolled.
+    pub extra_mods: Vec<ModDef>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -201,7 +208,27 @@ fn mod_def(id: &str, m: &Value) -> ModDef {
         gen_weights: tag_weights(m.get("generation_weights")),
         text: clean_text(m.get("text").and_then(Value::as_str).unwrap_or_default()),
         essence_only: m.get("is_essence_only").and_then(Value::as_bool).unwrap_or(false),
+        display: m
+            .get("stats")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(|st| display_key(st.get("id")?.as_str()?))
+            .collect(),
     }
+}
+
+/// Key for a gem-support / granted-skill display stat, e.g.
+/// "local_display_socketed_gems_supported_by_level_x_reduced_duration" → "support:reduced duration".
+pub fn display_key(stat: &str) -> Option<String> {
+    let s = stat.strip_prefix("local_display_").unwrap_or(stat);
+    let strip_level = |t: &str| t.strip_suffix("_level").unwrap_or(t).replace('_', " ");
+    for prefix in ["socketed_gems_supported_by_level_x_", "socketed_gems_supported_by_x_", "socketed_gems_get_"] {
+        if let Some(tail) = s.strip_prefix(prefix) {
+            return Some(format!("support:{}", strip_level(tail)));
+        }
+    }
+    s.strip_prefix("grants_skill_").map(|tail| format!("grant:{}", strip_level(tail)))
 }
 
 /// Reduces the raw RePoE files to the compact crafting dataset.
@@ -250,19 +277,25 @@ pub fn build(raw: &HashMap<&str, Value>, checked_at: i64, source_modified: Optio
     bases.retain(|b| seen.insert((b.item_class.clone(), b.name.clone(), b.implicits.clone())));
 
     let mut mods = Vec::new();
+    let mut extra_mods = Vec::new();
     for (id, m) in all_mods {
         let gen = m.get("generation_type").and_then(Value::as_str).unwrap_or_default();
-        if m.get("domain").and_then(Value::as_str) != Some("item") || !(gen == "prefix" || gen == "suffix") {
+        if !(gen == "prefix" || gen == "suffix") {
             continue;
         }
-        let spawn = tag_weights(m.get("spawn_weights"));
-        let essence_only = m.get("is_essence_only").and_then(Value::as_bool).unwrap_or(false);
-        if !essence_only && spawn.iter().all(|(_, w)| *w == 0) {
-            continue;
+        match m.get("domain").and_then(Value::as_str) {
+            Some("item") => {}
+            Some("unveiled" | "delve") => {
+                extra_mods.push(mod_def(id, m));
+                continue;
+            }
+            _ => continue,
         }
+        // Zero-weight mods (Elevated, legacy) never roll; they are kept so pasted items are recognised.
         mods.push(mod_def(id, m));
     }
     mods.sort_by(|a, b| a.id.cmp(&b.id));
+    extra_mods.sort_by(|a, b| a.id.cmp(&b.id));
 
     let mut fossils: Vec<FossilDef> = obj(get("fossils")?)?
         .iter()
@@ -344,6 +377,7 @@ pub fn build(raw: &HashMap<&str, Value>, checked_at: i64, source_modified: Optio
         essences,
         bench,
         crafted_mods: crafted.into_values().collect(),
+        extra_mods,
     })
 }
 
@@ -477,6 +511,7 @@ mod tests {
             );
         }
         mods.insert("Unique1".into(), json!({"domain":"item","generation_type":"unique","spawn_weights":[]}));
+        mods.insert("Veiled1".into(), json!({"domain":"unveiled","generation_type":"prefix","text":"+2 to Level of Socketed AoE Gems","spawn_weights":[{"tag":"helmet","weight":1500}]}));
         mods.insert("Zero".into(), json!({"domain":"item","generation_type":"suffix","spawn_weights":[{"tag":"default","weight":0}]}));
         mods.insert("Impl".into(), json!({"domain":"item","generation_type":"unique","text":"+(12-16)% to Fire and Lightning Resistances"}));
         let mut bases = Map::new();
@@ -510,7 +545,7 @@ mod tests {
     #[test]
     fn builds_compact_dataset() {
         let d = build(&raw(), 1, None).unwrap();
-        assert_eq!(d.mods.len(), 1000, "unique and zero-weight mods dropped");
+        assert_eq!(d.mods.len(), 1001, "unique mods dropped, zero-weight kept for recognition");
         assert_eq!(d.bases.len(), 120, "unreleased bases dropped");
         assert_eq!(d.bases[0].implicits, vec!["+(12-16)% to Fire and Lightning Resistances"]);
         assert_eq!(d.fossils.len(), 1, "fossils with special effects are excluded");
@@ -521,6 +556,16 @@ mod tests {
         assert_eq!(d.bench[0].item_classes, vec!["Ring"], "unsupported classes dropped");
         assert_eq!(d.bench[0].cost, vec![("Orb of Alteration".to_string(), 2)]);
         assert_eq!(d.crafted_mods.len(), 1);
+        assert_eq!(d.extra_mods.iter().map(|m| m.id.as_str()).collect::<Vec<_>>(), vec!["Veiled1"], "veiled mods never join the rolling pool");
+    }
+
+    #[test]
+    fn display_keys_for_textless_stats() {
+        assert_eq!(display_key("local_display_socketed_gems_supported_by_level_x_reduced_duration").as_deref(), Some("support:reduced duration"));
+        assert_eq!(display_key("socketed_gems_supported_by_x_hypothermia").as_deref(), Some("support:hypothermia"));
+        assert_eq!(display_key("local_display_socketed_gems_get_increased_area_level").as_deref(), Some("support:increased area"));
+        assert_eq!(display_key("local_display_grants_skill_decoy_totem_level").as_deref(), Some("grant:decoy totem"));
+        assert_eq!(display_key("base_maximum_life"), None);
     }
 
     #[test]

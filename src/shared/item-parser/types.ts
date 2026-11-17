@@ -24,6 +24,8 @@ export interface ParsedMod {
   generation?: "prefix" | "suffix";
   modName?: string;
   tags?: string[];
+  /** Advanced-copy header this line belongs to (lines of one modifier share it). */
+  header?: number;
   /** The line(s) exactly as copied. */
   raw: string;
 }

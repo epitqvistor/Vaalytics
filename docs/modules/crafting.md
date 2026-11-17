@@ -70,6 +70,22 @@ influences and fractured mods (matched by text + roll range, preferring mods
 that can roll on the base). Targets: family + worst accepted tier; All / Any /
 At least k. The middle column is the currency emulator (below).
 
+## Recognising pasted items (`recognise.ts`)
+
+Pasted fractured / explicit / crafted lines are matched to mods by text and
+roll range, preferring mods that can roll on the item:
+- multi-line mods are tried first and claim all their lines (hybrids, veiled mods);
+- lines RePoE has no text for ("Socketed Gems are Supported by Level X …",
+  "Grants Level X … Skill") match the mod's `display` keys built from its stat
+  ids in Rust (`display_key`, "less" ≈ "reduced");
+- the dataset keeps zero-weight item mods (Elevated / legacy) and `extraMods`
+  (Veiled, Delve) for recognition only — they never roll;
+- crafted lines match bench mods and stay crafted in the emulator;
+- unknown lines keep their slot as "unknown" mods when an advanced copy
+  (Ctrl+Alt+C) gives prefix/suffix; otherwise they are listed as left out.
+Limitation: a normal copy merges identical stats from several mods into one
+line (e.g. two "% increased Area of Effect"); use Ctrl+Alt+C for such items.
+
 ## Currency emulator (`emulator.ts`, `EmulatorPanel.tsx`)
 
 Item state = rarity + mods (with rolled values; fractured mods are kept).

@@ -18,6 +18,8 @@ export interface ModDef {
   genWeights: TagWeights;
   text: string;
   essenceOnly: boolean;
+  /** Lines RePoE has no text for, e.g. "support:reduced duration", "grant:decoy totem". */
+  display?: string[];
 }
 
 export interface BaseDef {
@@ -75,6 +77,8 @@ export interface CraftingData {
   essences: EssenceDef[];
   bench: BenchDef[];
   craftedMods: ModDef[];
+  /** Veiled / Delve mods: recognition only, never rolled. */
+  extraMods: ModDef[];
 }
 
 export interface CraftingDataResponse {

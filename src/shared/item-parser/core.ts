@@ -103,6 +103,8 @@ export function resolveHeaderType(type: string): { kind: ModKind; generation?: "
   return undefined;
 }
 
+let headerSeq = 0;
+
 export function parseHeader(line: string, _rules: ParserRules) {
   const inner = HEADER_LINE.exec(line)?.[1];
   if (!inner) return null;
@@ -118,6 +120,8 @@ export function parseHeader(line: string, _rules: ParserRules) {
     tier: m?.groups?.tier ? Number(m.groups.tier) : undefined,
     tags: rest.length ? rest.join(", ").split(/,\s*/).filter((t) => t && !/Increased$/.test(t)) : undefined,
     typeText: type,
+    /** Distinguishes headers, so lines of one multi-line modifier can be grouped. */
+    seq: ++headerSeq,
   };
 }
 
@@ -148,6 +152,7 @@ function makeMod(item: ParsedItem, rawLine: string, rules: ParserRules, header: 
     generation: header?.generation,
     modName: header?.name,
     tags: header?.tags,
+    header: header?.seq,
     raw: rawLine,
   };
 }

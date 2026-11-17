@@ -1,7 +1,7 @@
 {
   "name": "vaalytics",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "module",
   "description": "Vaalytics \u0102\u02d8\u00e2\u201a\u00ac\u00e2\u20ac\u0165 desktop companion for Path of Exile 1 and Path of Exile 2",
   "scripts": {

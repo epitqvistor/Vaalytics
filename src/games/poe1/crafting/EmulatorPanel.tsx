@@ -183,7 +183,13 @@ export function EmulatorPanel({
     influences: spec.influences,
     mods: [
       ...(implicits ?? spec.base.implicits.map((t) => t.split("\n").join(", "))).map((t, i) => ({ id: `i${i}`, text: t, kind: "implicit" as const })),
-      ...item.mods.map((m, i) => ({ id: `m${i}`, text: m.text.split("\n").join(", "), kind: m.fractured ? ("fractured" as const) : ("explicit" as const), tier: tierOf(m.mod) })),
+      ...item.mods.map((m, i) => ({
+        id: `m${i}`,
+        text: m.text.split("\n").join(", "),
+        kind: m.fractured ? ("fractured" as const) : m.crafted ? ("crafted" as const) : ("explicit" as const),
+        // Unknown (not in the game data) and crafted mods have no tier.
+        tier: m.crafted || m.mod.id.startsWith("unknown:") ? undefined : tierOf(m.mod),
+      })),
     ],
   };
 

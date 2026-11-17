@@ -2,7 +2,8 @@
 import type { ParsedItem } from "@/shared/item-parser/types";
 import { parsePoe1Item } from "../parser";
 import { itemTags, spawnWeight, type CraftingIndex } from "./pool";
-import type { EmuItem, EmuMod } from "./emulator";
+import type { EmuItem } from "./emulator";
+import { recognise } from "./recognise";
 import type { BaseDef, Influence, ItemSpec, ModDef } from "./types";
 import { INFLUENCES } from "./types";
 
@@ -98,35 +99,20 @@ export function specFromText(idx: CraftingIndex, text: string): PasteResult | { 
   if (item.mirrored) warnings.push("The item is mirrored — it can't be modified in game.");
   if (item.synthesised) warnings.push("Synthesised implicits aren't modelled.");
 
-  const fixed: ModDef[] = [];
   const tags = itemTags(base, cls, influences);
-  for (const m of item.mods.filter((x) => x.kind === "fractured")) {
-    const mod = matchMod(idx, m.text, { name: m.modName, gen: m.generation, tags }) ?? matchMod(idx, m.text, { tags });
-    if (mod) fixed.push(mod);
-    else warnings.push(`Couldn't identify the fractured mod “${m.text}”; it is ignored.`);
-  }
+  const rec = recognise(idx, tags, item.mods.filter((m) => m.kind === "fractured"));
+  const fixed: ModDef[] = rec.mods.filter((m) => m.fractured && !m.mod.id.startsWith("unknown:")).map((m) => m.mod);
+  for (const t of [...rec.dropped, ...rec.unknown]) warnings.push(`Couldn't identify the fractured mod “${t}”; it is ignored by the odds.`);
   if (!item.itemLevel) warnings.push("No item level in the text; using 86.");
   return { spec: { base, ilvl: item.itemLevel ?? 86, influences: influences.slice(0, 2), fixed }, item, warnings };
 }
 
-/** Emulator start state from a pasted item: fractured and recognised explicit mods with their rolled text. */
-export function emuFromPaste(idx: CraftingIndex, spec: ItemSpec, item: ParsedItem): { item: EmuItem; dropped: string[] } {
+/** Emulator start state from a pasted item: fractured, explicit and crafted mods with their rolled text. */
+export function emuFromPaste(idx: CraftingIndex, spec: ItemSpec, item: ParsedItem): { item: EmuItem; dropped: string[]; unknown: string[] } {
   const tags = itemTags(spec.base, idx.classById.get(spec.base.itemClass), spec.influences);
-  const mods: EmuMod[] = [];
-  const dropped: string[] = [];
-  let f = 0;
-  for (const m of item.mods) {
-    if (m.kind === "fractured") {
-      const mod = spec.fixed[f++];
-      if (mod) mods.push({ mod, text: m.text, fractured: true });
-    } else if (m.kind === "explicit") {
-      const mod = matchMod(idx, m.text, { name: m.modName, gen: m.generation, tags });
-      if (mod && !mods.some((x) => x.mod.groups.some((g) => mod.groups.includes(g)))) mods.push({ mod, text: m.text });
-      else dropped.push(m.text);
-    } else if (m.kind === "crafted") dropped.push(m.text);
-  }
+  const rec = recognise(idx, tags, item.mods);
   const rarity = item.rarity === "Rare" ? "rare" : item.rarity === "Magic" ? "magic" : "normal";
-  return { item: { rarity: mods.some((m) => !m.fractured) || rarity !== "normal" ? rarity : "normal", mods }, dropped };
+  return { item: { rarity, mods: rec.mods }, dropped: rec.dropped, unknown: rec.unknown };
 }
 
 /** Path of Building text for an emulated item. */
