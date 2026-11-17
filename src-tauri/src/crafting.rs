@@ -15,9 +15,9 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 const SOURCE_BASE: &str = "https://repoe-fork.github.io/";
-const FILES: [&str; 5] = ["mods", "base_items", "fossils", "essences", "item_classes"];
+const FILES: [&str; 6] = ["mods", "base_items", "fossils", "essences", "item_classes", "crafting_bench_options"];
 /// Bump when the compact format changes; older caches are rebuilt.
-const FORMAT_VERSION: u32 = 2;
+const FORMAT_VERSION: u32 = 3;
 const MAX_AGE_SECS: i64 = 24 * 3600;
 
 /// Item classes the calculator supports (standard 3 prefix / 3 suffix gear).
@@ -108,6 +108,17 @@ pub struct EssenceDef {
     pub mods: BTreeMap<String, String>,
 }
 
+/// Crafting bench recipe that adds an explicit (crafted) modifier.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BenchDef {
+    pub mod_id: String,
+    pub item_classes: Vec<String>,
+    /// Currency name → amount.
+    pub cost: Vec<(String, i64)>,
+    pub tier: i64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CraftingData {
@@ -123,6 +134,10 @@ pub struct CraftingData {
     pub mods: Vec<ModDef>,
     pub fossils: Vec<FossilDef>,
     pub essences: Vec<EssenceDef>,
+    /// Bench crafts for the supported classes (metamods included).
+    pub bench: Vec<BenchDef>,
+    /// Crafted modifiers referenced by `bench`.
+    pub crafted_mods: Vec<ModDef>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -171,6 +186,22 @@ pub fn clean_text(t: &str) -> String {
 
 fn obj(v: &Value) -> AppResult<&Map<String, Value>> {
     v.as_object().ok_or_else(|| AppError::InvalidInput("Unexpected crafting data format.".into()))
+}
+
+fn mod_def(id: &str, m: &Value) -> ModDef {
+    ModDef {
+        id: id.to_owned(),
+        name: m.get("name").and_then(Value::as_str).unwrap_or_default().to_owned(),
+        family: m.get("type").and_then(Value::as_str).unwrap_or(id).to_owned(),
+        groups: strings(m.get("groups")),
+        gen: m.get("generation_type").and_then(Value::as_str).unwrap_or_default().to_owned(),
+        level: m.get("required_level").and_then(Value::as_i64).unwrap_or(1),
+        tags: strings(m.get("implicit_tags")),
+        spawn: tag_weights(m.get("spawn_weights")),
+        gen_weights: tag_weights(m.get("generation_weights")),
+        text: clean_text(m.get("text").and_then(Value::as_str).unwrap_or_default()),
+        essence_only: m.get("is_essence_only").and_then(Value::as_bool).unwrap_or(false),
+    }
 }
 
 /// Reduces the raw RePoE files to the compact crafting dataset.
@@ -229,19 +260,7 @@ pub fn build(raw: &HashMap<&str, Value>, checked_at: i64, source_modified: Optio
         if !essence_only && spawn.iter().all(|(_, w)| *w == 0) {
             continue;
         }
-        mods.push(ModDef {
-            id: id.clone(),
-            name: m.get("name").and_then(Value::as_str).unwrap_or_default().to_owned(),
-            family: m.get("type").and_then(Value::as_str).unwrap_or(id).to_owned(),
-            groups: strings(m.get("groups")),
-            gen: gen.to_owned(),
-            level: m.get("required_level").and_then(Value::as_i64).unwrap_or(1),
-            tags: strings(m.get("implicit_tags")),
-            spawn,
-            gen_weights: tag_weights(m.get("generation_weights")),
-            text: clean_text(m.get("text").and_then(Value::as_str).unwrap_or_default()),
-            essence_only,
-        });
+        mods.push(mod_def(id, m));
     }
     mods.sort_by(|a, b| a.id.cmp(&b.id));
 
@@ -278,6 +297,37 @@ pub fn build(raw: &HashMap<&str, Value>, checked_at: i64, source_modified: Optio
         .collect();
     essences.sort_by(|a, b| a.name.cmp(&b.name));
 
+    // Bench: explicit crafts for supported classes; currency ids → names.
+    let all_bases = obj(get("base_items")?)?;
+    let mut bench = Vec::new();
+    let mut crafted: BTreeMap<String, ModDef> = BTreeMap::new();
+    for o in get("crafting_bench_options")?.as_array().into_iter().flatten() {
+        let Some(mod_id) = o.pointer("/actions/add_explicit_mod").and_then(Value::as_str) else { continue };
+        let Some(m) = all_mods.get(mod_id) else { continue };
+        let gen = m.get("generation_type").and_then(Value::as_str).unwrap_or_default();
+        if !(gen == "prefix" || gen == "suffix") {
+            continue;
+        }
+        let item_classes: Vec<String> = strings(o.get("item_classes")).into_iter().filter(|c| supported.contains(c.as_str())).collect();
+        if item_classes.is_empty() {
+            continue;
+        }
+        let cost = o
+            .get("cost")
+            .and_then(Value::as_object)
+            .map(|c| {
+                c.iter()
+                    .filter_map(|(k, v)| {
+                        let name = all_bases.get(k).and_then(|b| b.get("name")).and_then(Value::as_str)?;
+                        Some((name.to_owned(), v.as_i64()?))
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        crafted.entry(mod_id.to_owned()).or_insert_with(|| mod_def(mod_id, m));
+        bench.push(BenchDef { mod_id: mod_id.to_owned(), item_classes, cost, tier: o.get("bench_tier").and_then(Value::as_i64).unwrap_or(0) });
+    }
+
     if mods.len() < 1000 || bases.len() < 100 {
         return Err(AppError::InvalidInput("Crafting data from the source looks incomplete.".into()));
     }
@@ -292,6 +342,8 @@ pub fn build(raw: &HashMap<&str, Value>, checked_at: i64, source_modified: Optio
         mods,
         fossils,
         essences,
+        bench,
+        crafted_mods: crafted.into_values().collect(),
     })
 }
 
@@ -434,6 +486,7 @@ mod tests {
                 json!({"domain":"item","release_state":"released","item_class":"Ring","name":format!("Ring {i}"),"tags":["ring","default"],"implicits":["Impl"],"drop_level":i}),
             );
         }
+        bases.insert("Metadata/Items/Currency/CurrencyRerollMagic".into(), json!({"domain":"undefined","name":"Orb of Alteration"}));
         bases.insert("Hidden".into(), json!({"domain":"item","release_state":"unreleased","item_class":"Ring","name":"Nope"}));
         HashMap::from([
             ("mods", Value::Object(mods)),
@@ -443,6 +496,10 @@ mod tests {
                 "F1":{"name":"Pristine Fossil","positive_mod_weights":[{"tag":"life","weight":1000}],"negative_mod_weights":[{"tag":"defences","weight":0}],"added_mods":[],"forced_mods":[]},
                 "F2":{"name":"Hollow Fossil","positive_mod_weights":[],"negative_mod_weights":[],"forced_mods":["X"]}
             })),
+            ("crafting_bench_options", json!([
+                {"actions":{"add_explicit_mod":"Life1"},"bench_tier":1,"cost":{"Metadata/Items/Currency/CurrencyRerollMagic":2},"item_classes":["Ring","Jewel"]},
+                {"actions":{"change_socket_count":2},"cost":{}}
+            ])),
             ("essences", json!({
                 "E1":{"name":"Deafening Essence of Greed","level":7,"mods":{"Ring":"Life5"},"type":{"is_corruption_only":false}},
                 "E2":{"name":"Essence of Hysteria","level":8,"mods":{"Ring":"X"},"type":{"is_corruption_only":true}}
@@ -460,6 +517,10 @@ mod tests {
         assert_eq!(d.fossils[0].weights, vec![("life".to_string(), 1000), ("defences".to_string(), 0)]);
         assert_eq!(d.essences.len(), 1, "corruption-only essences are excluded");
         assert_eq!(d.classes.iter().find(|c| c.id == "Ring").unwrap().influence_tags.len(), 6);
+        assert_eq!(d.bench.len(), 1, "only explicit-mod crafts");
+        assert_eq!(d.bench[0].item_classes, vec!["Ring"], "unsupported classes dropped");
+        assert_eq!(d.bench[0].cost, vec![("Orb of Alteration".to_string(), 2)]);
+        assert_eq!(d.crafted_mods.len(), 1);
     }
 
     #[test]
@@ -485,6 +546,7 @@ mod tests {
         assert!(r.data.mods.len() > 3000, "{}", r.data.mods.len());
         assert!(r.data.fossils.len() >= 15);
         assert!(r.data.essences.len() >= 80);
+        assert!(r.data.bench.iter().any(|b| b.mod_id.contains("CannotChangePrefixes")), "metamods present");
         let again = s.get(GameId::Poe1, true).await.unwrap();
         assert_eq!(again.data.mods.len(), r.data.mods.len());
         if let Ok(out) = std::env::var("VAALYTICS_DUMP_CRAFTING") {

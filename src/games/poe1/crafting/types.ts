@@ -54,6 +54,14 @@ export interface EssenceDef {
   mods: Record<string, string>;
 }
 
+export interface BenchDef {
+  modId: string;
+  itemClasses: string[];
+  /** Currency name → amount. */
+  cost: [name: string, qty: number][];
+  tier: number;
+}
+
 export interface CraftingData {
   format: number;
   game: "poe1";
@@ -65,6 +73,8 @@ export interface CraftingData {
   mods: ModDef[];
   fossils: FossilDef[];
   essences: EssenceDef[];
+  bench: BenchDef[];
+  craftedMods: ModDef[];
 }
 
 export interface CraftingDataResponse {

@@ -12,5 +12,5 @@
 | 6b Browser | embedded WebView2 tabs, address bar/search, popups as tabs, login fallback, isolation verified (0.2.3) | **done** |
 | 6c Crafting 1 | PoE 1 calculator: RePoE data, weights/tiers, targets, Chaos / Alt-Aug-Regal / Essence / Fossil optimizer, paste, PoB export (0.3.0) | **done** |
 | 6d Crafting 2 | currency emulator (Shift auto-roll, session cost), Monte Carlo worker with histogram, PoB export of the crafted item (0.4.0) | **done** |
-| 6e Crafting 3 | Harvest, Eldritch, metacrafts, Bestiary | next |
+| 6e Crafting 3 | Harvest tag reforges, Eldritch currency, bench + metamods, next-step planner (0.5.0) | **done** |
 | 6f Remaining | price alerts, auto-update, code signing, third-party licence notice | later |

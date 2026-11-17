@@ -36,7 +36,9 @@ export interface McResult {
   crafts: number;
 }
 
-type Attempt = (r: () => number) => { ok: boolean; spent: string[] };
+type Spent = [name: string, qty: number][];
+type Attempt = (r: () => number) => { ok: boolean; spent: Spent };
+const one = (...names: string[]): Spent => names.map((n) => [n, 1]);
 
 /** Builds the attempt function for a method id produced by methods.ts. */
 export function attemptFor(idx: CraftingIndex, spec: ItemSpec, goal: Goal, method: MethodResult): Attempt {
@@ -44,7 +46,7 @@ export function attemptFor(idx: CraftingIndex, spec: ItemSpec, goal: Goal, metho
   const plain = idx.pool(spec);
   const tierOf = (m: ModDef) => idx.tierForMod(plain, m);
   const hit = (mods: ModDef[]) => targetsHit(mods, goal, tierOf) >= need;
-  const names = method.components.map((c) => c.name);
+  const names: Spent = method.components.map((c) => [c.name, c.qty]);
 
   if (method.id === "chaos") {
     const fp = new FastPool(plain);
@@ -62,18 +64,23 @@ export function attemptFor(idx: CraftingIndex, spec: ItemSpec, goal: Goal, metho
     const fp = new FastPool(plain);
     return (r) => ({ ok: hit(reforge(fp, r, [...spec.fixed, mod])), spent: names });
   }
+  if (method.id.startsWith("harvest:")) {
+    const tag = method.id.slice(8);
+    const fp = new FastPool(plain);
+    return (r) => ({ ok: hit(reforge(fp, r, spec.fixed, { tag })), spent: names });
+  }
   const fp = new FastPool(plain);
   if (method.id === "alt") {
-    return (r) => ({ ok: hit(magicPair(fp, r)), spent: ["Orb of Alteration", "Orb of Augmentation"] });
+    return (r) => ({ ok: hit(magicPair(fp, r)), spent: one("Orb of Alteration", "Orb of Augmentation") });
   }
   if (method.id === "alt-regal") {
     return (r) => {
       const mods = magicPair(fp, r);
       const n = targetsHit(mods, goal, tierOf);
-      if (n < need - 1) return { ok: false, spent: ["Orb of Alteration", "Orb of Augmentation"] };
+      if (n < need - 1) return { ok: false, spent: one("Orb of Alteration", "Orb of Augmentation") };
       const ok = targetsHit(fill(fp, r, mods, mods.length + 1), goal, tierOf) >= need;
-      const spent = ["Orb of Alteration", "Orb of Augmentation", "Regal Orb"];
-      return { ok, spent: ok ? spent : [...spent, "Orb of Scouring", "Orb of Transmutation"] };
+      const spent = one("Orb of Alteration", "Orb of Augmentation", "Regal Orb");
+      return { ok, spent: ok ? spent : [...spent, ...one("Orb of Scouring", "Orb of Transmutation")] };
     };
   }
   throw new Error(`Monte Carlo isn't available for ${method.label}.`);
@@ -91,7 +98,7 @@ export async function runMonteCarlo(
   const attempt = attemptFor(idx, spec, goal, method);
   const r = rng(seed);
   const price = (n: string): number | null => (n === "Chaos Orb" ? 1 : (prices[n] ?? null));
-  const costOf = (names: string[]) => names.reduce<number | null>((s, n) => (s === null || price(n) === null ? null : s + price(n)!), 0);
+  const costOf = (spent: Spent) => spent.reduce<number | null>((s, [n, q]) => (s === null || price(n) === null ? null : s + q * price(n)!), 0);
 
   let attempts = 0;
   let hits = 0;

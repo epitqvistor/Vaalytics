@@ -184,12 +184,21 @@ export function successFrom(prep: Prepared, st: DrawState, draws: number, memo =
  * Chance that one reforge (Chaos / Fossil / Essence) meets the goal.
  * `extraFixed` are mods the method guarantees (an essence mod).
  */
-export function reforgeChance(pool: Pool, goal: Goal, tierOf: (m: ModDef) => number, extraFixed: readonly ModDef[] = []): number {
+export function reforgeChance(
+  pool: Pool,
+  goal: Goal,
+  tierOf: (m: ModDef) => number,
+  extraFixed: readonly ModDef[] = [],
+  opts: { lock?: Gen } = {},
+): number {
   if (!goal.targets.length) return 0;
   const prep = prepare(pool, goal, extraFixed);
   const fixed = [...pool.spec.fixed, ...extraFixed];
   const st0 = fixedState(goal, fixed, tierOf, prep.targetGroups);
   if (st0.p > MAX_PER_SIDE || st0.s > MAX_PER_SIDE) return 0;
+  // A locked side ("cannot be changed", Eldritch dominance) gets no new mods.
+  if (opts.lock === "prefix") st0.p = MAX_PER_SIDE;
+  if (opts.lock === "suffix") st0.s = MAX_PER_SIDE;
   const memo = new Map<string, number>();
   let chance = 0;
   for (const [n, odds] of RARE_MOD_COUNT) {
@@ -256,4 +265,54 @@ export function triesFor(chance: number, confidence: number): number {
   if (chance >= 1) return 1;
   if (chance <= 0) return Infinity;
   return Math.ceil(Math.log(1 - confidence) / Math.log(1 - chance));
+}
+
+/**
+ * Harvest "Reforge … including a <tag> modifier": one mod with the tag is
+ * guaranteed (weight-proportional among rollable mods with that tag), the rest
+ * is rolled as a normal reforge. `kept` stay (fractured, locked side).
+ */
+export function taggedReforgeChance(
+  pool: Pool,
+  goal: Goal,
+  tierOf: (m: ModDef) => number,
+  tag: string,
+  kept: readonly ModDef[] = [],
+  opts: { lock?: Gen } = {},
+): number {
+  if (!goal.targets.length) return 0;
+  const used = new Set([...pool.spec.fixed, ...kept].flatMap((m) => m.groups));
+  const all = [...pool.spec.fixed, ...kept];
+  const room = (gen: Gen) => opts.lock !== gen && all.filter((m) => m.gen === gen).length < MAX_PER_SIDE;
+  const tagged = pool.mods.filter((pm) => pm.mod.tags.includes(tag) && room(pm.mod.gen) && !pm.mod.groups.some((g) => used.has(g)));
+  const total = tagged.reduce((s, pm) => s + pm.weight, 0);
+  if (total <= 0) return 0;
+  const targetGroups = groupsOfTargets(pool, goal, all);
+  // Mods with the same effect on the goal share one evaluation.
+  const memo = new Map<string, number>();
+  let chance = 0;
+  for (const pm of tagged) {
+    const { hit, block } = targetMasks(pm.mod, pm.tier, goal, targetGroups);
+    const key = block === 0 ? `${pm.mod.gen}:other` : `${pm.mod.gen}:${hit}:${block}`;
+    let c = memo.get(key);
+    if (c === undefined) {
+      c = reforgeChance(pool, goal, tierOf, [...kept, pm.mod], opts);
+      memo.set(key, c);
+    }
+    chance += (pm.weight / total) * c;
+  }
+  return chance;
+}
+
+/**
+ * Chance that adding one random mod (Exalted Orb, Eldritch Exalted Orb with
+ * `only`) to an item with `current` mods meets the goal.
+ */
+export function addChance(pool: Pool, goal: Goal, tierOf: (m: ModDef) => number, current: readonly ModDef[], only?: Gen): number {
+  if (!goal.targets.length) return 0;
+  const prep = prepare(pool, goal, current);
+  const st = fixedState(goal, [...pool.spec.fixed, ...current], tierOf, prep.targetGroups);
+  if (only === "prefix") st.s = MAX_PER_SIDE;
+  if (only === "suffix") st.p = MAX_PER_SIDE;
+  return successFrom(prep, { ...st, kp: 0, ks: 0 }, 1);
 }

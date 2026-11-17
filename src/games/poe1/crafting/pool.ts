@@ -68,11 +68,15 @@ export class CraftingIndex {
   readonly classById = new Map<string, ClassDef>();
   constructor(readonly data: CraftingData) {
     for (const m of data.mods) this.modById.set(m.id, m);
+    for (const m of data.craftedMods ?? []) if (!this.modById.has(m.id)) this.modById.set(m.id, m);
     for (const c of data.classes) this.classById.set(c.id, c);
   }
 
-  /** Builds the pool. Fossils reweight; mods blocked by `spec.fixed` groups are excluded. */
-  pool(spec: ItemSpec, fossils: readonly FossilDef[] = []): Pool {
+  /**
+   * Builds the pool. Fossils reweight; `blockedTags` (bench "Cannot roll Attack/Caster
+   * Modifiers") remove every mod with that tag; mods blocked by `spec.fixed` groups are excluded.
+   */
+  pool(spec: ItemSpec, fossils: readonly FossilDef[] = [], blockedTags: readonly string[] = []): Pool {
     const tags = itemTags(spec.base, this.classById.get(spec.base.itemClass), spec.influences);
     const byFamily = new Map<string, ModDef[]>();
     const baseWeight = new Map<string, number>();
@@ -97,6 +101,7 @@ export class CraftingIndex {
     for (const m of this.data.mods) {
       const w0 = baseWeight.get(m.id);
       if (!w0 || m.level > spec.ilvl || m.groups.some((g) => blocked.has(g))) continue;
+      if (blockedTags.length && m.tags.some((t) => blockedTags.includes(t))) continue;
       const weight = fossils.length ? Math.floor(w0 * fossilMultiplier(m, fossils)) : w0;
       if (weight > 0) mods.push({ mod: m, weight, tier: tierOf.get(m.id)! });
     }

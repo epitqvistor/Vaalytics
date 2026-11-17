@@ -107,7 +107,47 @@ attempts) for the 25/50/75/90 % cost and tries, a 24-bin histogram (last bin =
 98th percentile and above) and the measured vs model chance. With no hits the
 spread uses the model chance (shown). Runs in its own worker; cancellable.
 
-## Not yet (planned)
+## Harvest, Eldritch, bench (stage 3)
 
-Harvest reforges, Eldritch currency, bench metacrafts, Bestiary (stage 3);
-jewels; PoE 2.
+**Harvest** (`harvest.ts`): the 16 "Reforge a Rare item with random modifiers,
+including a <tag> modifier" crafts. RePoE has no Harvest data; costs come from
+poedb Horticrafting (checked 2026-11-17), Lifeforce / Rancour prices from
+poe.ninja. Model: one mod with the tag (mod `implicit_tags`) is drawn first,
+weight-proportional among rollable mods, then a normal reforge
+(`taggedReforgeChance`). Best three tags are ranked with the other methods.
+"More/less likely" and influence reforges are not modelled (multipliers unknown).
+
+**Bench** (`data.bench`, `data.craftedMods` from RePoE `crafting_bench_options`):
+every explicit craft for the class with its cost, plus metamods.
+Supported metamods: Prefixes/Suffixes cannot be changed, Cannot roll
+Attack/Caster Modifiers. Not modelled: "1/2 … cannot be changed", multi-mod.
+One crafted mod per item.
+
+Metamod rules (confirmed by the user, PoE 1):
+- "… cannot be changed" is respected by Chaos, Scouring, Annulment, Harvest
+  (and Veiled Orb, not emulated); essences and fossils ignore it.
+- A respected reroll keeps the locked side and fractured mods, rolls only the
+  other side (total 4–6, assumption) and removes the metamod with that side.
+- "Cannot roll X" removes every mod with tag X from rolls (Exalt, Chaos,
+  Harvest, Eldritch, magic currencies); essences/fossils ignore it.
+
+**Eldritch**: Searing Exarch / Eater of Worlds tiers are set in the item bar
+(body armour, helmet, gloves, boots). Higher tier dominates (Exarch →
+prefixes, Eater → suffixes); equal tiers → no dominance. Eldritch Chaos
+rerolls the dominant side (keeps the other side), Eldritch Exalt adds to it,
+Eldritch Annulment removes from it. Implicit rolling (Embers/Ichors) is not
+emulated.
+
+**Next step** (`nextsteps.ts`, `NextStepsPanel.tsx`): for the current emulated or
+pasted rare item: Exalt; "Cannot roll Attack/Caster" + Exalt (only when it
+beats a plain Exalt; the metamod takes a suffix slot); Eldritch Exalt / Chaos;
+"Lock prefixes/suffixes" + Chaos or + the best two Harvest reforges (the
+metamod needs a free slot on the other side and is recrafted each try).
+One-shot steps show cost per try; repeatable steps average cost ÷ chance.
+`stage3.test.ts` checks locked / tagged / single-add chances against the exact
+sampler.
+
+## Not yet
+
+Bestiary (Wild Bristle Matron: which metamod it adds isn't documented),
+Harvest "more/less likely", Eldritch implicit rolling, jewels, PoE 2.

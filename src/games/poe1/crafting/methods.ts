@@ -2,7 +2,8 @@
  * Method cost comparison. Costs are in chaos, from live poe.ninja prices;
  * a method whose components have no price is listed without a cost.
  */
-import { magicChance, reforgeChance, triesFor } from "./engine";
+import { magicChance, reforgeChance, taggedReforgeChance, triesFor } from "./engine";
+import { HARVEST_REFORGES } from "./harvest";
 import { CraftingIndex, ESSENCE_CLASS, fossilAllowed, type Pool } from "./pool";
 import type { EssenceDef, FossilDef, Goal, ItemSpec, ModDef } from "./types";
 
@@ -23,7 +24,7 @@ export interface Component {
 
 export interface MethodResult {
   id: string;
-  kind: "chaos" | "alt" | "essence" | "fossil";
+  kind: "chaos" | "alt" | "essence" | "fossil" | "harvest";
   label: string;
   detail?: string;
   /** Chance one try reaches the goal (for Alt/Regal: chance per Alteration, all steps included). */
@@ -90,6 +91,9 @@ export function compareMethods(idx: CraftingIndex, { spec, goal, prices }: Compa
 
   // 4. Fossils
   out.push(...fossilMethods(idx, spec, goal, prices, chaos));
+
+  // 5. Harvest reforges with a guaranteed tag (best three)
+  out.push(...rank(harvestMethods(pool, goal, tierOf(pool), prices, chaos)).slice(0, 3));
 
   return rank(out);
 }
@@ -237,4 +241,27 @@ function fossilMethods(idx: CraftingIndex, spec: ItemSpec, goal: Goal, prices: P
   }
   // Keep the best few fossil options (cheapest with prices, otherwise most likely).
   return rank(results).slice(0, 5);
+}
+
+function harvestMethods(pool: Pool, goal: Goal, tierOf: (m: ModDef) => number, prices: PriceTable, chaosChance: number): MethodResult[] {
+  const out: MethodResult[] = [];
+  for (const h of HARVEST_REFORGES) {
+    const chance = taggedReforgeChance(pool, goal, tierOf, h.tag);
+    if (chance <= chaosChance) continue;
+    out.push(
+      finish(
+        {
+          id: `harvest:${h.tag}`,
+          kind: "harvest",
+          label: `Harvest reforge · ${h.label}`,
+          detail: `Guarantees a ${h.label} modifier`,
+          chance,
+          components: h.cost.map(([name, qty]) => ({ name, qty, price: null })),
+          notes: ["Harvest costs from poedb (Horticrafting). The guaranteed mod is weight-proportional among mods with the tag."],
+        },
+        prices,
+      ),
+    );
+  }
+  return out;
 }

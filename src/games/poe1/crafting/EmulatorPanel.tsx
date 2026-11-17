@@ -5,13 +5,14 @@ import { Icon } from "@/shared/icons/Icon";
 import { ItemCard } from "@/shared/item-renderer/ItemCard";
 import type { DisplayItem } from "@/shared/item-renderer/types";
 import { cn } from "@/shared/utilities/cn";
-import { actionCost, CURRENCY, Emulator, type EmuAction, type EmuItem, type SimpleCurrency } from "./emulator";
+import { actionCost, CURRENCY, ELDRITCH, Emulator, type EldritchCurrency, type EmuAction, type EmuItem, type SimpleCurrency } from "./emulator";
+import { HARVEST_REFORGES, harvestByTag } from "./harvest";
 import type { PriceTable } from "./methods";
 import { RESONATORS } from "./methods";
 import { pobTextFor } from "./paste";
 import type { CraftingIndex } from "./pool";
 import { needOf, targetsHit } from "./sampler";
-import type { Goal, ItemSpec } from "./types";
+import type { Gen, Goal, ItemSpec, ModDef } from "./types";
 
 const ORDER: SimpleCurrency[] = ["transmute", "alteration", "augmentation", "regal", "alchemy", "chaos", "exalted", "annulment", "scouring"];
 const AUTO_LIMIT = 1_000_000;
@@ -28,6 +29,9 @@ export function EmulatorPanel({
   prices,
   icons,
   divine,
+  dominance,
+  eldritchAllowed,
+  onItemChange,
 }: {
   idx: CraftingIndex;
   spec: ItemSpec;
@@ -38,9 +42,13 @@ export function EmulatorPanel({
   prices: PriceTable;
   icons: Record<string, string>;
   divine: number | null;
+  dominance: Gen | null;
+  /** Eldritch implicits exist on this class (body armour, helmet, gloves, boots). */
+  eldritchAllowed: boolean;
+  onItemChange: (item: EmuItem) => void;
 }) {
   const notify = useToast();
-  const emu = useMemo(() => new Emulator(idx, spec), [idx, spec]);
+  const emu = useMemo(() => new Emulator(idx, spec, dominance), [idx, spec, dominance]);
   const [item, setItem] = useState<EmuItem>(start);
   const [spent, setSpent] = useState<Record<string, number>>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -66,6 +74,17 @@ export function EmulatorPanel({
     setAuto(null);
   }, [start, emu]);
   useEffect(() => () => void (stop.current = true), []);
+  useEffect(() => onItemChange(item), [item, onItemChange]);
+
+  const benchCrafts = useMemo(() => {
+    const list = emu.benchCrafts().map((b) => ({ b, mod: idx.modById.get(b.modId)! }));
+    const meta = (m: ModDef) => m.family.startsWith("ItemGeneration");
+    return list.sort((x, y) => Number(meta(y.mod)) - Number(meta(x.mod)) || x.mod.gen.localeCompare(y.mod.gen) || x.mod.text.localeCompare(y.mod.text) || x.b.tier - y.b.tier);
+  }, [emu, idx]);
+  const [benchIdx, setBenchIdx] = useState("0");
+  const craft = benchCrafts[Number(benchIdx)] ?? benchCrafts[0];
+  const [harvestTag, setHarvestTag] = useState("life");
+  const harvest = harvestByTag(harvestTag)!;
 
   const tierOf = emu.tierOf;
   const need = needOf(goal);
@@ -73,6 +92,7 @@ export function EmulatorPanel({
   const done = goal.targets.length > 0 && hits(item) >= need;
 
   const priceOf = (n: string): number | null => (n === "Chaos Orb" ? 1 : (prices[n] ?? null));
+  const costOf = (list: [string, number][]) => list.reduce<number | null>((s, [n, q]) => (s === null || priceOf(n) === null ? null : s + q * priceOf(n)!), 0);
   const totals = useMemo(() => {
     let chaos = 0;
     let missing = false;
@@ -86,8 +106,8 @@ export function EmulatorPanel({
     return { chaos, missing, count };
   }, [spent, prices]);
 
-  const addSpent = (into: Record<string, number>, names: string[]) => {
-    for (const n of names) into[n] = (into[n] ?? 0) + 1;
+  const addSpent = (into: Record<string, number>, names: [string, number][]) => {
+    for (const [n, q] of names) into[n] = (into[n] ?? 0) + q;
   };
 
   const once = (a: EmuAction) => {
@@ -126,7 +146,7 @@ export function EmulatorPanel({
           const aug = emu.apply(cur, { kind: "augmentation" }, rnd.current);
           if (!("error" in aug)) {
             cur = aug;
-            addSpent(acc, [CURRENCY.augmentation.name]);
+            addSpent(acc, [[CURRENCY.augmentation.name, 1]]);
           }
         }
         if (hits(cur) >= need || n >= AUTO_LIMIT) {
@@ -225,6 +245,73 @@ export function EmulatorPanel({
             )}
           </div>
 
+          <div className="flex items-end gap-1.5">
+            <Select
+              label="Harvest reforge"
+              size="sm"
+              value={harvestTag}
+              onChange={setHarvestTag}
+              options={HARVEST_REFORGES.map((h) => ({ value: h.tag, label: `${h.label} · ${h.cost.map(([n, q]) => `${q} ${n.split(" ")[0]}`).join(" + ")}` }))}
+              className="min-w-0 flex-1"
+            />
+            <CurrencyButton
+              compact
+              label="Reforge"
+              hint={`Reforge a Rare item with random modifiers, including a ${harvest.label} modifier`}
+              icon={icons[harvest.cost[0]![0]]}
+              price={costOf(harvest.cost)}
+              disabled={!!auto}
+              onClick={(shift) => use({ kind: "harvest", tag: harvest.tag }, `Harvest ${harvest.label}`, shift)}
+            />
+          </div>
+
+          {craft && (
+            <div className="space-y-1.5">
+              <Select
+                label="Crafting bench"
+                size="sm"
+                value={String(benchCrafts.indexOf(craft))}
+                onChange={setBenchIdx}
+                options={benchCrafts.map(({ b, mod }, i) => ({
+                  value: String(i),
+                  label: `${mod.gen === "prefix" ? "P" : "S"} · ${mod.text.split("\n").join(", ")} · ${b.cost.map(([n, q]) => `${q} ${n.replace(/^Orb of /, "")}`).join(" + ")}`,
+                }))}
+              />
+              <div className="flex justify-end gap-1.5">
+                <CurrencyButton compact label="Craft" hint={craft.mod.text} price={costOf(craft.b.cost)} disabled={!!auto} onClick={() => once({ kind: "bench", craft: craft.b })} />
+                <CurrencyButton
+                  compact
+                  label="Remove crafted"
+                  hint="Remove crafted modifiers (1 Orb of Scouring)"
+                  price={costOf(actionCost({ kind: "removeCrafted" }))}
+                  disabled={!!auto}
+                  onClick={() => once({ kind: "removeCrafted" })}
+                />
+              </div>
+            </div>
+          )}
+
+          {eldritchAllowed && (
+            <div>
+              <p className="mb-1 text-xs font-medium text-fg-muted">
+                Eldritch {dominance ? <span className="text-fg-subtle">· {dominance === "prefix" ? "Exarch dominant → prefixes" : "Eater dominant → suffixes"}</span> : <span className="text-warning">· no dominance</span>}
+              </p>
+              <div className="grid grid-cols-3 gap-1.5">
+                {(Object.keys(ELDRITCH) as EldritchCurrency[]).map((k) => (
+                  <CurrencyButton
+                    key={k}
+                    label={ELDRITCH[k].short}
+                    hint={ELDRITCH[k].hint}
+                    icon={icons[ELDRITCH[k].name]}
+                    price={priceOf(ELDRITCH[k].name)}
+                    disabled={!!auto || !dominance}
+                    onClick={(shift) => use({ kind: k }, ELDRITCH[k].short, shift)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           <div>
             <p className="mb-1 text-xs font-medium text-fg-muted">Fossils (up to 4)</p>
             <div className="flex flex-wrap gap-1">
@@ -256,7 +343,7 @@ export function EmulatorPanel({
                   label="Resonate"
                   hint={`${fossils.map((f) => f.name).join(" + ")} in a ${RESONATORS[fossils.length - 1]}`}
                   icon={icons[RESONATORS[fossils.length - 1]!]}
-                  price={actionCost({ kind: "fossil", fossils }).reduce<number | null>((s, n) => (s === null || priceOf(n) === null ? null : s + priceOf(n)!), 0)}
+                  price={costOf(actionCost({ kind: "fossil", fossils }))}
                   disabled={!!auto}
                   onClick={(shift) => use({ kind: "fossil", fossils }, "Fossils", shift)}
                 />

@@ -73,6 +73,23 @@ export class FastPool {
     return last;
   }
 
+  /** Like draw(), restricted to mods with `tag`. */
+  drawTagged(r: () => number, used: Uint8Array, p: number, s: number, tag: string, only?: 0 | 1): number {
+    let total = 0;
+    const ok = (i: number) => (only === undefined || this.side[i] === only) && this.mods[i]!.tags.includes(tag) && this.open(i, used, p, s, MAX_PER_SIDE);
+    for (let i = 0; i < this.mods.length; i++) if (ok(i)) total += this.weight[i]!;
+    if (total <= 0) return -1;
+    let x = r() * total;
+    let last = -1;
+    for (let i = 0; i < this.mods.length; i++) {
+      if (!ok(i)) continue;
+      last = i;
+      x -= this.weight[i]!;
+      if (x < 0) return i;
+    }
+    return last;
+  }
+
   take(i: number, used: Uint8Array): ModDef {
     for (const g of this.groups[i]!) used[g] = 1;
     return this.mods[i]!;
@@ -81,13 +98,13 @@ export class FastPool {
 
 const count = (mods: readonly ModDef[], gen: "prefix" | "suffix") => mods.reduce((c, m) => c + (m.gen === gen ? 1 : 0), 0);
 
-/** Adds random mods until `target` mods are on the item (or nothing fits). */
-export function fill(fp: FastPool, r: () => number, mods: ModDef[], target: number, max = MAX_PER_SIDE): ModDef[] {
+/** Adds random mods until `target` mods are on the item (or nothing fits). `only` limits to one side. */
+export function fill(fp: FastPool, r: () => number, mods: ModDef[], target: number, max = MAX_PER_SIDE, only?: 0 | 1): ModDef[] {
   const used = fp.usedFor(mods);
   let p = count(mods, "prefix");
   let s = mods.length - p;
   while (mods.length < target) {
-    const i = fp.draw(r, used, p, s, max);
+    const i = fp.draw(r, used, p, s, max, only);
     if (i < 0) break;
     mods.push(fp.take(i, used));
     if (fp.side[i] === 0) p++;
@@ -96,9 +113,21 @@ export function fill(fp: FastPool, r: () => number, mods: ModDef[], target: numb
   return mods;
 }
 
-/** One reforge to rare: kept mods + random up to 4–6. */
-export function reforge(fp: FastPool, r: () => number, kept: readonly ModDef[]): ModDef[] {
-  return fill(fp, r, [...kept], pickModCount(r));
+/**
+ * One reforge to rare: kept mods + random up to 4–6. `lock` keeps a side
+ * unchanged (no new mods there); `tag` guarantees one mod with that tag first
+ * (Harvest). Returns null when the guaranteed tag can't roll.
+ */
+export function reforge(fp: FastPool, r: () => number, kept: readonly ModDef[], opts: { lock?: 0 | 1; tag?: string } = {}): ModDef[] {
+  const mods = [...kept];
+  const n = pickModCount(r);
+  const only = opts.lock === undefined ? undefined : ((1 - opts.lock) as 0 | 1);
+  if (opts.tag) {
+    const used = fp.usedFor(mods);
+    const i = fp.drawTagged(r, used, count(mods, "prefix"), count(mods, "suffix"), opts.tag, only);
+    if (i >= 0) mods.push(fp.take(i, used));
+  }
+  return fill(fp, r, mods, Math.max(n, mods.length), MAX_PER_SIDE, only);
 }
 
 /** Magic item after Alteration + Augmentation: one prefix and one suffix (weight-proportional per side). */

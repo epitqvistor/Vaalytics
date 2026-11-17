@@ -16,6 +16,8 @@ import { FreshnessBar, VirtualRows } from "@/shared/views/market-ui";
 import { EmulatorPanel } from "./EmulatorPanel";
 import { usePrices, useComparison, useCraftingData, useMonteCarlo } from "./hooks";
 import { MonteCarloPanel } from "./MonteCarloPanel";
+import { NextStepsPanel } from "./NextStepsPanel";
+import type { EmuItem } from "./emulator";
 import type { MethodResult } from "./methods";
 import { emuFromPaste, specFromText } from "./paste";
 import { families, type CraftingIndex, type FamilyRow, type Pool } from "./pool";
@@ -61,6 +63,11 @@ function Cost({ chaos, divine, className }: { chaos: number | null; divine: numb
 
 const chanceText = (p: number) => (p <= 0 ? "—" : p >= 0.01 ? `${(p * 100).toFixed(p >= 0.1 ? 1 : 2)}%` : `1 in ${Math.round(1 / p).toLocaleString("en-US")}`);
 
+/** Classes that can have Searing Exarch / Eater of Worlds implicits. */
+const ELDRITCH_CLASSES = ["Body Armour", "Helmet", "Gloves", "Boots"];
+/** Implicit tiers by rank; equal tiers → no dominance. */
+const ELDRITCH_TIERS = ["None", "Lesser", "Greater", "Grand", "Exceptional"];
+
 const firstLine = (t: string) => t.split("\n").join(", ");
 
 const defaultBase = (bases: BaseDef[]) => [...bases].sort((a, b) => b.dropLevel - a.dropLevel)[0];
@@ -79,6 +86,9 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
   const base = idx.data.bases.find((b) => b.id === baseId) ?? basesOfClass[0]!;
   const [ilvl, setIlvl] = useState(86);
   const [influences, setInfluences] = useState<Influence[]>([]);
+  const [exarch, setExarch] = useState(0);
+  const [eater, setEater] = useState(0);
+  const [emuItem, setEmuItem] = useState<EmuItem | null>(null);
   const [fixed, setFixed] = useState<ModDef[]>([]);
   const [pasted, setPasted] = useState<ParsedItem | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
@@ -117,6 +127,8 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
     changeItem();
     setFixed([]);
     setInfluences([]);
+    setExarch(0);
+    setEater(0);
     setTargets([]);
   };
 
@@ -163,6 +175,9 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
       notify("info", "Press Ctrl+V", "Copy the item in game with Ctrl+C, then press Ctrl+V here.");
     }
   };
+
+  const eldritchAllowed = ELDRITCH_CLASSES.includes(base.itemClass);
+  const dominance: Gen | null = !eldritchAllowed || exarch === eater ? null : exarch > eater ? "prefix" : "suffix";
 
   const toggleInfluence = (inf: Influence) => {
     changeItem();
@@ -263,6 +278,26 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
           </div>
         </div>
 
+        {eldritchAllowed && (
+          <>
+            <Select
+              label="Searing Exarch"
+              size="sm"
+              value={String(exarch)}
+              onChange={(v) => setExarch(Number(v))}
+              options={ELDRITCH_TIERS.map((t, i) => ({ value: String(i), label: t }))}
+              className="w-32"
+            />
+            <Select
+              label="Eater of Worlds"
+              size="sm"
+              value={String(eater)}
+              onChange={(v) => setEater(Number(v))}
+              options={ELDRITCH_TIERS.map((t, i) => ({ value: String(i), label: t }))}
+              className="w-32"
+            />
+          </>
+        )}
         <div className="ml-auto flex min-w-60 items-center gap-4 rounded-lg border border-line bg-bg-2/80 px-3.5 py-2">
           {best ? (
             <>
@@ -314,7 +349,19 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
         </div>
 
         <div className="lg:col-span-4">
-          <EmulatorPanel idx={idx} spec={spec} start={emuStart.item} implicits={emuStart.implicits} goal={goal} prices={prices} icons={icons} divine={divine} />
+          <EmulatorPanel
+            idx={idx}
+            spec={spec}
+            start={emuStart.item}
+            implicits={emuStart.implicits}
+            goal={goal}
+            prices={prices}
+            icons={icons}
+            divine={divine}
+            dominance={dominance}
+            eldritchAllowed={eldritchAllowed}
+            onItemChange={setEmuItem}
+          />
         </div>
 
         <div className="flex flex-col gap-3.5 lg:col-span-4">
@@ -322,7 +369,10 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
           {results.length > 0 && (
             <MonteCarloPanel methods={results} state={mc.state} onRun={(method) => mc.run({ spec, goal, method, prices })} onCancel={mc.cancel} divine={divine} />
           )}
-          <p className="px-1 text-2xs leading-relaxed text-fg-subtle">Harvest, Eldritch currency and bench metacrafts aren't modelled yet.</p>
+          <NextStepsPanel idx={idx} spec={spec} item={emuItem} goal={goal} prices={prices} dominance={dominance} divine={divine} />
+          <p className="px-1 text-2xs leading-relaxed text-fg-subtle">
+            Not modelled: Harvest “more/less likely” reforges, Bestiary crafts, “1/2 modifiers cannot be changed” and multi-mod.
+          </p>
         </div>
       </section>
     </div>
