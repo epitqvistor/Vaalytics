@@ -20,7 +20,7 @@ export interface SegmentedControlProps<T extends string> {
 export function SegmentedControl<T extends string>({ value, onChange, segments, label, size = "md" }: SegmentedControlProps<T>) {
   const layoutId = useId();
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-md border border-line bg-bg-2 p-0.5">
+    <div role="radiogroup" aria-label={label} className="well inline-flex rounded-md p-0.5">
       {segments.map((s) => {
         const active = s.value === value;
         return (
@@ -40,7 +40,7 @@ export function SegmentedControl<T extends string>({ value, onChange, segments, 
               <motion.span
                 layoutId={layoutId}
                 transition={transition.layout}
-                className="absolute inset-0 rounded-[5px] border border-line-strong bg-elevated shadow-sm"
+                className="absolute inset-0 rounded-[5px] border border-white/[0.1] bg-gradient-to-b from-elevated-2 to-elevated shadow-[inset_0_1px_0_rgb(255_255_255/0.06),0_1px_2px_rgb(0_0_0/0.4)]"
               />
             )}
             <span className="relative">{s.label}</span>

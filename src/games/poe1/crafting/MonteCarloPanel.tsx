@@ -4,11 +4,10 @@ import { Button, Select } from "@/shared/components";
 import { Icon } from "@/shared/icons/Icon";
 import { cn } from "@/shared/utilities/cn";
 import type { McState } from "./hooks";
+import { useChaos } from "./money";
 import type { MethodResult } from "./methods";
 import type { McResult } from "./montecarlo";
 
-const fmt = (n: number) => (n >= 1000 ? Math.round(n).toLocaleString("en-US") : n >= 10 ? n.toFixed(1) : n.toFixed(2));
-const money = (c: number, divine: number | null) => (divine && c >= divine ? `${fmt(c / divine)} div` : `${fmt(c)}c`);
 
 export function MonteCarloPanel({
   methods,
@@ -74,6 +73,7 @@ export function MonteCarloPanel({
 }
 
 function McSummary({ r, divine }: { r: McResult; divine: number | null }) {
+  const money = useChaos(divine);
   const values = r.cost ?? null;
   const rows: [string, number, number][] = (["p25", "p50", "p75", "p90"] as const).map((k) => [k.slice(1), r.tries[k], values ? values[k] : NaN]);
   const diff = r.modelChance > 0 ? r.chance / r.modelChance - 1 : 0;
@@ -122,14 +122,14 @@ function McSummary({ r, divine }: { r: McResult; divine: number | null }) {
             <tr key={p}>
               <td className="font-sans text-fg-muted">{p}%</td>
               <td className="text-right text-fg">{tries.toLocaleString("en-US")}</td>
-              <td className="text-right text-fg">{Number.isNaN(cost) ? "no price" : money(cost, divine)}</td>
+              <td className="text-right text-fg">{Number.isNaN(cost) ? "no price" : money(cost)}</td>
             </tr>
           ))}
           {r.cost && (
             <tr className="border-t border-line">
               <td className="font-sans text-fg-muted">Average</td>
               <td />
-              <td className="text-right text-fg">{money(r.cost.mean, divine)}</td>
+              <td className="text-right text-fg">{money(r.cost.mean)}</td>
             </tr>
           )}
         </tbody>
@@ -141,13 +141,14 @@ function McSummary({ r, divine }: { r: McResult; divine: number | null }) {
 const chance = (p: number) => (p <= 0 ? "—" : p >= 0.01 ? `${(p * 100).toFixed(2)}%` : `1 in ${Math.round(1 / p).toLocaleString("en-US")}`);
 
 function Histogram({ r, divine }: { r: McResult; divine: number | null }) {
+  const money = useChaos(divine);
   const [hover, setHover] = useState<number | null>(null);
   const bins = r.histogram;
   const max = Math.max(...bins.map((b) => b.count), 1);
   const W = 300;
   const H = 96;
   const bw = W / bins.length;
-  const label = (v: number) => (r.cost ? money(v, divine) : `${Math.round(v).toLocaleString("en-US")} tries`);
+  const label = (v: number) => (r.cost ? money(v) : `${Math.round(v).toLocaleString("en-US")} tries`);
   const h = hover === null ? null : bins[hover]!;
   return (
     <figure className="space-y-1">

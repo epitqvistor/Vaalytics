@@ -5,6 +5,7 @@ import { PreferencesProvider, usePreferences } from "@/core/settings/Preferences
 import { ErrorBoundary, ToastProvider } from "@/shared/components";
 import { transition } from "@/shared/design/motion";
 import { Icon } from "@/shared/icons/Icon";
+import { Atmosphere } from "./Atmosphere";
 import { GameSelection } from "./GameSelection";
 import { GameShell } from "./GameShell";
 import { TitleBar } from "./TitleBar";
@@ -25,7 +26,8 @@ function MotionRoot() {
     // "user" follows the OS setting; the in-app preference can force it on.
     <MotionConfig reducedMotion={prefs.reduceMotion ? "always" : "user"} transition={transition.base}>
       <ToastProvider>
-        <div className="app-backdrop flex h-full flex-col">
+        <div className="relative isolate flex h-full flex-col">
+          <AppAtmosphere />
           <AppTitleBar />
           <div className="relative min-h-0 flex-1">
             <ErrorBoundary>
@@ -36,6 +38,11 @@ function MotionRoot() {
       </ToastProvider>
     </MotionConfig>
   );
+}
+
+function AppAtmosphere() {
+  const { game } = useGameContext();
+  return <Atmosphere game={game} />;
 }
 
 function AppTitleBar() {

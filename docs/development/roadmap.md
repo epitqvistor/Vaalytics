@@ -13,4 +13,8 @@
 | 6c Crafting 1 | PoE 1 calculator: RePoE data, weights/tiers, targets, Chaos / Alt-Aug-Regal / Essence / Fossil optimizer, paste, PoB export (0.3.0) | **done** |
 | 6d Crafting 2 | currency emulator (Shift auto-roll, session cost), Monte Carlo worker with histogram, PoB export of the crafted item (0.4.0) | **done** |
 | 6e Crafting 3 | Harvest tag reforges, Eldritch currency, bench + metamods, next-step planner (0.5.0) | **done** |
+| 7 Module foundation | registry-driven navigation (Overview / Economy / Endgame / Character / Tools), planned-module pages + toggle, versioned league-aware game data (3.30), provenance model, module docs/template (0.7.0) | **done** |
+| 8a Market Intelligence | category overview, movers, liquidity, in-app price alerts (0.8.0) | **done** |
+| 8b Loot Intelligence | value tiers for stackables, unique-base floors (poe.ninja baseType, migration 0003), show-only loot-filter block (0.9.0) | **done** |
+| 8c 3.30 modules | Thread Planner, Atlas Planner, Fate Planner, Map Lab, Farming Lab — each needs a verified 3.30 data source first | next |
 | 6f Remaining | price alerts, auto-update, code signing, third-party licence notice | later |

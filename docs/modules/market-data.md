@@ -59,3 +59,21 @@ Low-confidence entries (fewer than 5 listings) are hidden by default in the trac
 - PoE 2 has no unique-item endpoint on poe.ninja at the time of writing, so PoE 2 shows exchange categories only.
 - Scarabs did not return data for the current PoE 1 league via the exchange endpoint and are not listed.
 - Locally recorded history only accumulates while Vaalytics is open and the category is viewed.
+
+## Display currency ("Prices in")
+
+`src/core/market/DisplayCurrency.tsx` — per-game setting `market.displayUnit` (currency id,
+default: the base unit). Values stay stored in the base unit; the UI divides by the chosen
+currency's current poe.ninja rate (currency snapshot). Without a rate (not loaded / delisted)
+values are shown in the base unit — never estimated. The picker (`DisplayCurrencySelect`) sits in
+the headers of Dashboard, Currency Tracker, Price Checker and Crafting; the choice applies
+everywhere, including the price-check overlay.
+- `Price` converts base amounts automatically; `AltPrice` shows the second line (premium unit in
+  base mode, base value otherwise); `useMoney()` / crafting `useChaos()` format plain numbers.
+- Not converted: listing prices (shown in the seller's currency, with a converted "≈" line),
+  charts of an item's price history (a current rate would distort history) and listing counts.
+
+## Base type (normalizer v4, migration 0003)
+
+Stash endpoints (uniques) keep poe.ninja `baseType` in `market_items.base_type` / `MarketItemRow.baseType`
+(null for exchange categories). Used by Loot Intelligence to group uniques by base.

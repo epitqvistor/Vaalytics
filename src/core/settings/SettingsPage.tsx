@@ -25,11 +25,20 @@ export default function SettingsPage() {
     ...(DesignGallery ? [{ value: "design" as const, label: "Design system" }] : []),
   ];
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-[1360px]">
       <PageHeader title="Settings" actions={<SegmentedControl label="Settings section" value={tab} onChange={setTab} segments={tabs} />} />
       <Suspense fallback={null}>
-        {tab === "general" && <GeneralSettings />}
-        {tab === "game" && <GameSettings key={game} />}
+        {/* Forms read best at a moderate width; the page edge stays aligned with other sections. */}
+        {tab === "general" && (
+          <div className="max-w-4xl">
+            <GeneralSettings />
+          </div>
+        )}
+        {tab === "game" && (
+          <div className="max-w-4xl">
+            <GameSettings key={game} />
+          </div>
+        )}
         {tab === "diagnostics" && <DiagnosticsPanel />}
         {tab === "design" && DesignGallery && <DesignGallery />}
       </Suspense>
@@ -42,12 +51,20 @@ function GeneralSettings() {
   return (
     <div className="flex flex-col gap-5">
       <Panel title="Appearance">
-        <Switch
-          label="Reduce motion"
-          description="Minimise animations. Vaalytics also follows the Windows animation setting automatically."
-          checked={prefs.reduceMotion}
-          onChange={(v) => setPref("reduceMotion", v)}
-        />
+        <div className="flex flex-col gap-4">
+          <Switch
+            label="Reduce motion"
+            description="Minimise animations. Vaalytics also follows the Windows animation setting automatically."
+            checked={prefs.reduceMotion}
+            onChange={(v) => setPref("reduceMotion", v)}
+          />
+          <Switch
+            label="Show planned modules"
+            description="List modules that aren't built yet in navigation, marked “Soon”. Their pages describe what they will do; they show no data."
+            checked={prefs.showPlanned}
+            onChange={(v) => setPref("showPlanned", v)}
+          />
+        </div>
       </Panel>
       <TradeSettings />
     </div>
@@ -61,7 +78,9 @@ function TradeSettings() {
   const [draft, setDraft] = useState<string | null>(null);
   const [restore, setRestore] = useState(true);
   useEffect(() => {
-    getAppSetting<boolean>("priceCheck.restoreClipboard").then((v) => isBool(v) && setRestore(v)).catch(() => {});
+    getAppSetting<boolean>("priceCheck.restoreClipboard")
+      .then((v) => isBool(v) && setRestore(v))
+      .catch(() => {});
   }, []);
   const value = draft ?? contact ?? "";
   const valid = isValidContact(value);
@@ -103,7 +122,9 @@ function TradeSettings() {
 function HotkeyStatus() {
   const [status, setStatus] = useState<OverlayStatus | null>(null);
   useEffect(() => {
-    invoke<OverlayStatus>("overlay_status").then(setStatus).catch(() => {});
+    invoke<OverlayStatus>("overlay_status")
+      .then(setStatus)
+      .catch(() => {});
     let un: (() => void) | undefined;
     listen<OverlayStatus>("overlay:status", ({ payload }) => setStatus(payload)).then((u) => (un = u));
     return () => un?.();
@@ -145,13 +166,20 @@ function GameSettings() {
   const [sort, setSort] = useGameSetting<ListingSort>(game, "priceCheck.defaultSort", "price", isSort);
 
   return (
-    <Panel
-      title={`Price checker · ${GAMES[game].title}`}
-      actions={<HotkeyStatus />}
-    >
+    <Panel title={`Price checker · ${GAMES[game].title}`} actions={<HotkeyStatus />}>
       <div className="flex flex-col gap-5">
-        <Row label="Price check shortcut" description="Active only while the game window is focused, so other apps keep their shortcuts. Changes apply the next time the game window is focused.">
-          <Select label="Price check shortcut" hideLabel value={hotkey} onChange={setHotkey} options={HOTKEYS.map((h) => ({ value: h, label: h }))} className="w-44" />
+        <Row
+          label="Price check shortcut"
+          description="Active only while the game window is focused, so other apps keep their shortcuts. Changes apply the next time the game window is focused."
+        >
+          <Select
+            label="Price check shortcut"
+            hideLabel
+            value={hotkey}
+            onChange={setHotkey}
+            options={HOTKEYS.map((h) => ({ value: h, label: h }))}
+            className="w-44"
+          />
         </Row>
         <Row label="Default listing sort" description="How listings are ordered when a price check opens.">
           <Select

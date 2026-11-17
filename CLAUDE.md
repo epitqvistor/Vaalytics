@@ -27,8 +27,13 @@ See `docs/architecture/overview.md`. Key points:
 - DB migrations: append a new file to `src-tauri/migrations/` and to `MIGRATIONS` in `db.rs`. Never edit a shipped migration.
 - Settings keys: `[A-Za-z0-9._-]`, ≤128 chars, JSON values ≤64 KB.
 
+## Modules
+- Every feature is a module with its own nav entry, view, folder, docs and tests — registry `src/core/modules/registry.ts`, spec `docs/architecture/modules.md` (checklist there). Unbuilt modules are `planned` (honest page, no data).
+- Patch-dependent logic reads `usePatch(game)` (`src/core/game-data`, `docs/architecture/game-data.md`) — never hard-coded league names; 3.30 has no Scarabs (Threads).
+- Show what each number is with `ProvenanceTag` / `FreshnessBar` (market · historical · estimate · user · game data).
+
 ## Screens
-- Game-agnostic screens: `src/shared/views/*View.tsx`, fed `GameConfig` + data. Game entry points: `src/games/<id>/<section>/index.tsx`. Register sections in `src/app/sections.ts`.
+- Game-agnostic screens: `src/shared/views/*View.tsx`, fed `GameConfig` + data. Game entry points: `src/games/<id>/<section>/index.tsx`. Register modules in `src/core/modules/registry.ts` and their views in `src/app/sections.ts`.
 - In a game environment use `useActiveGame()` (pinned by the shell), never `useGameContext().game`.
 - Prototype/sample data must render `<SampleDataNotice />`; sample sellers are `sample_seller_NN`.
 - Visual QA of the real app: `scripts/cdp.mjs` (see docs/development/setup.md).

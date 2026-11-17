@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { areaPath, linePath, nearestIndex, niceTicks, paddedExtent, toPoints } from "./scale";
 
@@ -79,7 +80,8 @@ export function AreaChart({ values, labels, formatValue, formatTick = formatValu
         >
           <defs>
             <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="var(--color-accent)" stopOpacity="0.22" />
+              <stop offset="0" stopColor="var(--color-accent)" stopOpacity="0.16" />
+              <stop offset="0.6" stopColor="var(--color-accent)" stopOpacity="0.04" />
               <stop offset="1" stopColor="var(--color-accent)" stopOpacity="0" />
             </linearGradient>
           </defs>
@@ -106,12 +108,30 @@ export function AreaChart({ values, labels, formatValue, formatTick = formatValu
                 {labels[i]}
               </text>
             ))}
-            <path d={areaPath(points, innerH)} fill={`url(#${gradId})`} />
-            <path d={linePath(points)} fill="none" stroke="var(--color-accent)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+            {/* Drawn once per data set (keyed); MotionConfig honours reduced motion. */}
+            <motion.path
+              key={`a${values.join(",")}`}
+              d={areaPath(points, innerH)}
+              fill={`url(#${gradId})`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { duration: 0.5, delay: 0.25, ease: "easeOut" } }}
+            />
+            <motion.path
+              key={`l${values.join(",")}`}
+              d={linePath(points)}
+              fill="none"
+              stroke="var(--color-accent)"
+              strokeWidth={1.75}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }}
+            />
             {pt && (
               <g pointerEvents="none">
                 <line x1={pt[0]} x2={pt[0]} y1={0} y2={innerH} stroke="var(--color-line-strong)" />
                 <circle cx={pt[0]} cy={pt[1]} r={4.5} fill="var(--color-accent)" stroke="var(--color-surface)" strokeWidth={2} />
+                <circle cx={pt[0]} cy={pt[1]} r={9} fill="var(--color-accent)" opacity={0.12} />
               </g>
             )}
             <rect

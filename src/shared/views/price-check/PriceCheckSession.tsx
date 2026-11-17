@@ -1,4 +1,5 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { useDisplayCurrency, useMoney } from "@/core/market/DisplayCurrency";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { GameConfig } from "@/core/game-context/config";
 import { tradeFetchMore, tradePriceCheck, type TradeListing, type TradePriceCheck } from "@/core/ipc/commands";
@@ -307,7 +308,10 @@ function EstimatePanel({
   searchedAt: number | null;
   loading: boolean;
 }) {
-  const unit = config.baseUnit.short;
+  const dc = useDisplayCurrency();
+  const money = useMoney();
+  const conv = (v: number) => (dc ? dc.toUnit(v) : v);
+  const unit = dc ? dc.unit.short : config.baseUnit.short;
   const conf = estimate ? CONFIDENCE[estimate.confidence]! : null;
   return (
     <div className="panel grid grid-cols-[1.4fr_1fr_1fr_1fr] divide-x divide-line rounded-lg">
@@ -320,7 +324,7 @@ function EstimatePanel({
             <Spinner size={18} className="text-fg-subtle" />
           ) : (
             <>
-              <span className="tabular font-display text-2xl font-semibold text-fg">{estimate ? `~${formatAmount(estimate.estimate)}` : "—"}</span>
+              <span className="tabular font-display text-2xl font-semibold text-fg">{estimate ? `~${formatAmount(conv(estimate.estimate))}` : "—"}</span>
               {estimate && <span className="text-sm text-fg-muted">{unit}</span>}
             </>
           )}
@@ -334,8 +338,8 @@ function EstimatePanel({
           {result && !result.ratesAvailable && <span className="text-2xs text-warning">No poe.ninja rates — open Currency Tracker once to enable conversion</span>}
         </div>
       </div>
-      <Metric label="Lowest comparable" value={estimate ? `${formatAmount(estimate.low)} ${unit}` : "—"} />
-      <Metric label="Median comparable" value={estimate ? `${formatAmount(estimate.median)} ${unit}` : "—"} caption={estimate?.outliers ? `${estimate.outliers} suspiciously cheap ignored` : undefined} />
+      <Metric label="Lowest comparable" value={estimate ? money(estimate.low, { unit: config.baseUnit }) : "—"} />
+      <Metric label="Median comparable" value={estimate ? money(estimate.median, { unit: config.baseUnit }) : "—"} caption={estimate?.outliers ? `${estimate.outliers} suspiciously cheap ignored` : undefined} />
       <Metric
         label="Matching listings"
         value={result ? result.total.toLocaleString("en-US") : "—"}
@@ -362,6 +366,8 @@ const STATUS: Record<TradeListing["status"], { tone: BadgeTone; label: string }>
 };
 
 function ListingRow({ listing: l, match, config, compact }: { listing: TradeListing; match: number | null; config: GameConfig; compact?: boolean }) {
+  const dc = useDisplayCurrency();
+  const money = useMoney();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const status = STATUS[l.status];
@@ -381,10 +387,8 @@ function ListingRow({ listing: l, match, config, compact }: { listing: TradeList
         <button type="button" onClick={() => setOpen((o) => !o)} className="text-left" aria-expanded={open} title="Show item modifiers">
           <span className="tabular font-semibold text-fg">{l.amount != null ? formatAmount(l.amount) : "—"}</span>{" "}
           <span className="text-xs text-fg-muted">{l.currency ?? ""}</span>
-          {l.amountBase != null && l.currency !== config.baseUnit.id && (
-            <span className="tabular block text-2xs text-fg-subtle">
-              ≈ {formatAmount(l.amountBase)} {config.baseUnit.short}
-            </span>
+          {l.amountBase != null && l.currency !== (dc ? dc.unit.id : config.baseUnit.id) && (
+            <span className="tabular block text-2xs text-fg-subtle">≈ {money(l.amountBase, { unit: config.baseUnit })}</span>
           )}
         </button>
         <div className="min-w-0">

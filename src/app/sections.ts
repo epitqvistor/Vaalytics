@@ -1,35 +1,50 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 import type { GameId } from "@/core/game-context/games";
 import type { SectionId, SectionProps } from "@/core/game-context/sections";
+import { statusFor } from "@/core/modules/registry";
 
 type SectionComponent = LazyExoticComponent<ComponentType<SectionProps>>;
 
-// Game-agnostic sections (PoE 1 overrides crafting with its own calculator) (they read the active game from context).
+// Game-agnostic views (they read the active game from context).
 const shared = {
   trade: lazy(() => import("@/shared/views/TradeView")),
   builds: lazy(() => import("@/shared/views/BuildsView")),
-  crafting: lazy(() => import("@/shared/views/CraftingView")),
   tools: lazy(() => import("@/shared/views/ToolsView")),
   browser: lazy(() => import("@/browser/BrowserView")),
   settings: lazy(() => import("@/core/settings/SettingsPage")),
 };
 
+/** Honest page for modules that are registered but not built yet. */
+const Planned = lazy(() => import("@/core/modules/PlannedModuleView"));
+
 /**
- * Section registry. The app shell is the only place that knows about both game
- * modules; each module is code-split and loaded on first visit.
+ * Implemented views per game. The app shell is the only place that knows about
+ * both game modules; each view is code-split and loaded on first visit.
  */
-export const SECTIONS: Record<GameId, Record<SectionId, SectionComponent>> = {
+const READY: Record<GameId, Partial<Record<SectionId, SectionComponent>>> = {
   poe1: {
     dashboard: lazy(() => import("@/games/poe1/dashboard")),
     "price-checker": lazy(() => import("@/games/poe1/price-checker")),
     currency: lazy(() => import("@/games/poe1/currency")),
+    "market-intelligence": lazy(() => import("@/games/poe1/market-intelligence")),
     ...shared,
     crafting: lazy(() => import("@/games/poe1/crafting")),
+    "loot-intelligence": lazy(() => import("@/games/poe1/loot-intelligence")),
   },
   poe2: {
     dashboard: lazy(() => import("@/games/poe2/dashboard")),
     "price-checker": lazy(() => import("@/games/poe2/price-checker")),
     currency: lazy(() => import("@/games/poe2/currency")),
+    "market-intelligence": lazy(() => import("@/games/poe2/market-intelligence")),
     ...shared,
   },
 };
+
+/** View for a module: the implemented one when `ready`, otherwise the planned page. */
+export function viewFor(game: GameId, id: SectionId): SectionComponent {
+  const ready = READY[game][id];
+  return statusFor(id, game) === "ready" && ready ? ready : Planned;
+}
+
+/** Ready modules must have a view (checked by tests). */
+export const READY_VIEWS = READY;

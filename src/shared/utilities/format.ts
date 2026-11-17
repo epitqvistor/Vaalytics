@@ -25,6 +25,8 @@ export function formatDuration(totalSecs: number): string {
 export function formatAmount(value: number): string {
   if (!Number.isFinite(value)) return "—";
   const abs = Math.abs(value);
+  // Below 0.01, keep 2 significant digits so converted amounts (0.0042 div) aren't shown as 0.
+  if (abs > 0 && abs < 0.01) return value.toLocaleString("en-US", { maximumSignificantDigits: 2 });
   const digits = abs >= 100 ? 0 : abs >= 10 ? 1 : abs >= 1 ? 2 : 3;
   return value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: digits });
 }

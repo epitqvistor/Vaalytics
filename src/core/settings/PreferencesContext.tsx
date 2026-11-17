@@ -5,10 +5,12 @@ import { getAppSetting, setAppSetting } from "@/core/ipc/commands";
 export interface Preferences {
   /** Force reduced motion regardless of the OS setting. */
   reduceMotion: boolean;
+  /** Show modules that are registered but not built yet in navigation. */
+  showPlanned: boolean;
 }
 
-const DEFAULTS: Preferences = { reduceMotion: false };
-const KEYS: { [K in keyof Preferences]: string } = { reduceMotion: "ui.reduceMotion" };
+const DEFAULTS: Preferences = { reduceMotion: false, showPlanned: true };
+const KEYS: { [K in keyof Preferences]: string } = { reduceMotion: "ui.reduceMotion", showPlanned: "ui.showPlannedModules" };
 
 interface PreferencesValue {
   prefs: Preferences;
@@ -22,11 +24,13 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    getAppSetting<boolean>(KEYS.reduceMotion)
-      .then((v) => !cancelled && typeof v === "boolean" && setPrefs((p) => ({ ...p, reduceMotion: v })))
-      .catch(() => {
-        /* outside Tauri or DB unavailable: keep defaults */
-      });
+    for (const key of Object.keys(KEYS) as (keyof Preferences)[]) {
+      getAppSetting<boolean>(KEYS[key])
+        .then((v) => !cancelled && typeof v === "boolean" && setPrefs((p) => ({ ...p, [key]: v })))
+        .catch(() => {
+          /* outside Tauri or DB unavailable: keep defaults */
+        });
+    }
     return () => {
       cancelled = true;
     };

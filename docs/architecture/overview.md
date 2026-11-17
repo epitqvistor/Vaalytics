@@ -17,10 +17,11 @@ React UI rendered in WebView2 presents it.
 └───────────────────────────────▲───────────────────────────────────────┘
                                 │ invoke() via src/core/ipc/commands.ts
 ┌───────────────────────────────┴──────── React UI (src) ───────────────┐
-│ app/          shell, title bar, section registry (only place that     │
-│               knows both games)                                        │
-│ core/         game-context (GameId, GameConfig, sections), ipc,       │
-│               settings, diagnostics                                    │
+│ app/          shell, title bar, atmosphere, module views (only place  │
+│               that knows both games)                                   │
+│ core/         game-context, modules (registry → navigation),          │
+│               game-data (versioned patch rules), provenance, market,  │
+│               trade, ipc, settings, diagnostics                        │
 │ games/poe1    config, sample data, section entry points               │
 │ games/poe2    (same; never imports the other game)                    │
 │ shared/       components, icons, charts, item-renderer, market-data   │
@@ -29,6 +30,8 @@ React UI rendered in WebView2 presents it.
 │ styles/       design tokens                                            │
 └────────────────────────────────────────────────────────────────────────┘
 ```
+
+Modules, navigation and reusable services: [modules.md](modules.md). Patch rules per league: [game-data.md](game-data.md).
 
 ## Principles
 

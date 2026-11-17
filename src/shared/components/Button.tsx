@@ -21,18 +21,21 @@ const base =
   "relative inline-flex select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-md font-medium " +
   "transition-[background-color,border-color,color,box-shadow,transform,opacity] duration-150 ease-out " +
   "hover:-translate-y-px active:translate-y-0 active:scale-[0.98] " +
-  "disabled:pointer-events-none disabled:opacity-40 disabled:saturate-50";
+  "focus-visible:outline-offset-2 disabled:pointer-events-none";
 
 const variants: Record<ButtonVariant, string> = {
+  // Solid accent with a lit top edge; restrained shadow on hover (no neon glow).
   primary:
-    "bg-gradient-to-b from-accent-2 to-accent text-on-accent " +
-    "shadow-[inset_0_1px_0_rgb(255_255_255/0.35),0_1px_2px_rgb(0_0_0/0.35),0_0_0_1px_rgb(242_140_56/0.5)] " +
-    "hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.4),0_6px_20px_-6px_var(--color-accent-glow),0_0_0_1px_rgb(255_173_98/0.7)]",
+    "bg-[linear-gradient(180deg,#f7a058,#ec8330)] text-on-accent " +
+    "shadow-[inset_0_1px_0_rgb(255_255_255/0.3),inset_0_-1px_0_rgb(0_0_0/0.15),0_1px_2px_rgb(0_0_0/0.4),0_0_0_1px_rgb(180_90_30/0.6)] " +
+    "hover:bg-[linear-gradient(180deg,#ffad66,#f28c38)] hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.35),inset_0_-1px_0_rgb(0_0_0/0.15),0_6px_16px_-8px_rgb(242_140_56/0.55),0_0_0_1px_rgb(200_105_40/0.7)] " +
+    "disabled:bg-none disabled:bg-elevated disabled:text-fg-disabled disabled:shadow-[inset_0_0_0_1px_var(--color-line)]",
   secondary:
-    "border border-line-strong bg-elevated/80 text-fg shadow-[inset_0_1px_0_rgb(255_255_255/0.05)] " +
-    "hover:border-white/20 hover:bg-elevated-2 hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.07),0_4px_12px_-4px_rgb(0_0_0/0.5)]",
-  ghost: "text-fg-muted hover:bg-glass-hover hover:text-fg hover:translate-y-0",
-  danger: "border border-danger/30 bg-danger-soft text-danger hover:border-danger/50 hover:bg-danger/20",
+    "border border-line-strong bg-elevated/85 text-fg shadow-[inset_0_1px_0_rgb(255_255_255/0.05)] " +
+    "hover:border-white/20 hover:bg-elevated-2 hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.07),0_4px_12px_-6px_rgb(0_0_0/0.6)] " +
+    "disabled:border-line disabled:bg-elevated/50 disabled:text-fg-disabled disabled:shadow-none",
+  ghost: "text-fg-muted hover:bg-white/[0.05] hover:text-fg hover:translate-y-0 disabled:text-fg-disabled",
+  danger: "border border-danger/30 bg-danger-soft text-danger hover:border-danger/50 hover:bg-danger/20 disabled:opacity-40",
 };
 
 const sizes: Record<ButtonSize, string> = {

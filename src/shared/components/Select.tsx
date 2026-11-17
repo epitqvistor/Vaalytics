@@ -141,8 +141,8 @@ export function Select<T extends string>({ value, onChange, options, label, hide
         onClick={() => setOpen((o) => !o)}
         onKeyDown={onKeyDown}
         className={cn(
-          "group flex w-full items-center gap-2 rounded-md border bg-elevated/80 pr-2 pl-2.5 text-left text-fg transition-[border-color,background-color,box-shadow] duration-150",
-          "shadow-[inset_0_1px_0_rgb(255_255_255/0.04)] hover:border-line-strong hover:bg-elevated",
+          "group flex w-full items-center gap-2 rounded-md border bg-elevated/85 pr-2 pl-2.5 text-left text-fg transition-[border-color,background-color,box-shadow] duration-150",
+          "shadow-[inset_0_1px_0_rgb(255_255_255/0.045),0_1px_1px_rgb(0_0_0/0.25)] hover:border-line-strong hover:bg-elevated-2",
           open ? "border-accent/60 shadow-[0_0_0_3px_var(--color-accent-soft)]" : "border-line",
           size === "sm" ? "h-7 text-xs" : "h-8.5 text-sm",
         )}
@@ -183,7 +183,8 @@ export function Select<T extends string>({ value, onChange, options, label, hide
                     onClick={() => commit(i)}
                     className={cn(
                       "flex h-8 cursor-default items-center gap-2 rounded-md px-2.5 text-sm transition-colors duration-100",
-                      i === active ? "bg-white/[0.07] text-fg" : "text-fg-muted",
+                      i === active ? "bg-white/[0.065] text-fg" : "text-fg-muted",
+                      selected && "font-medium text-fg",
                     )}
                   >
                     <span className="min-w-0 flex-1 truncate">{o.label}</span>

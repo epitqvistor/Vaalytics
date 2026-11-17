@@ -49,3 +49,9 @@ export const variants = {
     exit: { opacity: 0, scale: 0.98, transition: transition.exit },
   },
 } as const satisfies Record<string, Variants>;
+
+/** Container that reveals its children (each using `variants.rise`) one after another. */
+export const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.045, delayChildren: 0.02 } },
+} as const satisfies Variants;

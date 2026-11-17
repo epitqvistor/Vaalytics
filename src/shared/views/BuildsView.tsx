@@ -25,7 +25,7 @@ export default function BuildsView({ onNavigate }: SectionProps) {
   const rows = useMemo(() => (builds ?? []).filter((b) => !q || b.name.toLowerCase().includes(q) || b.folder.toLowerCase().includes(q)), [builds, q]);
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-var(--spacing-titlebar)-56px)] max-w-5xl flex-col">
+    <div className="mx-auto flex h-[calc(100vh-var(--spacing-titlebar)-56px)] max-w-[1360px] flex-col">
       <PageHeader
         title="Builds"
         description={status?.buildsDir ? `Saved in ${status.buildsDir}` : "Builds saved by Path of Building on this PC"}

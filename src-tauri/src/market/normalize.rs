@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 /// Bump when normalization output changes, so cached rows are re-derived
 /// (stored ETags are dropped once and the next fetch is a full download).
-pub const NORMALIZER_VERSION: i64 = 3;
+pub const NORMALIZER_VERSION: i64 = 4;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -23,6 +23,9 @@ pub struct NormalizedItem {
     pub sparkline: Vec<Option<f64>>,
     pub volume_value: Option<f64>,
     pub listings: Option<i64>,
+    /// Base type of unique items (stash endpoints); None for exchange categories.
+    #[serde(default)]
+    pub base_type: Option<String>,
 }
 
 #[derive(Debug, Default)]
@@ -183,6 +186,7 @@ pub fn normalize_exchange(body: &[u8], base_unit: &str) -> Result<Normalized, No
             sparkline: spark,
             volume_value: finite(line.volume_primary_value).map(|v| v * to_base),
             listings: None,
+            base_type: None,
         });
     }
     Ok(out)
@@ -209,6 +213,7 @@ struct StashLine {
     listing_count: Option<i64>,
     /// Linked sockets; distinguishes otherwise identical unique rows (5L/6L).
     links: Option<u8>,
+    base_type: Option<String>,
 }
 
 pub fn normalize_stash(body: &[u8], base_unit: &str) -> Result<Normalized, NormalizeError> {
@@ -245,6 +250,7 @@ pub fn normalize_stash(body: &[u8], base_unit: &str) -> Result<Normalized, Norma
             sparkline: spark,
             volume_value: None,
             listings: line.listing_count,
+            base_type: line.base_type.filter(|b| !b.is_empty()),
         });
     }
     Ok(out)
@@ -303,12 +309,14 @@ mod tests {
            "sparkLine":{"totalChange":70,"data":[null,null,0,60,70]},"chaosValue":68,"exaltedValue":100.1,"divineValue":0.46,
            "count":399,"detailsId":"nightmare-map-t0-gen-24","listingCount":3972},
           {"id":1,"name":"No price","detailsId":"np"},
-          {"id":2,"name":"Replica Farrul's Fur","links":6,"chaosValue":2852,"detailsId":"replica-farruls-fur-6l","listingCount":8}
+          {"id":2,"name":"Replica Farrul's Fur","baseType":"Sleek Coat","links":6,"chaosValue":2852,"detailsId":"replica-farruls-fur-6l","listingCount":8}
         ]}"#;
         let n = normalize_stash(body.as_bytes(), "chaos").unwrap();
         assert_eq!(n.items.len(), 2);
         assert_eq!(n.skipped, 1);
         assert_eq!(n.items[1].variant.as_deref(), Some("6L"));
+        assert_eq!(n.items[1].base_type.as_deref(), Some("Sleek Coat"));
+        assert_eq!(n.items[0].base_type, None);
         let m = &n.items[0];
         assert_eq!(m.item_id, "nightmare-map-t0-gen-24");
         assert_eq!(m.value, 68.0);

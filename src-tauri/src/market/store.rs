@@ -89,8 +89,8 @@ pub fn replace_items(db: &Database, game: GameId, league: &str, category: &str, 
     {
         let mut ins = tx.prepare(
             "INSERT OR REPLACE INTO market_items (game, league, category, item_id, name, variant, icon, value, divine_value,
-               change_7d, sparkline, volume_value, listings, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
+               change_7d, sparkline, volume_value, listings, updated_at, base_type)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
         )?;
         let mut hist = tx.prepare(
             "INSERT OR REPLACE INTO price_history (game, league, category, item_id, ts, value, divine_value)
@@ -101,7 +101,7 @@ pub fn replace_items(db: &Database, game: GameId, league: &str, category: &str, 
             let spark = serde_json::to_string(&it.sparkline)?;
             ins.execute(params![
                 game.as_str(), league, category, it.item_id, it.name, it.variant, it.icon, it.value, it.divine_value,
-                it.change_7d, spark, it.volume_value, it.listings, now
+                it.change_7d, spark, it.volume_value, it.listings, now, it.base_type
             ])?;
             hist.execute(params![game.as_str(), league, category, it.item_id, bucket, it.value, it.divine_value])?;
         }
@@ -113,7 +113,7 @@ pub fn replace_items(db: &Database, game: GameId, league: &str, category: &str, 
 pub fn items(db: &Database, game: GameId, league: &str, category: &str) -> AppResult<Vec<NormalizedItem>> {
     let conn = db.conn()?;
     let mut stmt = conn.prepare(
-        "SELECT item_id, name, variant, icon, value, divine_value, change_7d, sparkline, volume_value, listings
+        "SELECT item_id, name, variant, icon, value, divine_value, change_7d, sparkline, volume_value, listings, base_type
          FROM market_items WHERE game = ?1 AND league = ?2 AND category = ?3 ORDER BY value DESC",
     )?;
     let rows = stmt.query_map(params![game.as_str(), league, category], |r| {
@@ -129,6 +129,7 @@ pub fn items(db: &Database, game: GameId, league: &str, category: &str) -> AppRe
             sparkline: spark.and_then(|s| serde_json::from_str(&s).ok()).unwrap_or_default(),
             volume_value: r.get(8)?,
             listings: r.get(9)?,
+            base_type: r.get(10)?,
         })
     })?;
     Ok(rows.collect::<Result<_, _>>()?)
@@ -197,6 +198,7 @@ mod tests {
             sparkline: vec![None, Some(1.5)],
             volume_value: Some(10.0),
             listings: None,
+            base_type: Some("Leather Belt".into()),
         }
     }
 

@@ -6,6 +6,7 @@ import type { SectionProps } from "@/core/game-context/sections";
 import type { MarketItemRow } from "@/core/ipc/commands";
 import { favoriteKey, trendValues } from "@/core/market/derive";
 import { useFavorites, useMarketCategories, useMarketHistory, useMarketOverview } from "@/core/market/hooks";
+import { useDisplayCurrency, useMoney } from "@/core/market/DisplayCurrency";
 import { useLeague } from "@/core/market/LeagueContext";
 import { Checkbox, ChangeText, EmptyState, IconButton, Input, PageHeader, Panel, SegmentedControl, Select } from "@/shared/components";
 import { AreaChart } from "@/shared/charts/AreaChart";
@@ -14,8 +15,8 @@ import { variants } from "@/shared/design/motion";
 import { Icon } from "@/shared/icons/Icon";
 import { cn } from "@/shared/utilities/cn";
 import { formatAmount, formatCompact } from "@/shared/utilities/format";
-import { Price } from "./common";
-import { FreshnessBar, ItemIcon, LeagueSelect, VirtualRows } from "./market-ui";
+import { AltPrice, Price } from "./common";
+import { DisplayCurrencySelect, FreshnessBar, ItemIcon, LeagueSelect, VirtualRows } from "./market-ui";
 
 export interface CurrencyViewProps extends SectionProps {
   config: GameConfig;
@@ -32,6 +33,7 @@ const volumeOf = (r: MarketItemRow) => r.volumeValue ?? r.listings ?? 0;
 const isLowConfidence = (r: MarketItemRow) => r.listings != null && r.listings < MIN_LISTINGS;
 
 export function CurrencyView({ config }: CurrencyViewProps) {
+  const display = useDisplayCurrency();
   const game = useActiveGame();
   const { league, error: leagueError } = useLeague();
   const categories = useMarketCategories(game);
@@ -69,8 +71,17 @@ export function CurrencyView({ config }: CurrencyViewProps) {
   const onSort = (key: SortKey) => setSort((s) => (s.key === key ? { key, desc: !s.desc } : { key, desc: key !== "name" }));
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-var(--spacing-titlebar)-56px)] max-w-7xl flex-col">
-      <PageHeader title="Currency Tracker" description={`Prices in ${config.baseUnit.name}s from poe.ninja`} actions={<LeagueSelect />} />
+    <div className="mx-auto flex h-[calc(100vh-var(--spacing-titlebar)-56px)] max-w-[1360px] flex-col">
+      <PageHeader
+        title="Currency Tracker"
+        description={`Prices in ${display?.converting ? display.unit.name : config.baseUnit.name}s from poe.ninja`}
+        actions={
+          <>
+            <DisplayCurrencySelect />
+            <LeagueSelect />
+          </>
+        }
+      />
 
       <div className="mb-3 flex items-center gap-3">
         <Select
@@ -140,7 +151,7 @@ export function CurrencyView({ config }: CurrencyViewProps) {
               rowHeight={ROW_H}
               getKey={(r) => r.itemId}
               header={
-                <div role="row" className={cn(GRID, "h-9 border-b border-line bg-surface text-xs text-fg-subtle")}>
+                <div role="row" className={cn(GRID, "h-9 border-b border-line bg-bg-2/95 text-xs text-fg-subtle")}>
                   <span />
                   <SortHeader label="Item" k="name" sort={sort} onSort={onSort} />
                   <SortHeader label="Value" k="value" sort={sort} onSort={onSort} align="right" />
@@ -192,13 +203,12 @@ function Row({
 }) {
   const spark = sparkValues(r);
   const trend = r.change7d == null ? "flat" : r.change7d > 0 ? "up" : r.change7d < 0 ? "down" : "flat";
-  const showDivine = r.divineValue != null && r.divineValue >= 1 && r.itemId !== "divine";
   return (
     <div
       role="row"
       aria-selected={selected}
       onClick={onSelect}
-      className={cn(GRID, "h-full border-b border-line text-sm transition-colors", selected ? "bg-accent-soft" : "hover:bg-glass")}
+      className={cn(GRID, "h-full border-b border-line text-sm transition-colors", selected ? "bg-accent-soft shadow-[inset_2px_0_0_var(--color-accent)]" : "hover:bg-white/[0.025]")}
     >
       <span className="pl-2" onClick={(e) => e.stopPropagation()}>
         <IconButton
@@ -221,11 +231,7 @@ function Row({
           {isLowConfidence(r) && <Icon name="warning" size={12} className="text-warning" label={`Only ${r.listings} listing${r.listings === 1 ? "" : "s"} — low confidence`} />}
           <Price amount={r.value} unit={config.baseUnit} className={isLowConfidence(r) ? "opacity-70" : undefined} />
         </span>
-        {showDivine && (
-          <span className="tabular block text-2xs text-fg-subtle">
-            {formatAmount(r.divineValue!)} {config.premiumUnit.short}
-          </span>
-        )}
+        <AltPrice amount={r.value} unit={config.baseUnit} premium={config.premiumUnit} itemId={r.itemId} />
       </span>
       <span className="px-3">{spark.length >= 2 ? <Sparkline values={spark} trend={trend} /> : <span className="text-xs text-fg-subtle">—</span>}</span>
       <span className="px-3 text-right">{r.change7d != null ? <ChangeText change={r.change7d} /> : <span className="text-fg-subtle">—</span>}</span>
@@ -275,6 +281,7 @@ function ItemDetail({
   config: GameConfig;
   onClose: () => void;
 }) {
+  const money = useMoney();
   const game = useActiveGame();
   const history = useMarketHistory(game, league, category, item.itemId, 30);
   const [range, setRange] = useState<"source" | "local">("source");
@@ -299,11 +306,7 @@ function ItemDetail({
         <Price amount={item.value} unit={config.baseUnit} strong className="text-xl" />
         {item.change7d != null && <ChangeText change={item.change7d} />}
       </div>
-      {item.divineValue != null && item.itemId !== "divine" && (
-        <p className="tabular mt-0.5 text-xs text-fg-subtle">
-          ≈ {formatAmount(item.divineValue)} {config.premiumUnit.name}
-        </p>
-      )}
+      <AltPrice amount={item.value} unit={config.baseUnit} premium={config.premiumUnit} itemId={item.itemId} className="mt-0.5 text-xs!" />
 
       <div className="mt-4">
         <SegmentedControl
@@ -344,7 +347,7 @@ function ItemDetail({
           <>
             <dt className="text-fg-muted">Traded value</dt>
             <dd className="tabular text-right text-fg">
-              {formatCompact(item.volumeValue)} {config.baseUnit.short}
+              {money(item.volumeValue, { compact: true, unit: config.baseUnit })}
             </dd>
           </>
         )}

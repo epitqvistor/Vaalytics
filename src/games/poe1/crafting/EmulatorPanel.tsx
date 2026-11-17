@@ -9,6 +9,7 @@ import { actionCost, CURRENCY, ELDRITCH, Emulator, type EldritchCurrency, type E
 import { HARVEST_REFORGES, harvestByTag } from "./harvest";
 import type { PriceTable } from "./methods";
 import { RESONATORS } from "./methods";
+import { useChaos } from "./money";
 import { pobTextFor } from "./paste";
 import type { CraftingIndex } from "./pool";
 import { needOf, targetsHit } from "./sampler";
@@ -18,7 +19,6 @@ const ORDER: SimpleCurrency[] = ["transmute", "alteration", "augmentation", "reg
 const AUTO_LIMIT = 1_000_000;
 const FRAME_BUDGET_MS = 12;
 
-const fmt = (n: number) => (n >= 1000 ? Math.round(n).toLocaleString("en-US") : n >= 10 ? n.toFixed(1) : n.toFixed(2));
 
 export function EmulatorPanel({
   idx,
@@ -47,6 +47,8 @@ export function EmulatorPanel({
   eldritchAllowed: boolean;
   onItemChange: (item: EmuItem) => void;
 }) {
+  const money = useChaos(divine);
+  const unitMoney = useChaos(null);
   const notify = useToast();
   const emu = useMemo(() => new Emulator(idx, spec, dominance), [idx, spec, dominance]);
   const [item, setItem] = useState<EmuItem>(start);
@@ -328,7 +330,7 @@ export function EmulatorPanel({
                     key={f.id}
                     type="button"
                     aria-pressed={on}
-                    title={`${f.name} · ${priceOf(f.name) === null ? "no price" : `${fmt(priceOf(f.name)!)}c`}`}
+                    title={`${f.name} · ${priceOf(f.name) === null ? "no price" : unitMoney(priceOf(f.name)!)}`}
                     onClick={() => setFossilIds((ids) => (on ? ids.filter((x) => x !== f.id) : ids.length >= 4 ? ids : [...ids, f.id]))}
                     className={cn(
                       "flex h-7 items-center gap-1 rounded-md border px-1.5 text-2xs transition-colors",
@@ -379,8 +381,7 @@ export function EmulatorPanel({
           <div className="flex items-center justify-between gap-2">
             <span className="text-fg-muted" title={Object.entries(spent).map(([n, q]) => `${q}× ${n}`).join("\n")}>
               Used <span className="font-mono tabular text-fg">{totals.count.toLocaleString("en-US")}</span> ·{" "}
-              <span className="font-mono tabular text-fg">{fmt(totals.chaos)}c</span>
-              {divine && totals.chaos >= divine && <span className="font-mono tabular text-fg-subtle"> ({fmt(totals.chaos / divine)} div)</span>}
+              <span className="font-mono tabular text-fg">{money(totals.chaos)}</span>
               {totals.missing && <span className="text-warning"> + unpriced</span>}
             </span>
             <Button
@@ -433,6 +434,7 @@ function CurrencyButton({
   compact?: boolean;
   onClick: (shift: boolean) => void;
 }) {
+  const unitMoney = useChaos(null);
   return (
     <button
       type="button"
@@ -447,9 +449,9 @@ function CurrencyButton({
       {icon ? <img src={icon} alt="" className={compact ? "size-5" : "size-7"} /> : <Icon name="crafting" size={compact ? 14 : 18} className="text-fg-subtle" />}
       <span className="min-w-0">
         <span className="block truncate text-xs text-fg">{label}</span>
-        {!compact && <span className="block font-mono text-2xs tabular text-fg-subtle">{price === null ? "no price" : `${fmt(price)}c`}</span>}
+        {!compact && <span className="block font-mono text-2xs tabular text-fg-subtle">{price === null ? "no price" : unitMoney(price)}</span>}
       </span>
-      {compact && <span className="font-mono text-2xs tabular text-fg-subtle">{price === null ? "—" : `${fmt(price)}c`}</span>}
+      {compact && <span className="font-mono text-2xs tabular text-fg-subtle">{price === null ? "—" : unitMoney(price)}</span>}
     </button>
   );
 }

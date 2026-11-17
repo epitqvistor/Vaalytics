@@ -167,7 +167,7 @@ export default function BrowserView(_props: SectionProps) {
   };
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-var(--spacing-titlebar)-56px)] max-w-7xl flex-col">
+    <div className="mx-auto flex h-[calc(100vh-var(--spacing-titlebar)-56px)] max-w-[1360px] flex-col">
       <div className="panel flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl">
         {/* Tabs */}
         <div className="flex h-10 shrink-0 items-end gap-1 overflow-x-auto border-b border-line bg-bg-2/80 px-2" role="tablist" aria-label="Browser tabs">

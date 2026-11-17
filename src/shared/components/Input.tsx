@@ -31,8 +31,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       )}
       <div
         className={cn(
-          "group flex items-center gap-2 rounded-md border bg-elevated px-2.5 transition-colors duration-150",
-          "focus-within:border-accent/60 focus-within:shadow-[0_0_0_3px_var(--color-accent-soft)]",
+          "group flex items-center gap-2 rounded-md border bg-well px-2.5 shadow-[inset_0_1px_2px_rgb(0_0_0/0.35)] transition-[border-color,box-shadow] duration-150",
+          "focus-within:border-accent/55 focus-within:shadow-[inset_0_1px_2px_rgb(0_0_0/0.35),0_0_0_3px_var(--color-accent-soft)]",
           error ? "border-danger/60" : "border-line hover:border-line-strong",
           size === "sm" ? "h-7" : "h-8.5",
           disabled && "opacity-50",

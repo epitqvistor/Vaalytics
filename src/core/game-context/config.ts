@@ -13,6 +13,11 @@ export interface GameConfig {
   premiumUnit: CurrencyUnit;
   /** Item ids (in the "currency" market category) highlighted on the Dashboard. */
   keyCurrencies: readonly string[];
+  /**
+   * Fixed unit for some Dashboard tiles, regardless of the "Prices in" choice
+   * (e.g. Divine Orb always in the base unit). Others follow the display currency.
+   */
+  keyCurrencyUnits?: Readonly<Record<string, "base" | "premium">>;
   links: {
     officialSite: string;
     trade: string;

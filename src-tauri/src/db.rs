@@ -11,6 +11,7 @@ use std::sync::{Mutex, MutexGuard};
 const MIGRATIONS: &[(&str, &str)] = &[
     ("0001_initial", include_str!("../migrations/0001_initial.sql")),
     ("0002_market", include_str!("../migrations/0002_market.sql")),
+    ("0003_market_base_type", include_str!("../migrations/0003_market_base_type.sql")),
 ];
 
 pub struct Database {

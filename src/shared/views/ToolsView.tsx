@@ -18,7 +18,7 @@ export default function ToolsView(_props: SectionProps) {
   const order: GameId[] = [game, ...GAME_IDS.filter((g) => g !== game)];
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-[1360px]">
       <PageHeader title="Path of Building & Tools" description="Launch Path of Building for each game and open the official trading sites." />
 
       <h2 className="mb-3 text-xs font-semibold tracking-[0.14em] text-fg-subtle uppercase">Path of Building</h2>

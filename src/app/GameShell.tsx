@@ -1,68 +1,90 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Suspense, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { GAME_ART } from "@/assets/games";
 import { ActiveGameProvider, useGameContext } from "@/core/game-context/GameContext";
 import { GAMES, type GameId } from "@/core/game-context/games";
-import { NAV_GROUPS, SECTION_META, type SectionId } from "@/core/game-context/sections";
+import type { SectionId } from "@/core/game-context/sections";
+import { MODULE_GROUPS, moduleMeta, navigationFor, statusFor, type ModuleMeta } from "@/core/modules/registry";
+import { usePreferences } from "@/core/settings/PreferencesContext";
+import { DisplayCurrencyProvider } from "@/core/market/DisplayCurrency";
 import { LeagueProvider } from "@/core/market/LeagueContext";
-import { ErrorBoundary, NavItem, Spinner } from "@/shared/components";
+import { GAME_MODULES } from "./gameModules";
+import { ErrorBoundary, NavItem, PageContext, Spinner } from "@/shared/components";
 import { variants } from "@/shared/design/motion";
 import { Icon } from "@/shared/icons/Icon";
-import { SECTIONS } from "./sections";
+import { viewFor } from "./sections";
 
 export function GameShell({ game }: { game: GameId }) {
+  const { prefs } = usePreferences();
   const [section, setSection] = useState<SectionId>("dashboard");
-  const Current = SECTIONS[game][section];
+  const nav = useMemo(() => navigationFor(game, { showPlanned: prefs.showPlanned }), [game, prefs.showPlanned]);
+  // A hidden planned module (setting turned off) falls back to the dashboard.
+  const visible = [...nav.groups.flatMap((g) => g.items), ...nav.footer].some((m) => m.id === section);
+  const current: SectionId = visible ? section : "dashboard";
+  const Current = viewFor(game, current);
+  const meta = moduleMeta(current);
+  const page = {
+    group: MODULE_GROUPS.find((g) => g.id === meta.group)?.label ?? "Application",
+    game: GAMES[game].shortTitle,
+    moduleId: current,
+  };
 
-  const navItem = (id: SectionId) => (
+  const navItem = (m: ModuleMeta) => (
     <NavItem
-      key={id}
-      icon={SECTION_META[id].icon}
-      label={SECTION_META[id].label}
-      active={section === id}
-      onSelect={() => setSection(id)}
+      key={m.id}
+      icon={m.icon}
+      label={m.label}
+      active={current === m.id}
+      onSelect={() => setSection(m.id)}
       indicatorId="main-nav"
-      trailing={SECTION_META[id].plannedFor?.includes(game) ? <span className="text-[10px] tracking-wide text-fg-subtle uppercase">Soon</span> : undefined}
+      trailing={statusFor(m.id, game) === "planned" ? <span className="text-[10px] tracking-wide text-fg-subtle uppercase">Soon</span> : undefined}
     />
   );
 
   return (
     <ActiveGameProvider game={game}>
       <LeagueProvider game={game}>
-        <div className="flex h-full">
-          <aside className="glass-nav relative flex w-sidebar shrink-0 flex-col border-r border-line px-3 pt-3 pb-3">
-            <GameSwitcher game={game} />
-            <nav className="mt-4 flex flex-col gap-4 overflow-y-auto" aria-label="Sections">
-              {NAV_GROUPS.map((g) => (
-                <div key={g.label}>
-                  <p className="mb-1 px-2.5 text-[10px] font-semibold tracking-[0.14em] text-fg-subtle uppercase">{g.label}</p>
-                  <div className="flex flex-col gap-0.5">{g.items.map(navItem)}</div>
-                </div>
-              ))}
-            </nav>
-            <nav className="mt-auto flex flex-col gap-0.5 border-t border-line pt-3" aria-label="Application">
-              {navItem("settings")}
-            </nav>
-          </aside>
+        <DisplayCurrencyProvider game={game} base={GAME_MODULES[game].config.baseUnit} premium={GAME_MODULES[game].config.premiumUnit}>
+          <div className="flex h-full">
+            <aside className="glass-nav relative flex w-sidebar shrink-0 flex-col border-r border-line px-3 pt-3 pb-3 shadow-[inset_-1px_0_0_rgb(255_255_255/0.02)]">
+              <GameSwitcher game={game} />
+              <nav className="mt-4 -mr-1.5 flex flex-col gap-3.5 overflow-y-auto pr-1.5" aria-label="Sections">
+                {nav.groups.map((g) => (
+                  <div key={g.id}>
+                    <p className="mb-1.5 flex items-center gap-2 px-2.5 text-[10px] font-semibold tracking-[0.16em] text-fg-subtle uppercase">
+                      {g.label}
+                      <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-white/[0.06] to-transparent" />
+                    </p>
+                    <div className="flex flex-col gap-0.5">{g.items.map(navItem)}</div>
+                  </div>
+                ))}
+              </nav>
+              <nav className="mt-auto flex flex-col gap-0.5 border-t border-line pt-3" aria-label="Application">
+                {nav.footer.map(navItem)}
+              </nav>
+            </aside>
 
-          <main className="relative min-w-0 flex-1 overflow-y-auto">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div key={section} variants={variants.rise} initial="hidden" animate="visible" exit="exit" className="min-h-full px-8 py-7">
-                <Suspense
-                  fallback={
-                    <div className="flex h-40 items-center justify-center text-fg-subtle">
-                      <Spinner />
-                    </div>
-                  }
-                >
-                  <ErrorBoundary resetKey={section}>
-                    <Current onNavigate={setSection} />
-                  </ErrorBoundary>
-                </Suspense>
-              </motion.div>
-            </AnimatePresence>
-          </main>
-        </div>
+            <main className="relative min-w-0 flex-1 overflow-y-auto">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div key={current} variants={variants.rise} initial="hidden" animate="visible" exit="exit" className="min-h-full px-8 py-7">
+                  <Suspense
+                    fallback={
+                      <div className="flex h-40 items-center justify-center text-fg-subtle">
+                        <Spinner />
+                      </div>
+                    }
+                  >
+                    <ErrorBoundary resetKey={current}>
+                      <PageContext.Provider value={page}>
+                        <Current onNavigate={setSection} />
+                      </PageContext.Provider>
+                    </ErrorBoundary>
+                  </Suspense>
+                </motion.div>
+              </AnimatePresence>
+            </main>
+          </div>
+        </DisplayCurrencyProvider>
       </LeagueProvider>
     </ActiveGameProvider>
   );

@@ -5,6 +5,7 @@
  */
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useDisplayCurrency } from "@/core/market/DisplayCurrency";
 import { useLeague } from "@/core/market/LeagueContext";
 import type { SectionProps } from "@/core/game-context/sections";
 import { Badge, Button, EmptyState, IconButton, Input, PageHeader, SegmentedControl, Select, Spinner, useToast } from "@/shared/components";
@@ -12,9 +13,10 @@ import { variants } from "@/shared/design/motion";
 import { Icon } from "@/shared/icons/Icon";
 import type { ParsedItem } from "@/shared/item-parser/types";
 import { cn } from "@/shared/utilities/cn";
-import { FreshnessBar, VirtualRows } from "@/shared/views/market-ui";
+import { DisplayCurrencySelect, FreshnessBar, VirtualRows } from "@/shared/views/market-ui";
 import { EmulatorPanel } from "./EmulatorPanel";
 import { usePrices, useComparison, useCraftingData, useMonteCarlo } from "./hooks";
+import { useChaos } from "./money";
 import { MonteCarloPanel } from "./MonteCarloPanel";
 import { NextStepsPanel } from "./NextStepsPanel";
 import type { EmuItem } from "./emulator";
@@ -27,7 +29,7 @@ export default function CraftingSection(_props: SectionProps) {
   const { idx, res, error, loading, reload } = useCraftingData();
   if (!idx || !res) {
     return (
-      <div className="mx-auto max-w-[1380px]">
+      <div className="mx-auto max-w-[1360px]">
         <PageHeader title="Crafting" />
         <div className="panel rounded-xl">
           {error ? (
@@ -53,7 +55,10 @@ const fmtNum = (n: number, digits = 1) =>
   n >= 1000 ? Math.round(n).toLocaleString("en-US") : n >= 100 ? n.toFixed(0) : n >= 10 ? n.toFixed(digits) : n.toFixed(Math.max(digits, 2));
 
 function Cost({ chaos, divine, className }: { chaos: number | null; divine: number | null; className?: string }) {
+  const dc = useDisplayCurrency();
+  const money = useChaos(null);
   if (chaos === null || !Number.isFinite(chaos)) return <span className={cn("text-fg-subtle", className)}>no price</span>;
+  if (dc?.converting) return <span className={cn("font-mono tabular", className)}>{money(chaos)}</span>;
   return (
     <span className={cn("font-mono tabular", className)}>
       {fmtNum(chaos)}c{divine && chaos >= divine ? <span className="text-fg-subtle"> · {fmtNum(chaos / divine, 2)} div</span> : null}
@@ -187,12 +192,13 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
   const best = results.find((r) => r.avgCost !== null) ?? results[0];
 
   return (
-    <div className="mx-auto max-w-[1380px] space-y-3.5">
+    <div className="mx-auto max-w-[1360px] space-y-3.5">
       <PageHeader
         title="Crafting"
         description="Odds from the game's modifier data (RePoE) · costs from live poe.ninja prices. Every result is an estimate."
         actions={
           <>
+            <DisplayCurrencySelect />
             <Button icon="copy" variant="secondary" onClick={pasteButton}>
               Paste item <span className="ml-1 text-fg-subtle">Ctrl+V</span>
             </Button>
@@ -596,6 +602,7 @@ function MethodsPanel({ results, busy, error, divine, hasTargets }: { results: M
 }
 
 function MethodRow({ m, best, divine }: { m: MethodResult; best: boolean; divine: number | null }) {
+  const unitMoney = useChaos(null);
   const [open, setOpen] = useState(false);
   return (
     <li className="px-3.5 py-2.5">
@@ -635,7 +642,7 @@ function MethodRow({ m, best, divine }: { m: MethodResult; best: boolean; divine
                   <span>
                     {c.qty}× {c.name}
                   </span>
-                  <span className={cn("font-mono tabular", c.price === null && "text-warning")}>{c.price === null ? "no price" : `${fmtNum(c.price)}c`}</span>
+                  <span className={cn("font-mono tabular", c.price === null && "text-warning")}>{c.price === null ? "no price" : unitMoney(c.price)}</span>
                 </li>
               ))}
             </ul>

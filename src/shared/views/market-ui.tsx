@@ -1,5 +1,6 @@
 import { memo, useCallback, useLayoutEffect, useRef, useState, type ReactNode, type UIEvent } from "react";
 import type { MarketSnapshot } from "@/core/ipc/commands";
+import { useDisplayCurrency } from "@/core/market/DisplayCurrency";
 import { useLeague } from "@/core/market/LeagueContext";
 import { useNow } from "@/core/market/hooks";
 import { Badge, IconButton, Select, Spinner } from "@/shared/components";
@@ -42,6 +43,29 @@ export function LeagueSelect({ className, compact }: { className?: string; compa
       size={compact ? "sm" : "md"}
       className={cn(width, className)}
     />
+  );
+}
+
+/**
+ * "Show prices in": the display currency for every price in this game
+ * (chaos/exalted, divine, or any currency with a poe.ninja rate).
+ */
+export function DisplayCurrencySelect({ className, compact }: { className?: string; compact?: boolean }) {
+  const d = useDisplayCurrency();
+  if (!d) return null;
+  return (
+    <div className={cn("flex items-center gap-2", className)}>
+      <span className="text-xs whitespace-nowrap text-fg-subtle">Prices in</span>
+      <Select
+        label="Show prices in"
+        hideLabel
+        value={d.options.some((o) => o.id === d.selectedId) ? d.selectedId : d.unit.id}
+        onChange={d.setUnit}
+        options={d.options.map((o) => ({ value: o.id, label: o.id === d.base.id ? `${o.name} (base)` : o.name }))}
+        size={compact ? "sm" : "md"}
+        className={compact ? "w-36" : "w-44"}
+      />
+    </div>
   );
 }
 

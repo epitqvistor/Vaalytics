@@ -5,6 +5,7 @@ import { MotionConfig, motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { GAMES, type GameId } from "@/core/game-context/games";
 import { setAppSetting } from "@/core/ipc/commands";
+import { DisplayCurrencyProvider } from "@/core/market/DisplayCurrency";
 import { LeagueProvider, useLeague } from "@/core/market/LeagueContext";
 import { PreferencesProvider, usePreferences } from "@/core/settings/PreferencesContext";
 import { useGameSetting } from "@/core/settings/useGameSetting";
@@ -57,7 +58,9 @@ export default function OverlayApp() {
       <MotionRoot>
         {capture ? (
           <LeagueProvider game={capture.game}>
-            <OverlayFrame key={seq} capture={capture} />
+            <DisplayCurrencyProvider game={capture.game} base={GAME_MODULES[capture.game].config.baseUnit} premium={GAME_MODULES[capture.game].config.premiumUnit}>
+              <OverlayFrame key={seq} capture={capture} />
+            </DisplayCurrencyProvider>
           </LeagueProvider>
         ) : (
           <div className="flex h-full items-center justify-center text-fg-subtle">

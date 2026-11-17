@@ -4,12 +4,11 @@ import { Badge, EmptyState } from "@/shared/components";
 import { cn } from "@/shared/utilities/cn";
 import type { EmuItem } from "./emulator";
 import type { PriceTable } from "./methods";
+import { useChaos } from "./money";
 import { nextSteps } from "./nextsteps";
 import type { CraftingIndex } from "./pool";
 import type { Gen, Goal, ItemSpec } from "./types";
 
-const fmt = (n: number) => (n >= 1000 ? Math.round(n).toLocaleString("en-US") : n >= 10 ? n.toFixed(1) : n.toFixed(2));
-const money = (c: number, divine: number | null) => (divine && c >= divine ? `${fmt(c / divine)} div` : `${fmt(c)}c`);
 const chance = (p: number) => (p >= 0.01 ? `${(p * 100).toFixed(p >= 0.1 ? 1 : 2)}%` : `1 in ${Math.round(1 / p).toLocaleString("en-US")}`);
 
 export function NextStepsPanel({
@@ -29,6 +28,7 @@ export function NextStepsPanel({
   dominance: Gen | null;
   divine: number | null;
 }) {
+  const money = useChaos(divine);
   const steps = useMemo(() => (item ? nextSteps(idx, spec, item, goal, prices, dominance) : []), [idx, spec, item, goal, prices, dominance]);
   const bestRepeat = steps.filter((s) => s.repeatable && s.avgCost !== null).sort((a, b) => a.avgCost! - b.avgCost!)[0]?.id;
 
@@ -63,7 +63,7 @@ export function NextStepsPanel({
               <div className="shrink-0 text-right">
                 <p className="font-mono text-sm tabular text-fg">{chance(s.chance)}</p>
                 <p className={cn("font-mono text-2xs tabular", s.costPerTry === null ? "text-warning" : "text-fg-subtle")}>
-                  {s.costPerTry === null ? "no price" : s.repeatable ? `avg ${money(s.avgCost!, divine)}` : `${money(s.costPerTry, divine)} / try`}
+                  {s.costPerTry === null ? "no price" : s.repeatable ? `avg ${money(s.avgCost!)}` : `${money(s.costPerTry)} / try`}
                 </p>
               </div>
             </li>

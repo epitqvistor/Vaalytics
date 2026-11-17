@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { useMemo } from "react";
 import type { GameConfig } from "@/core/game-context/config";
 import { useActiveGame } from "@/core/game-context/GameContext";
@@ -5,13 +6,15 @@ import type { SectionProps } from "@/core/game-context/sections";
 import type { MarketItemRow } from "@/core/ipc/commands";
 import { biggestMovers, parseFavoriteKey, trendValues } from "@/core/market/derive";
 import { useFavorites, useMarketCategories, useMarketHistory, useMarketOverviews } from "@/core/market/hooks";
+import { useDisplayCurrency } from "@/core/market/DisplayCurrency";
 import { useLeague } from "@/core/market/LeagueContext";
-import { Button, ChangeText, EmptyState, Kbd, PageHeader, Panel, StatTile } from "@/shared/components";
+import { Button, ChangeText, EmptyState, Kbd, PageHeader, Panel, Skeleton, StatTile } from "@/shared/components";
+import { stagger, variants } from "@/shared/design/motion";
 import { AreaChart } from "@/shared/charts/AreaChart";
 import { Sparkline } from "@/shared/charts/Sparkline";
 import { formatAmount, formatCompact } from "@/shared/utilities/format";
 import { Price } from "./common";
-import { FreshnessBar, ItemIcon, LeagueSelect } from "./market-ui";
+import { DisplayCurrencySelect, FreshnessBar, ItemIcon, LeagueSelect } from "./market-ui";
 
 export interface DashboardViewProps extends SectionProps {
   config: GameConfig;
@@ -23,6 +26,7 @@ const trendOf = (c: number | null) => ((c ?? 0) > 0 ? "up" : (c ?? 0) < 0 ? "dow
 const sparkOf = (r: MarketItemRow) => r.sparkline.filter((v): v is number => v != null);
 
 export function DashboardView({ config, onNavigate }: DashboardViewProps) {
+  const dc = useDisplayCurrency();
   const game = useActiveGame();
   const { league, error: leagueError } = useLeague();
   const { list: favoriteKeys } = useFavorites(game);
@@ -54,19 +58,28 @@ export function DashboardView({ config, onNavigate }: DashboardViewProps) {
 
   const catLabel = (id: string) => catalog.find((c) => c.id === id)?.label ?? id;
 
-  /** Large values read better in divines. */
-  const display = (item: MarketItemRow) =>
-    item.divineValue != null && item.divineValue >= 10 && item.itemId !== "divine"
+  /** In the chosen display currency; in base mode large values read better in the premium unit. */
+  const display = (item: MarketItemRow) => {
+    const fixed = config.keyCurrencyUnits?.[item.itemId];
+    if (fixed === "base") return { value: formatAmount(item.value), unit: config.baseUnit.short };
+    if (fixed === "premium") {
+      const p = dc?.toCurrency(item.value, config.premiumUnit.id) ?? item.divineValue;
+      if (p != null) return { value: formatAmount(p), unit: config.premiumUnit.short };
+    }
+    if (dc?.converting) return { value: formatAmount(dc.toUnit(item.value)), unit: dc.unit.short };
+    return item.divineValue != null && item.divineValue >= 10 && item.itemId !== config.premiumUnit.id
       ? { value: formatAmount(item.divineValue), unit: config.premiumUnit.short }
       : { value: formatAmount(item.value), unit: config.baseUnit.short };
+  };
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-[1360px]">
       <PageHeader
         title="Dashboard"
         description={league ? `${league} · prices from poe.ninja` : "Loading leagues…"}
         actions={
           <>
+            <DisplayCurrencySelect />
             <LeagueSelect />
             <Button variant="primary" icon="priceCheck" onClick={() => onNavigate("price-checker")}>
               Price check <Kbd>Ctrl D</Kbd>
@@ -85,15 +98,21 @@ export function DashboardView({ config, onNavigate }: DashboardViewProps) {
             <FreshnessBar snapshot={currency} />
           </div>
 
-          <div className="grid grid-cols-4 gap-4">
+          <motion.div className="grid grid-cols-4 gap-4" variants={stagger} initial="hidden" animate="visible">
             {keyItems.length > 0
               ? keyItems.map((item) => {
                   const d = display(item);
-                  return <StatTile key={item.itemId} label={item.name} value={d.value} unit={d.unit} change={item.change7d ?? undefined} caption="7 days" />;
+                  return (
+                    <motion.div key={item.itemId} variants={variants.rise}>
+                      <StatTile label={item.name} value={d.value} unit={d.unit} change={item.change7d ?? undefined} caption="7 days" />
+                    </motion.div>
+                  );
                 })
-              : Array.from({ length: 3 }, (_, i) => <div key={i} className="panel h-[98px] rounded-lg" aria-hidden />)}
-            <StatTile label="Watchlist" value={favorites.length} unit={favorites.length === 1 ? "item" : "items"} caption="Starred in Currency Tracker" />
-          </div>
+              : Array.from({ length: 3 }, (_, i) => <Skeleton key={i} className="h-[104px] rounded-lg" />)}
+            <motion.div variants={variants.rise}>
+              <StatTile label="Watchlist" value={favorites.length} unit={favorites.length === 1 ? "item" : "items"} caption="Starred in Currency Tracker" />
+            </motion.div>
+          </motion.div>
 
           <div className="mt-5 grid grid-cols-3 gap-5">
             <Panel

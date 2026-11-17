@@ -4,6 +4,27 @@ Location: `src/styles/index.css` (tokens), `src/shared/design` (motion, dev gall
 `src/shared/icons` (icon set), `src/shared/components` (primitives).
 Dev builds include a live gallery at **Settings → Design system** (excluded from production bundles).
 
+## 0.6 visual rework (Nov 2026)
+- **Atmosphere** (`src/app/Atmosphere.tsx`, `atmo-*` utilities): static layers behind the app,
+  outside every scroll container — key light (warm for PoE 1, cooler `data-game="poe2"`),
+  an original etched atlas drawing (`src/assets/atmosphere/atlas-lines.svg`, 12 KB, 3.5–7 %
+  opacity, radial mask), two-scale stone/ash grain (`soft-light`) and a vignette. No animation;
+  idle WebView2 CPU measured at 0.0 %.
+- **Surface language**: `panel` (solid data), `panel-raised` (hero tiles, faint warm top light),
+  `well` (recessed fields, table headers), `glass-*` for chrome/floating UI only.
+- **Page header**: eyebrow "Group · Game" from `PageContext` (set by the shell), 22 px title,
+  `ornament-rule` hairline (warm → neutral → transparent) under every header.
+- **Nav**: active item = warm left-lit pill with a 2 px accent edge inside the pill
+  (no longer clipped by the scrolling nav); group labels end in a fading rule.
+- **Controls**: primary button is a solid accent with a lit top edge (no neon glow); disabled
+  states are neutral (not washed-out orange); inputs and text areas are `well`s; segmented
+  controls sit in a well with a raised thumb.
+- **Motion**: `stagger` container preset (dashboard tiles), chart line draws once per data set
+  (`pathLength`, 0.7 s), area fades in; all respect `MotionConfig reducedMotion`.
+- **Layout**: every page uses the same centred `max-w-[1360px]` container; forms (Settings)
+  stay ≤ `max-w-4xl` inside it so the left edge always aligns.
+- Scrollbars: thin rounded WebView2 (`::-webkit-scrollbar`) thumbs.
+
 ## 0.2 refresh (Nov 2026)
 - Palette: canvas `#101114`, nav `#17191D`, elevated `#202329`; ambient `app-backdrop` (two static light pools + faint grain) gives glass something to refract.
 - Surfaces: `glass` and `glass-float` use a gradient border (lit top edge) instead of glow; `glass-nav` tints sidebar/title bar; `panel` is near-opaque for data.
@@ -13,20 +34,20 @@ Dev builds include a live gallery at **Settings → Design system** (excluded fr
 
 ## Principles
 1. **Data first.** Prices, tables and listings sit on *solid* surfaces (`panel`, `bg-surface`). Glass is for chrome, navigation and floating UI only.
-2. **Compact desktop density.** 13 px is the default UI size; headings stay modest (page title 20 px).
+2. **Compact desktop density.** 13 px is the default UI size; headings stay modest (page title 22 px).
 3. **One accent.** Orange (`accent`) marks primary action and current location. Status colours are reserved for status.
 4. **Quiet motion.** Short, transform/opacity-only, never looping.
 
 ## Tokens
 | Group | Tokens |
 |---|---|
-| Canvas → raised | `bg` #111214 · `bg-2` #16181C · `surface` #1B1D22 · `elevated` #22252B · `elevated-2` #2A2E35 |
+| Canvas → raised | `bg` #0F1013 · `bg-2` #15171B · `surface` #191B20 · `elevated` #1F2228 · `elevated-2` #272B32 · `well` #121418 |
 | Translucent | `glass` 4.5 % · `glass-hover` 6 % · `glass-strong` 7.5 % white |
-| Lines | `line` 7.5 % · `line-strong` 13 % white |
+| Lines | `line` 7 % · `line-strong` 12 % white · `line-warm` accent 28 % |
 | Brand | `accent` #F28C38 · `accent-2` #FFAD62 · `accent-soft` 14 % · `on-accent` #1A1006 |
 | Text | `fg` #F5F5F5 · `fg-muted` #A1A5AE · `fg-subtle` #6F747E · `fg-disabled` |
 | Status | `success` · `warning` · `danger` · `info`, each with a `-soft` background |
-| Radius | `xs` 4 · `sm` 6 · `md` 8 · `lg` 12 · `xl` 16 |
+| Radius | `xs` 4 · `sm` 6 · `md` 7 · `lg` 10 · `xl` 14 |
 | Shadow | `sm` · `md` · `lg` |
 | Layout | `titlebar` 36 px · `sidebar` 232 px |
 

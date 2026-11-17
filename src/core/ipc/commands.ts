@@ -79,6 +79,8 @@ export interface MarketItemRow {
   sparkline: (number | null)[];
   volumeValue: number | null;
   listings: number | null;
+  /** Base type of unique items (poe.ninja stash endpoints); null for exchange categories. */
+  baseType?: string | null;
 }
 
 export interface MarketSnapshot {
