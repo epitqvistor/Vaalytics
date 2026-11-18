@@ -7,7 +7,7 @@
 //! - The overlay is a separate always-on-top window created on first use.
 
 #[cfg(windows)]
-mod win;
+pub(crate) mod win;
 
 use crate::game::GameId;
 use crate::settings;
@@ -93,6 +93,7 @@ pub fn init(app: &tauri::App) -> tauri::Result<()> {
     {
         let handle = app.handle().clone();
         win::watch_foreground(move |game| {
+            crate::loot::on_foreground(game);
             let h = handle.clone();
             let _ = handle.run_on_main_thread(move || on_foreground(&h, game));
         });

@@ -71,6 +71,16 @@ const POE2: &[CategoryDef] = &[
     ex("abyss", "Abyss", "Abyss"),
     ex("uncut-gems", "Uncut Gems", "UncutGems"),
     ex("lineage-gems", "Lineage Support Gems", "LineageSupportGems"),
+    ex("verisium", "Verisium", "Verisium"),
+    // Stash item overviews. PoE 2 uses plural type names (verified 2026-11-17:
+    // `UniqueJewels` → 200, `UniqueJewel` → 404, `UniqueRelics` → 404).
+    item("unique-weapons", "Unique Weapons", "UniqueWeapons"),
+    item("unique-armours", "Unique Armours", "UniqueArmours"),
+    item("unique-accessories", "Unique Accessories", "UniqueAccessories"),
+    item("unique-jewels", "Unique Jewels", "UniqueJewels"),
+    item("unique-flasks", "Unique Flasks", "UniqueFlasks"),
+    item("unique-charms", "Unique Charms", "UniqueCharms"),
+    item("unique-tablets", "Unique Tablets", "UniqueTablets"),
 ];
 
 pub fn categories(game: GameId) -> &'static [CategoryDef] {
@@ -142,9 +152,12 @@ mod tests {
     }
 
     #[test]
-    fn poe2_has_no_item_endpoint_categories() {
-        // poe.ninja returned 404 for the PoE 2 stash endpoint during research.
-        assert!(categories(GameId::Poe2).iter().all(|c| c.endpoint == Endpoint::Exchange));
+    fn poe2_unique_categories_use_the_stash_endpoint_with_plural_types() {
+        let items: Vec<_> = categories(GameId::Poe2).iter().filter(|c| c.endpoint == Endpoint::Item).collect();
+        assert_eq!(items.len(), 7);
+        assert!(items.iter().all(|c| c.id.starts_with("unique-") && c.api_type.ends_with('s')));
+        let jewels = find(GameId::Poe2, "unique-jewels").unwrap();
+        assert!(overview_url(GameId::Poe2, "Forbidden Rites", jewels).ends_with("/poe2/api/economy/stash/current/item/overview?league=Forbidden%20Rites&type=UniqueJewels"));
     }
 
     #[test]

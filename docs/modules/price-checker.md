@@ -8,7 +8,7 @@ Behaviour modelled on Awakened PoE Trade's documented flow (studied, not copied)
 - A foreground-change hook (`SetWinEventHook(EVENT_SYSTEM_FOREGROUND)`, event-driven, no polling) detects the game window by class `POEWindowClass` **and** exact title (`Path of Exile` / `Path of Exile 2`).
 - The price-check shortcut (per game, default **Ctrl+D**, alternatives in Settings) is registered with `RegisterHotKey` **only while the game is focused**. Ctrl+D therefore keeps working normally in browsers and other apps.
 - On press: remember the clipboard text (clear it if it already holds item text) → send the game's own copy shortcut (Ctrl is only pressed if the user isn't already holding it; since PoE 3.29 Ctrl+C copies the advanced format) → poll the clipboard every 40 ms for up to 600 ms for text starting with `Item Class:` → restore the previous text (Settings → *Restore clipboard*, default on).
-- The clipboard is never monitored otherwise. No memory reading, injection or game-file access.
+- The price check never monitors the clipboard. (Loot Journal, PoE 2, listens for clipboard changes only while the PoE 2 window is focused — see loot-journal.md; a price-checked item is captured there too, as it is an item copy.) No memory reading, injection or game-file access.
 
 ## 2. Parsing (`src/shared/item-parser`, `src/games/<id>/parser`)
 Shared engine + per-game rules (markers, flags, special sections):
@@ -47,3 +47,23 @@ Created on first use (no idle cost). Transparent, frameless, always on top, not 
 - Magic items: base type can't be isolated from affixed names without base-type data, so they are searched by modifiers and rarity only.
 - Not yet verified against a running game in this environment (no game available): hotkey registration, copy simulation and clipboard read. Parser fixtures for the advanced format are constructed from documented markers; replace with real captures.
 - Live Trade search not exercised by Vaalytics itself yet (no contact configured). Opt-in test: `set VAALYTICS_TRADE_CONTACT=…` then `cargo test --manifest-path src-tauri/Cargo.toml live_trade -- --ignored --nocapture`.
+
+## Gems
+
+- Transfigured gems ("Static Strike of Gathering Lightning") are searched as base gem + discriminator
+  (`type: { option: "Static Strike", discriminator: "alt_x" }`). The list comes from the official
+  `/api/trade/data/items` (gem group, entries with `disc`), cached on disk for 24 h like the stat list
+  (`trade_gem_variants`). Without the list the plain name is sent.
+- Gem level comes from the gem's own `Level:` line; the `Requirements:` block (character level, Str, Dex, Int)
+  is parsed separately so it never overrides it.
+- Gem filters (editable): level min–max and quality min–max (default: the gem's own values; empty = no
+  limit) and corruption (Any / Corrupted / Not corrupted; gems default to their own state).
+
+## Listing status (3.30 instant buyout)
+
+PoE 1 Trade has instant-buyout listings whose sellers needn't be online. The search status is a
+choice: **Instant buyout + online** (`available`, the Trade site's default and ours for PoE 1),
+Instant buyout only (`securable`), Online sellers only (`online`), Any. PoE 2 offers Online / Any
+(no instant-buyout listings there, checked 2026-11-17). Instant-buyout listings (fetch result has a
+gold `fee`) are marked "Instant buyout" instead of "Offline" and are never hidden as offline.
+Before 0.9.2 the search used `online`, which left out instant-buyout listings (e.g. 2 instead of 104).

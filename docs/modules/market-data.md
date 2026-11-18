@@ -24,7 +24,7 @@ UI hook ──invoke──▶ engine.snapshot()  ──▶ SQLite (instant)     
 ```
 
 - **Cache-first.** Every read returns stored data immediately, with `fetchedAt`, `expiresAt`, `lastError` so the UI can show freshness and errors honestly.
-- **Respecting the source.** Refreshes happen only when the stored copy has expired according to the source's own `Cache-Control: max-age` (clamped to 5 min–6 h). Requests are serialized with ≥1.5 s spacing, use `If-None-Match`, and carry a descriptive User-Agent. Manual refresh is disabled until data expires.
+- **Respecting the source.** Refreshes happen only when the stored copy has expired according to the source's own `Cache-Control: max-age` (clamped to 5 min–6 h). Request starts are spaced ≥0.5 s apart with at most 3 in flight (a slow response doesn't hold up the queue), a 429 pauses all requests for its `Retry-After`; requests use `If-None-Match`, and carry a descriptive User-Agent. Manual refresh is disabled until data expires.
 - **Retries.** Up to 3 attempts for network errors, HTTP 5xx and 429 (honouring `Retry-After`, capped at 120 s). After a failure the resource is not retried automatically for 5 minutes (or `Retry-After`, if longer). Cached data stays visible with a warning.
 - **Interest-driven background sync.** A 60 s tick refreshes only resources viewed in the last 2 hours *and* expired. Nothing is fetched for categories nobody looks at.
 - **De-duplication.** One in-flight refresh per (game, league, category).
@@ -77,3 +77,13 @@ everywhere, including the price-check overlay.
 
 Stash endpoints (uniques) keep poe.ninja `baseType` in `market_items.base_type` / `MarketItemRow.baseType`
 (null for exchange categories). Used by Loot Intelligence to group uniques by base.
+
+## PoE 2 unique items (0.14.1)
+
+poe.ninja serves PoE 2 uniques on the stash endpoint with **plural** type names (verified
+2026-11-17): `UniqueWeapons`, `UniqueArmours`, `UniqueAccessories`, `UniqueJewels`,
+`UniqueFlasks`, `UniqueCharms`, `UniqueTablets` (`UniqueJewel` and `UniqueRelics` return 404). The
+PoE 2 response has the exchange-style `core` (`primary: "divine"`, `rates`) and lines priced in
+`primaryValue`; `normalize_stash` detects `core` and converts to the base unit (exalted). Corrupted
+lines get the variant `Corrupted`. `NORMALIZER_VERSION` = 5.
+Exchange type `Verisium` (alloys, ores, crests, Verisium itself) was added in 0.14.2 (verified 2026-11-17, all leagues).

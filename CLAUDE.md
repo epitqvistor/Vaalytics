@@ -15,7 +15,7 @@ Stack: Tauri 2 (Rust) · React 19 · TypeScript · Vite · Tailwind CSS v4 · Mo
 1. **Game isolation.** PoE 1 and PoE 2 never share market data, item definitions, currencies, settings, caches or history. Every game-scoped DB table has a `game` column with a CHECK constraint. `src/games/poe1` and `src/games/poe2` must not import each other; shared code goes in `src/shared` or `src/core`.
 2. **No fake data.** Never invent prices, listings, sellers, endpoints or market data. Prototype sample data must be visibly labelled "Sample data". When a source is unavailable, show an honest error/stale state.
 3. **No fake features.** Only show navigation/buttons that do something. No placeholders for unsupported games.
-4. **Game-safety.** No process-memory reading, DLL injection, game-file modification or anti-cheat bypass. No continuous clipboard monitoring — the clipboard is read only during a user-triggered price check.
+4. **Game-safety.** No process-memory reading, DLL injection, game-file modification or anti-cheat bypass. No continuous clipboard monitoring. The clipboard is read only (a) right after the user's price-check hotkey, and (b) for Loot Journal, right after a clipboard-change notification that arrived while a Path of Exile 2 window is in the foreground (the OS listener is registered only then; non-item text is discarded immediately, never stored or logged). Vaalytics writes the clipboard only on an explicit user action (a "Copy" button, or restoring the previous text after the price-check hotkey).
 5. **Respect external services.** Honour rate limits (`X-Rate-Limit-*` on pathofexile.com), cache headers and source update intervals. Identify with a proper User-Agent. Never bypass restrictions.
 6. **Security.** Remote/browser webviews never get IPC capabilities (`src-tauri/capabilities/main.json` is scoped to the `main` window only). Never store credentials in plaintext; never expose cookies/tokens to the React frontend; never ask for passwords.
 7. **External software** is never installed or launched without explicit user action.
@@ -47,6 +47,10 @@ See `docs/architecture/overview.md`. Key points:
 - Spec: `docs/modules/price-checker.md`. Parsers are per game (`src/games/<id>/parser`) on the shared core; add fixtures for every format change.
 - Never send Trade requests without the user's contact (User-Agent); never bypass the rate limiter. Window creation from commands must be `async` (sync deadlocks on Windows).
 - The hotkey is registered only while the game window is focused; the clipboard is read only right after the hotkey.
+
+## Loot Journal & Session Intelligence (PoE 2)
+- Specs: `docs/modules/loot-journal.md`, `docs/modules/session-intelligence.md`. Background services in Rust (`src-tauri/src/loot`, `src-tauri/src/session`); no polling of clipboard content, no memory reading.
+- Captured items are "captured", never "all loot": no profit from captures; copy location ≠ drop location (origin stays unknown unless the user sets it). Never price rares/uniques from a name.
 
 ## Crafting
 - PoE 1 only, spec `docs/modules/crafting.md`. Mod data comes from RePoE via Rust (`crafting_data`), never hard-coded. Engine changes must keep `engine.test.ts` (model vs exact simulation) passing.

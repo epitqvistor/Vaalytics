@@ -287,3 +287,15 @@
     background: transparent;
   }
 }
+
+/*
+ * PoE 2 stat tiles: a thin, static red edge light (1px ring + a faint halo).
+ * Inert in PoE 1. No animation.
+ */
+:root[data-game="poe2"] .led-edge {
+  box-shadow:
+    0 0 0 1px rgb(232 64 64 / 0.42),
+    0 0 10px -3px rgb(232 52 52 / 0.38),
+    inset 0 1px 0 rgb(255 120 120 / 0.06),
+    0 10px 28px -18px rgb(0 0 0 / 0.7);
+}

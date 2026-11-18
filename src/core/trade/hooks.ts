@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { GameId } from "@/core/game-context/games";
-import { getAppSetting, setAppSetting, tradeStats, TRADE_CONTACT_KEY } from "@/core/ipc/commands";
+import { getAppSetting, setAppSetting, tradeGemVariants, tradeStats, TRADE_CONTACT_KEY, type TradeGemVariant } from "@/core/ipc/commands";
 import { buildStatIndex, type StatIndex } from "@/shared/trade/stats";
 
 const indexCache = new Map<GameId, Promise<StatIndex>>();
@@ -12,6 +12,19 @@ export function loadStatIndex(game: GameId): Promise<StatIndex> {
     p = tradeStats(game).then(buildStatIndex);
     p.catch(() => indexCache.delete(game));
     indexCache.set(game, p);
+  }
+  return p;
+}
+
+const gemCache = new Map<GameId, Promise<TradeGemVariant[]>>();
+
+/** Transfigured-gem names → base + discriminator (Trade item data, cached on disk for 24 h by the host). */
+export function loadGemVariants(game: GameId): Promise<TradeGemVariant[]> {
+  let p = gemCache.get(game);
+  if (!p) {
+    p = tradeGemVariants(game);
+    p.catch(() => gemCache.delete(game));
+    gemCache.set(game, p);
   }
   return p;
 }

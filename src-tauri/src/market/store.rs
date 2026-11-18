@@ -135,6 +135,59 @@ pub fn items(db: &Database, game: GameId, league: &str, category: &str) -> AppRe
     Ok(rows.collect::<Result<_, _>>()?)
 }
 
+/// A cached market row matched by exact name (no variant), for valuing items
+/// copied from the game. Returns the category it was found in.
+#[derive(Debug, Clone, PartialEq)]
+pub struct NameMatch {
+    pub category: String,
+    pub value: f64,
+    pub volume_value: Option<f64>,
+    pub listings: Option<i64>,
+    pub icon: Option<String>,
+    pub fetched_at: Option<i64>,
+}
+
+pub fn find_by_name(db: &Database, game: GameId, league: &str, name: &str) -> AppResult<Option<NameMatch>> {
+    Ok(db
+        .conn()?
+        .query_row(
+            "SELECT i.category, i.value, i.volume_value, i.listings, i.icon, f.fetched_at
+             FROM market_items i LEFT JOIN market_fetches f ON f.game = i.game AND f.league = i.league AND f.category = i.category
+             WHERE i.game = ?1 AND i.league = ?2 AND i.name = ?3 AND i.variant IS NULL
+             ORDER BY COALESCE(i.volume_value, 0) DESC LIMIT 1",
+            params![game.as_str(), league, name],
+            |r| Ok(NameMatch { category: r.get(0)?, value: r.get(1)?, volume_value: r.get(2)?, listings: r.get(3)?, icon: r.get(4)?, fetched_at: r.get(5)? }),
+        )
+        .optional()?)
+}
+
+/// A cached unique-item row (stash categories), for valuing unique copies.
+#[derive(Debug, Clone, PartialEq)]
+pub struct UniqueRow {
+    pub category: String,
+    pub name: String,
+    pub variant: Option<String>,
+    pub value: f64,
+    pub listings: Option<i64>,
+    pub icon: Option<String>,
+    pub fetched_at: Option<i64>,
+}
+
+/// Unique rows on `base_type` (optionally with an exact `name`), cheapest first.
+pub fn uniques_on_base(db: &Database, game: GameId, league: &str, base_type: &str, name: Option<&str>) -> AppResult<Vec<UniqueRow>> {
+    let conn = db.conn()?;
+    let mut stmt = conn.prepare(
+        "SELECT i.category, i.name, i.variant, i.value, i.listings, i.icon, f.fetched_at
+         FROM market_items i LEFT JOIN market_fetches f ON f.game = i.game AND f.league = i.league AND f.category = i.category
+         WHERE i.game = ?1 AND i.league = ?2 AND i.base_type = ?3 AND (?4 IS NULL OR i.name = ?4)
+         ORDER BY i.value ASC",
+    )?;
+    let rows = stmt.query_map(params![game.as_str(), league, base_type, name], |r| {
+        Ok(UniqueRow { category: r.get(0)?, name: r.get(1)?, variant: r.get(2)?, value: r.get(3)?, listings: r.get(4)?, icon: r.get(5)?, fetched_at: r.get(6)? })
+    })?;
+    Ok(rows.collect::<Result<_, _>>()?)
+}
+
 pub fn history(db: &Database, game: GameId, league: &str, category: &str, item_id: &str, since: i64) -> AppResult<Vec<HistoryPoint>> {
     let conn = db.conn()?;
     let mut stmt = conn.prepare(

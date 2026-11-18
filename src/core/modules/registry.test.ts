@@ -30,14 +30,17 @@ describe("module registry", () => {
     expect(ids(off)).not.toContain("thread-planner");
     expect(ids(on)).toContain("thread-planner");
     expect(off.groups.map((g) => g.id)).toEqual(["overview", "economy", "endgame", "character", "tools"]);
-    expect(off.groups.find((g) => g.id === "endgame")!.items.map((m) => m.id)).toEqual(["loot-intelligence"]);
+    expect(off.groups.find((g) => g.id === "endgame")!.items.map((m) => m.id)).toEqual(["map-lab", "farming-lab", "loot-intelligence"]);
     expect(on.groups.map((g) => g.id)).toEqual(["overview", "economy", "endgame", "character", "tools"]);
     expect(off.footer.map((m) => m.id)).toEqual(["settings"]);
+    expect(off.groups.find((g) => g.id === "overview")!.items.map((m) => m.id)).toEqual(["dashboard"]);
   });
 
   it("PoE 1 endgame modules are not offered for PoE 2", () => {
     const poe2 = navigationFor("poe2", { showPlanned: true });
     expect(poe2.groups.some((g) => g.id === "endgame")).toBe(false);
+    expect(poe2.groups.find((g) => g.id === "overview")!.items.map((m) => m.id)).toEqual(["dashboard"]);
+    expect(poe2.groups.find((g) => g.id === "tools")!.items.map((m) => m.id)).toEqual(["crafting", "session-intelligence", "loot-journal", "browser"]);
     expect(poe2.groups.flatMap((g) => g.items).find((m) => m.id === "crafting")?.availability.poe2).toBe("planned");
   });
 });

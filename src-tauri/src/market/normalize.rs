@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 /// Bump when normalization output changes, so cached rows are re-derived
 /// (stored ETags are dropped once and the next fetch is a full download).
-pub const NORMALIZER_VERSION: i64 = 4;
+pub const NORMALIZER_VERSION: i64 = 5;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -216,7 +216,75 @@ struct StashLine {
     base_type: Option<String>,
 }
 
+/// PoE 2 stash overview: `core` (primary currency + rates, like the exchange
+/// endpoint) and lines priced in `primaryValue` (verified 2026-11-17, e.g.
+/// `{"core":{"primary":"divine","rates":{"exalted":552.2,…}},"lines":[{"name":"Prism of Belief",
+/// "baseType":"Diamond","primaryValue":0.00181,"listingCount":10000,"corrupted":true,…}]}`).
+#[derive(Deserialize)]
+struct StashV2Response {
+    core: Core,
+    lines: Vec<StashV2Line>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct StashV2Line {
+    name: String,
+    base_type: Option<String>,
+    icon: Option<String>,
+    details_id: Option<String>,
+    primary_value: Option<f64>,
+    listing_count: Option<i64>,
+    spark_line: Option<Sparkline>,
+    #[serde(default)]
+    corrupted: bool,
+    variant: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct StashPeek {
+    core: Option<serde::de::IgnoredAny>,
+}
+
+fn normalize_stash_v2(resp: StashV2Response, base_unit: &str) -> Result<Normalized, NormalizeError> {
+    let rate = |unit: &str| -> Option<f64> {
+        if unit == resp.core.primary {
+            Some(1.0)
+        } else {
+            resp.core.rates.get(unit).copied().filter(|r| r.is_finite() && *r > 0.0)
+        }
+    };
+    let to_base = rate(base_unit).ok_or_else(|| NormalizeError::MissingRate(base_unit.to_string()))?;
+    let to_divine = rate("divine");
+    let mut out = Normalized::default();
+    for line in resp.lines {
+        let (Some(pv), Some(id)) = (finite(line.primary_value), line.details_id) else {
+            out.skipped += 1;
+            continue;
+        };
+        let (change, spark) = trend(line.spark_line);
+        let parts: Vec<String> = line.corrupted.then(|| "Corrupted".to_string()).into_iter().chain(line.variant.filter(|v| !v.is_empty())).collect();
+        out.items.push(NormalizedItem {
+            item_id: id,
+            name: line.name,
+            variant: (!parts.is_empty()).then(|| parts.join(" · ")),
+            icon: icon_url(line.icon),
+            value: pv * to_base,
+            divine_value: to_divine.map(|r| pv * r),
+            change_7d: change,
+            sparkline: spark,
+            volume_value: None,
+            listings: line.listing_count,
+            base_type: line.base_type.filter(|b| !b.is_empty()),
+        });
+    }
+    Ok(out)
+}
+
 pub fn normalize_stash(body: &[u8], base_unit: &str) -> Result<Normalized, NormalizeError> {
+    if serde_json::from_slice::<StashPeek>(body)?.core.is_some() {
+        return normalize_stash_v2(serde_json::from_slice(body)?, base_unit);
+    }
     let resp: StashResponse = serde_json::from_slice(body)?;
     let mut out = Normalized::default();
     for line in resp.lines {
@@ -322,6 +390,27 @@ mod tests {
         assert_eq!(m.value, 68.0);
         assert_eq!(m.listings, Some(3972));
         assert_eq!(m.sparkline, vec![None, None, Some(0.0), Some(60.0), Some(70.0)]);
+    }
+
+    #[test]
+    fn poe2_stash_format_uses_primary_value_and_rates() {
+        // Sanitized from the PoE 2 UniqueJewels overview (2026-11-17).
+        let body = r#"{"core":{"items":[{"id":"divine"}],"rates":{"exalted":552.2,"chaos":10.4},"primary":"divine","secondary":"chaos"},
+          "lines":[
+            {"id":1,"itemId":"Prism of Belief Diamond","detailsId":"prism-of-belief-diamond","name":"Prism of Belief","baseType":"Diamond",
+             "icon":"https://web.poecdn.com/gen/image/x/Prism.png","category":"[Jewel]","primaryValue":0.00181,"listingCount":10000,"corrupted":true,
+             "sparkLine":{"totalChange":1.5,"data":[null,0,1.5]}},
+            {"id":2,"detailsId":"heart-of-the-well-diamond","name":"Heart of the Well","baseType":"Diamond","primaryValue":0.09611,"listingCount":10000,"corrupted":false},
+            {"id":3,"detailsId":"no-price","name":"No Price","baseType":"Ruby"}
+          ]}"#;
+        let n = normalize_stash(body.as_bytes(), "exalted").unwrap();
+        assert_eq!((n.items.len(), n.skipped), (2, 1));
+        let p = &n.items[0];
+        assert_eq!((p.item_id.as_str(), p.name.as_str(), p.base_type.as_deref(), p.variant.as_deref()), ("prism-of-belief-diamond", "Prism of Belief", Some("Diamond"), Some("Corrupted")));
+        assert!((p.value - 0.00181 * 552.2).abs() < 1e-9);
+        assert_eq!((p.divine_value, p.listings), (Some(0.00181), Some(10000)));
+        assert_eq!(n.items[1].variant, None);
+        assert!(matches!(normalize_stash(br#"{"core":{"primary":"divine","rates":{}},"lines":[]}"#, "exalted"), Err(NormalizeError::MissingRate(_))));
     }
 
     #[test]

@@ -15,7 +15,7 @@ export interface StatTileProps {
 export function StatTile({ label, value, unit, change, caption }: StatTileProps) {
   const dir = change == null ? null : change > 0.0005 ? "up" : change < -0.0005 ? "down" : "flat";
   return (
-    <div className="panel-raised group flex flex-col rounded-lg px-4 pt-3.5 pb-3 transition-transform duration-200 ease-out hover:-translate-y-px">
+    <div className="panel-raised led-edge group flex flex-col rounded-lg px-4 pt-3.5 pb-3 transition-transform duration-200 ease-out hover:-translate-y-px">
       <span className="text-[11px] font-medium tracking-[0.06em] text-fg-muted uppercase">{label}</span>
       <div className="mt-2 flex items-baseline gap-1.5">
         <span className="tabular font-display text-[26px] leading-8 font-semibold tracking-[-0.02em] text-fg">{value}</span>

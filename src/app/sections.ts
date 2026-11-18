@@ -30,12 +30,18 @@ const READY: Record<GameId, Partial<Record<SectionId, SectionComponent>>> = {
     ...shared,
     crafting: lazy(() => import("@/games/poe1/crafting")),
     "loot-intelligence": lazy(() => import("@/games/poe1/loot-intelligence")),
+    "farming-lab": lazy(() => import("@/games/poe1/farming-lab")),
+    "map-lab": lazy(() => import("@/games/poe1/map-lab")),
+    regex: lazy(() => import("@/games/poe1/regex")),
   },
   poe2: {
     dashboard: lazy(() => import("@/games/poe2/dashboard")),
     "price-checker": lazy(() => import("@/games/poe2/price-checker")),
     currency: lazy(() => import("@/games/poe2/currency")),
     "market-intelligence": lazy(() => import("@/games/poe2/market-intelligence")),
+    "session-intelligence": lazy(() => import("@/games/poe2/session-intelligence")),
+    "loot-journal": lazy(() => import("@/games/poe2/loot-journal")),
+    "campaign-intelligence": lazy(() => import("@/games/poe2/campaign-intelligence")),
     ...shared,
   },
 };

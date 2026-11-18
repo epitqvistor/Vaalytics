@@ -8,7 +8,7 @@ module never touches the shell.
 
 | Layer | Where | What it owns |
 |---|---|---|
-| Rust host | `src-tauri/src` | DB (SQLite, migrations), poe.ninja **Market engine** (`market/`: fetch, ETag/max-age cache, hourly history), official **Trade** client with GGG rate limiter (`trade/`), overlay + hotkey + clipboard (`overlay/`), Path of Building (`pob.rs`), crafting data (`crafting.rs`, RePoE), browser (`browser.rs`) |
+| Rust host | `src-tauri/src` | DB (SQLite, migrations), poe.ninja **Market engine** (`market/`: fetch, ETag/max-age cache, hourly history), official **Trade** client with GGG rate limiter (`trade/`), overlay + hotkey + clipboard (`overlay/`), PoE 2 session tracker (`session/`), Path of Building (`pob.rs`), crafting data (`crafting.rs`, RePoE), browser (`browser.rs`) |
 | IPC | `src/core/ipc/commands.ts` | the only way the UI calls Rust |
 | Core | `src/core/*` | game context, **module registry** (`modules/`), **versioned game data** (`game-data/`), **provenance** (`provenance/`), market hooks + league + display currency (`market/`), trade hooks, settings, diagnostics |
 | Shared | `src/shared/*` | components, icons, charts, item parser core, item renderer, game-agnostic views (Dashboard, Currency, Price Checker, Trade, Builds, Tools) |
@@ -51,9 +51,9 @@ Current groups:
 |---|---|---|
 | Overview | Dashboard | Dashboard |
 | Economy | Price Checker, Currency Tracker, Trade, Market Intelligence | Price Checker, Currency Tracker, Trade, Market Intelligence |
-| Endgame | Loot Intelligence, *Atlas Planner, Thread Planner, Fate Planner, Map Lab, Farming Lab* | — |
-| Character | Builds, Path of Building & Tools | same |
-| Tools | Crafting, Browser | *Crafting*, Browser |
+| Endgame | Map Lab, Farming Lab, Loot Intelligence, *Atlas Planner, Thread Planner, Fate Planner* | — |
+| Character | Builds, Path of Building & Tools | Campaign Intelligence, Builds, Path of Building & Tools |
+| Tools | Crafting, REGEX, Browser | *Crafting*, Session Intelligence, Loot Journal, Browser |
 
 *Italic* = planned.
 

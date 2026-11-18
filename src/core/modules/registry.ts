@@ -26,10 +26,14 @@ export type ModuleId =
   | "farming-lab"
   | "loot-intelligence"
   // Character
+  | "campaign-intelligence"
   | "builds"
   | "tools"
   // Tools
   | "crafting"
+  | "regex"
+  | "session-intelligence"
+  | "loot-journal"
   | "browser"
   // Application
   | "settings";
@@ -117,24 +121,16 @@ export const MODULES: readonly ModuleMeta[] = [
     label: "Map Lab",
     icon: "map",
     group: "endgame",
-    summary: "Evaluate map modifiers and map setups for the current patch.",
-    availability: { poe1: "planned" },
-    plan: {
-      scope: ["Paste a map, see its modifiers grouped by risk and reward", "Compare map setups (Threads, device, Atlas)"],
-      data: ["Map modifier definitions for the selected patch", "The item parser shared with the Price Checker"],
-    },
+    summary: "Paste a map to see its modifiers grouped by your own risk rules and its rewards; compare pasted maps.",
+    availability: { poe1: "ready" },
   },
   {
     id: "farming-lab",
     label: "Farming Lab",
     icon: "flask",
     group: "endgame",
-    summary: "Log your own farming sessions and see their real results.",
-    availability: { poe1: "planned" },
-    plan: {
-      scope: ["Session log: setup, maps run, time, loot value", "Compare strategies by your own recorded results"],
-      data: ["User-provided session data", "Loot valued with live prices (source and time shown); no invented drop rates"],
-    },
+    summary: "Record your farming sessions and compare strategies by your own results.",
+    availability: { poe1: "ready" },
   },
   {
     id: "loot-intelligence",
@@ -145,6 +141,14 @@ export const MODULES: readonly ModuleMeta[] = [
     availability: { poe1: "ready" },
   },
 
+  {
+    id: "campaign-intelligence",
+    label: "Campaign Intelligence",
+    icon: "map",
+    group: "character",
+    summary: "Where to go next in the PoE 2 campaign and what to do there — step-by-step objectives and permanent rewards, from your Client.txt progress and verified 0.5.5 campaign data.",
+    availability: { poe2: "ready" },
+  },
   { id: "builds", label: "Builds", icon: "builds", group: "character", summary: "Your Path of Building builds for this game.", availability: BOTH },
   { id: "tools", label: "Path of Building & Tools", icon: "tools", group: "character", summary: "Launch Path of Building and open trusted community tools.", availability: BOTH },
 
@@ -159,6 +163,30 @@ export const MODULES: readonly ModuleMeta[] = [
       scope: ["PoE 2 crafting (omens, essences, runes) on PoE 2 game data"],
       data: ["RePoE data for PoE 2", "PoE 2 prices from the Market engine"],
     },
+  },
+  {
+    id: "regex",
+    label: "REGEX",
+    icon: "regex",
+    group: "tools",
+    summary: "Stash, vendor and map search strings from 3.30 game data, with a library and quick slots.",
+    availability: { poe1: "ready" },
+  },
+  {
+    id: "session-intelligence",
+    label: "Session Intelligence",
+    icon: "clock",
+    group: "tools",
+    summary: "Your game sessions, recorded automatically from the game process and Client.txt: time, areas, maps and trends.",
+    availability: { poe2: "ready" },
+  },
+  {
+    id: "loot-journal",
+    label: "Loot Journal",
+    icon: "journal",
+    group: "tools",
+    summary: "Items you copy in the game (Ctrl+C) are captured, categorised and valued automatically — captured items only, not all your loot.",
+    availability: { poe2: "ready" },
   },
   { id: "browser", label: "Browser", icon: "browser", group: "tools", summary: "Web pages inside Vaalytics, with your own sign-ins.", availability: BOTH },
 

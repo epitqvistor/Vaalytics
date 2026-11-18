@@ -105,6 +105,9 @@ export function resolveHeaderType(type: string): { kind: ModKind; generation?: "
 
 let headerSeq = 0;
 
+/** "Attack, Melee, Strike, Duration" — capitalised words separated by commas. */
+const GEM_TAGS = /^[A-Z][A-Za-z ]*(, [A-Z][A-Za-z ]*)+$/;
+
 export function parseHeader(line: string, _rules: ParserRules) {
   const inner = HEADER_LINE.exec(line)?.[1];
   if (!inner) return null;
@@ -203,6 +206,7 @@ export function parseWith(rules: ParserRules, rawText: string): ParseResult {
   }
 
   let sawItemLevel = false;
+  const reqBlock: Record<string, number | undefined> = {};
   for (const section of sections) {
     // 1) single-line flags (Corrupted, Mirrored, influences, …)
     if (section.length === 1 && rules.flags[section[0]!]) {
@@ -266,10 +270,19 @@ export function parseWith(rules: ParserRules, rawText: string): ParseResult {
       continue;
     }
     if (isPropertySection) {
+      // "Requirements:" opens a block whose Level/Str/Dex/Int are requirements, not item properties
+      // (a gem's "Level: 15" and its "Requirements: Level: 59" must not be confused).
+      let inReq = false;
       for (const line of section) {
+        if (line === "Requirements:") {
+          inReq = true;
+          continue;
+        }
         const m = PROPERTY.exec(line);
         if (!m) {
-          if (line !== "Requirements:") item.unparsed.push(line);
+          // A gem's tag line ("Attack, Melee, Strike, …") has no "name: value" form.
+          if (item.rarity === "Gem" && !inReq && GEM_TAGS.test(line)) item.properties.push({ name: "Tags", value: line });
+          else if (line !== "Requirements:") item.unparsed.push(line);
           continue;
         }
         const name = m[1]!.trim();
@@ -277,8 +290,9 @@ export function parseWith(rules: ParserRules, rawText: string): ParseResult {
         const augmented = value.endsWith(" (augmented)");
         if (augmented) value = value.slice(0, -" (augmented)".length);
         if (name === "Quality") item.quality = Number(value.replace(/[^\d]/g, "")) || undefined;
-        else if (name === "Level" && item.rarity === "Gem") item.gemLevel = Number(value.replace(/[^\d]/g, "")) || undefined;
+        else if (name === "Level" && item.rarity === "Gem" && !inReq) item.gemLevel = Number(value.replace(/[^\d]/g, "")) || undefined;
         else if (name === "Map Tier") item.mapTier = Number(value) || undefined;
+        if (inReq && ["Level", "Str", "Dex", "Int"].includes(name)) reqBlock[name] = Number(value.replace(/[^\d]/g, "")) || undefined;
         item.properties.push({ name, value, augmented: augmented || undefined });
       }
       continue;
@@ -291,7 +305,10 @@ export function parseWith(rules: ParserRules, rawText: string): ParseResult {
     item.unparsed.push(...section);
   }
 
-  // Requirements (PoE 1 multi-line form) from properties
+  // Requirements (PoE 1 multi-line form): the "Requirements:" block, else loose properties (non-gems).
+  if (!item.requirements && Object.values(reqBlock).some(Boolean)) {
+    item.requirements = { level: reqBlock.Level, str: reqBlock.Str, dex: reqBlock.Dex, int: reqBlock.Int };
+  }
   const req = (n: string) => Number(item.properties.find((p) => p.name === n)?.value.replace(/[^\d]/g, "")) || undefined;
   if (!item.requirements && (req("Level") || req("Str") || req("Dex") || req("Int")) && item.rarity !== "Gem") {
     item.requirements = { level: req("Level"), str: req("Str"), dex: req("Dex"), int: req("Int") };

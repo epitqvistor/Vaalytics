@@ -4,14 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { GameConfig } from "@/core/game-context/config";
 import { tradeFetchMore, tradePriceCheck, type TradeListing, type TradePriceCheck } from "@/core/ipc/commands";
 import { useGameSetting } from "@/core/settings/useGameSetting";
-import { isValidContact, useStatIndex, useTradeContact } from "@/core/trade/hooks";
-import { Badge, Button, Checkbox, IconButton, Input, Panel, SegmentedControl, Spinner, Switch, type BadgeTone } from "@/shared/components";
+import { isValidContact, loadGemVariants, useStatIndex, useTradeContact } from "@/core/trade/hooks";
+import { Badge, Button, Checkbox, IconButton, Input, Panel, SegmentedControl, Select, Spinner, type BadgeTone } from "@/shared/components";
 import { Icon } from "@/shared/icons/Icon";
 import { ItemCard } from "@/shared/item-renderer/ItemCard";
 import { toDisplayItem } from "@/shared/item-renderer/adapt";
 import type { ParsedItem } from "@/shared/item-parser/types";
 import { estimatePrice } from "@/shared/trade/estimate";
-import { buildFilters, buildQuery, defaultOptions, type SearchOptions, type StatFilter } from "@/shared/trade/query";
+import { buildFilters, buildQuery, defaultOptions, STATUS_OPTIONS, type Range, type SearchOptions, type StatFilter } from "@/shared/trade/query";
 import { templateKey } from "@/shared/trade/stats";
 import { cn } from "@/shared/utilities/cn";
 import { formatAmount, formatRelative } from "@/shared/utilities/format";
@@ -63,7 +63,9 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
       setLoading(true);
       setError(null);
       try {
-        const r = await tradePriceCheck(item.game, league, buildQuery(item, filters, options), 10);
+        // Transfigured gems need base + discriminator; without the list the plain name is tried.
+        const gems = item.rarity === "Gem" ? await loadGemVariants(item.game).catch(() => []) : [];
+        const r = await tradePriceCheck(item.game, league, buildQuery(item, filters, options, gems), 10);
         setResult(r);
         setListings(r.listings);
         setSearchedAt(Date.now());
@@ -114,13 +116,14 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   );
 
   const shown = useMemo(() => {
-    const out = opts.onlineOnly ? listings.filter((l) => l.status !== "offline") : [...listings];
+    // Listings went stale since the search: drop sellers that went offline, unless buyable instantly.
+    const out = opts.status === "any" ? [...listings] : listings.filter((l) => l.status !== "offline" || l.instantBuyout);
     const price = (l: TradeListing) => l.amountBase ?? Infinity;
     out.sort((a, b) =>
       sort === "price" ? price(a) - price(b) : sort === "newest" ? Date.parse(b.indexed ?? "") - Date.parse(a.indexed ?? "") : (matchOf(b) ?? 0) - (matchOf(a) ?? 0),
     );
     return out;
-  }, [listings, sort, opts.onlineOnly, matchOf]);
+  }, [listings, sort, opts.status, matchOf]);
 
   const estimate = useMemo(() => estimatePrice(listings), [listings]);
 
@@ -162,15 +165,34 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
                   </span>
                 </div>
               )}
+              {item.rarity === "Gem" && (
+                <div className="flex flex-wrap items-end gap-x-5 gap-y-2 border-t border-line px-4 py-3">
+                  <RangeInput label="Gem level" value={opts.gemLevel} max={21} onChange={(r) => (setOpts((o) => ({ ...o, gemLevel: r })), setDirty(true))} />
+                  <RangeInput label="Quality" suffix="%" value={opts.gemQuality} max={23} onChange={(r) => (setOpts((o) => ({ ...o, gemQuality: r })), setDirty(true))} />
+                  <p className="mb-1 text-2xs text-fg-subtle">Empty = no limit. Defaults to this gem's level and quality.</p>
+                </div>
+              )}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line px-4 py-3">
-                <Switch label="Online only" checked={opts.onlineOnly} onChange={(v) => (setOpts((o) => ({ ...o, onlineOnly: v })), setDirty(true))} />
-                {item.corrupted !== undefined && (
-                  <Checkbox
-                    checked={opts.matchCorrupted}
-                    onChange={(v) => (setOpts((o) => ({ ...o, matchCorrupted: v })), setDirty(true))}
-                    label={<span className="text-xs text-fg-muted">Match {item.corrupted ? "corrupted" : "uncorrupted"}</span>}
-                  />
-                )}
+                <Select
+                  label="Listings"
+                  hideLabel
+                  size="sm"
+                  value={opts.status}
+                  onChange={(v) => (setOpts((o) => ({ ...o, status: v })), setDirty(true))}
+                  options={STATUS_OPTIONS[item.game]}
+                  className="w-48"
+                />
+                <SegmentedControl
+                  label="Corrupted"
+                  size="sm"
+                  value={opts.corrupted}
+                  onChange={(v) => (setOpts((o) => ({ ...o, corrupted: v })), setDirty(true))}
+                  segments={[
+                    { value: "any", label: "Any" },
+                    { value: "yes", label: "Corrupted" },
+                    { value: "no", label: "Not corrupted" },
+                  ]}
+                />
                 <Button
                   size="sm"
                   variant={dirty ? "primary" : "secondary"}
@@ -359,6 +381,21 @@ function Metric({ label, value, caption }: { label: string; value: ReactNode; ca
   );
 }
 
+/** Min–max number pair; an empty field means no limit. */
+function RangeInput({ label, value, onChange, max, suffix }: { label: string; value: Range; onChange: (r: Range) => void; max: number; suffix?: string }) {
+  const parse = (v: string) => (v.trim() === "" ? null : Math.max(0, Math.min(max, Math.round(Number(v)) || 0)));
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-medium text-fg-muted">{label}</span>
+      <div className="flex items-center gap-1.5">
+        <Input size="sm" type="number" min={0} max={max} placeholder="min" aria-label={`${label} min`} value={value.min ?? ""} onChange={(e) => onChange({ ...value, min: parse(e.target.value) })} suffix={suffix} containerClassName="w-20" />
+        <span className="text-fg-subtle">–</span>
+        <Input size="sm" type="number" min={0} max={max} placeholder="max" aria-label={`${label} max`} value={value.max ?? ""} onChange={(e) => onChange({ ...value, max: parse(e.target.value) })} suffix={suffix} containerClassName="w-20" />
+      </div>
+    </div>
+  );
+}
+
 const STATUS: Record<TradeListing["status"], { tone: BadgeTone; label: string }> = {
   online: { tone: "success", label: "Online" },
   afk: { tone: "warning", label: "AFK" },
@@ -370,7 +407,7 @@ function ListingRow({ listing: l, match, config, compact }: { listing: TradeList
   const money = useMoney();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const status = STATUS[l.status];
+  const status = l.instantBuyout ? { tone: "info" as BadgeTone, label: "Instant buyout" } : STATUS[l.status];
   const copy = () => {
     if (!l.whisper) return;
     navigator.clipboard
@@ -399,7 +436,7 @@ function ListingRow({ listing: l, match, config, compact }: { listing: TradeList
         </div>
         {!compact && (
           <>
-            <Badge tone={status.tone} dot>
+            <Badge tone={status.tone} dot={!l.instantBuyout}>
               {status.label}
             </Badge>
             <span className="text-xs text-fg-muted">{l.indexed ? formatRelative(Date.parse(l.indexed)) : "—"}</span>
@@ -408,7 +445,12 @@ function ListingRow({ listing: l, match, config, compact }: { listing: TradeList
           </>
         )}
         <div className="flex items-center gap-1">
-          {compact && <span className={cn("size-2 rounded-full", l.status === "online" ? "bg-success" : l.status === "afk" ? "bg-warning" : "bg-fg-subtle")} title={status.label} />}
+          {compact && (
+            <span
+              className={cn("size-2 rounded-full", l.instantBuyout ? "bg-info" : l.status === "online" ? "bg-success" : l.status === "afk" ? "bg-warning" : "bg-fg-subtle")}
+              title={status.label}
+            />
+          )}
           <IconButton
             icon={copied ? "check" : "copy"}
             size="sm"

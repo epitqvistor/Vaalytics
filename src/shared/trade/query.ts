@@ -25,14 +25,39 @@ export interface FilterSet {
   unmatched: { id: string; text: string }[];
 }
 
+/**
+ * Trade listing status. PoE 1 3.30 has instant-buyout (merchant) listings whose
+ * sellers needn't be online: "available" (the Trade site's default) = instant
+ * buyout + online in person; "online" excludes instant buyout.
+ */
+export type TradeStatus = "available" | "securable" | "online" | "any";
+export const STATUS_OPTIONS: Record<"poe1" | "poe2", { value: TradeStatus; label: string }[]> = {
+  poe1: [
+    { value: "available", label: "Instant buyout + online" },
+    { value: "securable", label: "Instant buyout only" },
+    { value: "online", label: "Online sellers only" },
+    { value: "any", label: "Any (incl. offline)" },
+  ],
+  // PoE 2 Trade has no instant-buyout listings (checked 2026-11-17).
+  poe2: [
+    { value: "online", label: "Online sellers only" },
+    { value: "any", label: "Any (incl. offline)" },
+  ],
+};
+
+export type Range = { min: number | null; max: number | null };
+
 export interface SearchOptions {
-  onlineOnly: boolean;
+  status: TradeStatus;
   /** Restrict by item level (≥). */
   itemLevelMin: number | null;
-  /** Match corrupted state of the item. */
-  matchCorrupted: boolean;
+  /** Corrupted state: any, only corrupted, only uncorrupted. */
+  corrupted: "any" | "yes" | "no";
   /** PoE 1: require at least this many links. */
   linksMin: number | null;
+  /** Gems: level and quality ranges (null = no limit). */
+  gemLevel: Range;
+  gemQuality: Range;
 }
 
 const PRICE_BY_NAME = new Set(["Unique", "Gem", "Currency", "Divination Card"]);
@@ -113,20 +138,37 @@ export function buildFilters(item: ParsedItem, index: StatIndex): FilterSet {
 }
 
 export function defaultOptions(item: ParsedItem): SearchOptions {
+  const gem = item.rarity === "Gem";
   return {
-    onlineOnly: true,
+    status: item.game === "poe1" ? "available" : "online",
     itemLevelMin: null,
-    matchCorrupted: item.corrupted,
+    // Corruption changes a gem's value a lot (and what it can become), so gems match it exactly.
+    corrupted: item.corrupted ? "yes" : gem ? "no" : "any",
     linksMin: item.game === "poe1" && (item.links ?? 0) >= 5 ? item.links! : null,
+    gemLevel: { min: gem ? (item.gemLevel ?? null) : null, max: null },
+    gemQuality: { min: gem && item.quality ? item.quality : null, max: null },
   };
 }
 
 type Json = Record<string, unknown>;
 
-export function buildQuery(item: ParsedItem, stats: readonly StatFilter[], opts: SearchOptions): Json {
-  const query: Json = { status: { option: opts.onlineOnly ? "online" : "any" } };
+/** Trade `type` for a gem: transfigured gems are base gem + discriminator. */
+export function gemType(item: ParsedItem, variants: readonly { text: string; type: string; disc: string }[]): Json | string {
+  const v = variants.find((g) => g.text === item.baseType);
+  return v ? { option: v.type, discriminator: v.disc } : item.baseType;
+}
 
-  if (item.rarity === "Unique") {
+export function buildQuery(
+  item: ParsedItem,
+  stats: readonly StatFilter[],
+  opts: SearchOptions,
+  gemVariants: readonly { text: string; type: string; disc: string }[] = [],
+): Json {
+  const query: Json = { status: { option: opts.status } };
+
+  if (item.rarity === "Gem") {
+    query.type = gemType(item, gemVariants);
+  } else if (item.rarity === "Unique") {
     if (item.name) query.name = item.name;
     query.type = item.baseType;
   } else if (item.rarity !== "Magic") {
@@ -156,11 +198,14 @@ export function buildQuery(item: ParsedItem, stats: readonly StatFilter[], opts:
   }
 
   const misc: Json = {};
-  if (opts.matchCorrupted) misc.corrupted = { option: item.corrupted ? "true" : "false" };
+  if (opts.corrupted !== "any") misc.corrupted = { option: opts.corrupted === "yes" ? "true" : "false" };
   if (opts.itemLevelMin != null) misc.ilvl = { min: opts.itemLevelMin };
   if (item.rarity === "Gem") {
-    if (item.gemLevel != null) misc.gem_level = { min: item.gemLevel };
-    if (item.quality != null) misc.quality = { min: item.quality };
+    const range = (r: Range) => (r.min == null && r.max == null ? null : { ...(r.min != null ? { min: r.min } : {}), ...(r.max != null ? { max: r.max } : {}) });
+    const level = range(opts.gemLevel);
+    const quality = range(opts.gemQuality);
+    if (level) misc.gem_level = level;
+    if (quality) misc.quality = quality;
   }
   if (Object.keys(misc).length) filters.misc_filters = { filters: misc };
 

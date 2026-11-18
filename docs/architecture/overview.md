@@ -14,6 +14,9 @@ React UI rendered in WebView2 presents it.
 │ market/      ── poe.ninja engine: fetch, normalize, cache, history    │
 │ trade/       ── official Trade client, GGG rate limits, listings      │
 │ overlay/     ── foreground hook, hotkey, clipboard capture, overlay   │
+│ session/     ── PoE 2 session tracker (process + Client.txt)          │
+│ loot/        ── PoE 2 Loot Journal (clipboard listener, valuation)    │
+│ campaign/    ── PoE 2 campaign events (hook on the session reader)    │
 └───────────────────────────────▲───────────────────────────────────────┘
                                 │ invoke() via src/core/ipc/commands.ts
 ┌───────────────────────────────┴──────── React UI (src) ───────────────┐

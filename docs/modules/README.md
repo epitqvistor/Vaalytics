@@ -13,3 +13,9 @@ owns (tables, settings keys), and known limitations.
 | Crafting (PoE 1) | `src/games/poe1/crafting`, `src-tauri/src/crafting.rs` | [crafting.md](crafting.md) |
 | Market Intelligence | `src/shared/market-intel` | [market-intelligence.md](market-intelligence.md) |
 | Loot Intelligence (PoE 1) | `src/games/poe1/loot-intelligence` | [loot-intelligence.md](loot-intelligence.md) |
+| Farming Lab (PoE 1) | `src/games/poe1/farming-lab`, `src-tauri/src/farming.rs` | [farming-lab.md](farming-lab.md) |
+| Map Lab (PoE 1) | `src/games/poe1/map-lab` | [map-lab.md](map-lab.md) |
+| REGEX (PoE 1) | `src/games/poe1/regex`, `src-tauri/src/regex_library.rs` | [regex.md](regex.md) |
+| Session Intelligence (PoE 2) | `src/games/poe2/session-intelligence`, `src-tauri/src/session/` | [session-intelligence.md](session-intelligence.md) |
+| Loot Journal (PoE 2) | `src/games/poe2/loot-journal`, `src-tauri/src/loot/` | [loot-journal.md](loot-journal.md) |
+| Campaign Intelligence (PoE 2, complete, stages 1–7) | `src/games/poe2/campaign-intelligence`, `src-tauri/src/campaign/` | [campaign-intelligence.md](campaign-intelligence.md) |

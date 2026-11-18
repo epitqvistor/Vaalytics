@@ -1,5 +1,7 @@
 //! HTTP client for market sources. Responsibilities:
-//! - one request at a time with a minimum spacing between requests
+//! - request *starts* spaced at least MIN_SPACING apart, at most MAX_IN_FLIGHT at once
+//!   (a slow response no longer holds up the next request)
+//! - a 429 / Retry-After pauses every request, not just the one that got it
 //! - conditional requests (If-None-Match) so unchanged data costs ~nothing
 //! - honour Cache-Control max-age (clamped) and Retry-After
 //! - bounded retries with backoff for network errors, 429 and 5xx
@@ -9,7 +11,8 @@ use serde::Serialize;
 use std::sync::Mutex;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-const MIN_SPACING: Duration = Duration::from_millis(1500);
+const MIN_SPACING: Duration = Duration::from_millis(500);
+const MAX_IN_FLIGHT: usize = 3;
 const TIMEOUT: Duration = Duration::from_secs(20);
 const MAX_ATTEMPTS: u32 = 3;
 const MAX_RETRY_AFTER: Duration = Duration::from_secs(120);
@@ -43,10 +46,19 @@ pub struct HttpStats {
     pub last_request_at: Option<i64>,
 }
 
+#[derive(Default)]
+struct Gate {
+    /// Earliest time the next request may start.
+    next_start: Option<Instant>,
+    /// Set by a 429: no request starts before this.
+    blocked_until: Option<Instant>,
+}
+
 pub struct HttpClient {
     client: reqwest::Client,
-    /// Serializes requests and remembers when the last one finished.
-    gate: tokio::sync::Mutex<Option<Instant>>,
+    /// Schedules request starts (spacing + rate-limit pause).
+    gate: tokio::sync::Mutex<Gate>,
+    permits: tokio::sync::Semaphore,
     stats: Mutex<HttpStats>,
 }
 
@@ -63,7 +75,12 @@ impl HttpClient {
             .gzip(true)
             .build()
             .expect("HTTP client configuration is static and valid");
-        Self { client, gate: tokio::sync::Mutex::new(None), stats: Mutex::new(HttpStats::default()) }
+        Self {
+            client,
+            gate: tokio::sync::Mutex::new(Gate::default()),
+            permits: tokio::sync::Semaphore::new(MAX_IN_FLIGHT),
+            stats: Mutex::new(HttpStats::default()),
+        }
     }
 
     pub fn stats(&self) -> HttpStats {
@@ -77,18 +94,17 @@ impl HttpClient {
     }
 
     pub async fn get(&self, url: &str, etag: Option<&str>) -> Result<FetchOutcome, FetchError> {
-        let mut last = self.gate.lock().await;
+        let _permit = self.permits.acquire().await.map_err(|_| FetchError::Network("client closed".into()))?;
         let mut attempt = 0;
         loop {
             attempt += 1;
-            if let Some(prev) = *last {
-                let since = prev.elapsed();
-                if since < MIN_SPACING {
-                    tokio::time::sleep(MIN_SPACING - since).await;
-                }
-            }
+            self.wait_turn().await;
             let result = self.send_once(url, etag).await;
-            *last = Some(Instant::now());
+            if let Err((FetchError::RateLimited(_), Some(after))) = &result {
+                let mut g = self.gate.lock().await;
+                let until = Instant::now() + (*after).min(MAX_RETRY_AFTER);
+                g.blocked_until = Some(g.blocked_until.map_or(until, |b| b.max(until)));
+            }
             match result {
                 Ok(outcome) => return Ok(outcome),
                 Err((err, retry_after)) => {
@@ -98,11 +114,31 @@ impl HttpClient {
                     if !retryable || attempt >= MAX_ATTEMPTS {
                         return Err(err);
                     }
-                    let backoff = retry_after.unwrap_or(Duration::from_secs(2u64.pow(attempt) * 2));
-                    log::info!("market fetch retry {attempt}/{MAX_ATTEMPTS} in {}s: {err}", backoff.as_secs());
-                    tokio::time::sleep(backoff.min(MAX_RETRY_AFTER)).await;
+                    // A 429 already blocks the gate for its Retry-After; other errors back off here.
+                    if retry_after.is_none() {
+                        let backoff = Duration::from_secs(2u64.pow(attempt) * 2);
+                        log::info!("market fetch retry {attempt}/{MAX_ATTEMPTS} in {}s: {err}", backoff.as_secs());
+                        tokio::time::sleep(backoff).await;
+                    } else {
+                        log::info!("market fetch retry {attempt}/{MAX_ATTEMPTS} after rate limit: {err}");
+                    }
                 }
             }
+        }
+    }
+
+    /// Reserves the next start slot and sleeps until it.
+    async fn wait_turn(&self) {
+        let start = {
+            let mut g = self.gate.lock().await;
+            let now = Instant::now();
+            let start = [Some(now), g.next_start, g.blocked_until].into_iter().flatten().max().unwrap_or(now);
+            g.next_start = Some(start + MIN_SPACING);
+            start
+        };
+        let now = Instant::now();
+        if start > now {
+            tokio::time::sleep(start - now).await;
         }
     }
 
@@ -170,5 +206,20 @@ mod tests {
         assert_eq!(parse_max_age(Some("max-age=999999")), MAX_MAX_AGE);
         assert_eq!(parse_max_age(Some("no-cache")), DEFAULT_MAX_AGE);
         assert_eq!(parse_max_age(None), DEFAULT_MAX_AGE);
+    }
+
+    #[tokio::test]
+    async fn spaces_request_starts_and_honours_rate_limit_pause() {
+        let c = HttpClient::new();
+        let t0 = Instant::now();
+        c.wait_turn().await;
+        c.wait_turn().await;
+        c.wait_turn().await;
+        let e = t0.elapsed();
+        assert!(e >= MIN_SPACING * 2 && e < MIN_SPACING * 2 + Duration::from_millis(400), "{e:?}");
+        c.gate.lock().await.blocked_until = Some(Instant::now() + Duration::from_millis(1500));
+        let t1 = Instant::now();
+        c.wait_turn().await;
+        assert!(t1.elapsed() >= Duration::from_millis(1400), "a 429 pause holds every start");
     }
 }

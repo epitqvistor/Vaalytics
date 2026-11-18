@@ -11,7 +11,7 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
     VK_CONTROL,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    DispatchMessageW, GetClassNameW, GetCursorPos, GetForegroundWindow, GetMessageW, GetWindowTextW, TranslateMessage,
+    DispatchMessageW, EnumWindows, GetClassNameW, GetCursorPos, GetWindowThreadProcessId, GetForegroundWindow, GetMessageW, GetWindowTextW, TranslateMessage,
     EVENT_SYSTEM_FOREGROUND, MSG, WINEVENT_OUTOFCONTEXT,
 };
 
@@ -50,6 +50,35 @@ fn game_of(hwnd: HWND) -> Option<GameId> {
 
 pub fn foreground_game() -> Option<GameId> {
     game_of(unsafe { GetForegroundWindow() })
+}
+
+unsafe extern "system" fn collect_game_window(hwnd: HWND, lparam: windows::Win32::Foundation::LPARAM) -> windows::core::BOOL {
+    // Never query our own windows: GetWindowTextW on a window of this process
+    // sends WM_GETTEXT to its thread, which deadlocks if that thread is waiting
+    // on us. Other processes' titles are read from the window manager's cache.
+    let mut pid = 0u32;
+    GetWindowThreadProcessId(hwnd, Some(&mut pid));
+    if pid == 0 || pid == std::process::id() {
+        return windows::core::BOOL(1);
+    }
+    // Class first; the title is read only for Path of Exile windows.
+    if read_wide(|b| GetClassNameW(hwnd, b)) == POE_CLASS {
+        if let Some(game) = classify(POE_CLASS, &read_wide(|b| GetWindowTextW(hwnd, b))) {
+            let out = &mut *(lparam.0 as *mut Vec<(u32, GameId)>);
+            out.push((pid, game));
+        }
+    }
+    windows::core::BOOL(1)
+}
+
+/// Process ids that own a top-level Path of Exile window, with the game the
+/// window title identifies. Public window-manager API only; used by Session
+/// Intelligence to tell PoE 1 from PoE 2 (both ship the same executable names).
+pub fn game_window_pids() -> Vec<(u32, GameId)> {
+    let mut out: Vec<(u32, GameId)> = Vec::new();
+    // SAFETY: the callback only runs during EnumWindows and the pointer outlives it.
+    let _ = unsafe { EnumWindows(Some(collect_game_window), windows::Win32::Foundation::LPARAM(&mut out as *mut _ as isize)) };
+    out
 }
 
 unsafe extern "system" fn on_foreground(_: HWINEVENTHOOK, _: u32, hwnd: HWND, _: i32, _: i32, _: u32, _: u32) {

@@ -100,3 +100,31 @@ Item Level: 80
 ${lines}
 `,
   );
+
+/** Transfigured gem (from a user report): Trade needs base gem + discriminator. */
+export const parseTransfiguredGemForTest = () =>
+  parse(
+    "poe1",
+    `Item Class: Skill Gems
+Rarity: Gem
+Static Strike of Gathering Lightning
+--------
+Attack, Melee, Strike, Duration, Lightning, Chaining
+Level: 15
+Cost: 9 Mana
+Attack Damage: 280.1% of base
+Effectiveness of Added Damage: 280%
+Quality: +5% (augmented)
+--------
+Requirements:
+Level: 59
+Str: 83
+Int: 58
+--------
+Attack with a melee weapon, gaining a Gathering Lightning buff for a duration if you hit an enemy.
+--------
+Experience: 4997158/9400731
+--------
+Place into an item socket to gain this skill. Right click to remove from a socket.
+`,
+  );

@@ -35,3 +35,7 @@ WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9333 --remote-all
 node scripts/cdp.mjs shot.png "document.querySelector('nav button').click(); await new Promise(r=>setTimeout(r,800)); return 1"
 ```
 Never ship with this flag: anything on the machine could control the webview while the port is open.
+
+Dev builds only: `VAALYTICS_DATA_DIR=<folder>` makes the app use that folder for `vaalytics.db`, so a QA run
+never migrates or writes the real database (a newer schema would stop an older release build from starting).
+Combine with `WEBVIEW2_USER_DATA_FOLDER=<folder>` for a throwaway webview profile.

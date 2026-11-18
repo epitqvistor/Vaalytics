@@ -17,7 +17,7 @@ use std::time::Duration;
 const SOURCE_BASE: &str = "https://repoe-fork.github.io/";
 const FILES: [&str; 6] = ["mods", "base_items", "fossils", "essences", "item_classes", "crafting_bench_options"];
 /// Bump when the compact format changes; older caches are rebuilt.
-const FORMAT_VERSION: u32 = 5;
+const FORMAT_VERSION: u32 = 6;
 const MAX_AGE_SECS: i64 = 24 * 3600;
 
 /// Item classes the calculator supports (standard 3 prefix / 3 suffix gear).
@@ -145,6 +145,38 @@ pub struct CraftingData {
     /// Veiled (unveiled at Jun) and Delve-only mods: used to recognise pasted
     /// items, never rolled.
     pub extra_mods: Vec<ModDef>,
+    /// Texts for the in-game search (Regex module), English client.
+    #[serde(default)]
+    pub search: SearchData,
+}
+
+/// One searchable modifier: its text lines as RePoE renders them (translation markup removed).
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchMod {
+    pub id: String,
+    pub text: String,
+    pub gen: String,
+    /// Spawn tags with weight > 0 (e.g. "top_tier_map").
+    pub tags: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchData {
+    /// Area mods that roll on maps (any *_tier_map tag).
+    pub map_mods: Vec<SearchMod>,
+    /// Area mods of Expedition logbooks.
+    pub logbook_mods: Vec<SearchMod>,
+    pub flask_mods: Vec<SearchMod>,
+    /// Jewel (misc) and abyss jewel mods.
+    pub jewel_mods: Vec<SearchMod>,
+    /// Cluster jewel (affliction) mods.
+    pub cluster_mods: Vec<SearchMod>,
+    /// Heist contract / blueprint area mods.
+    pub heist_mods: Vec<SearchMod>,
+    /// Released base names by item class (maps, flasks, jewels, tattoos, threads, heist…).
+    pub bases: BTreeMap<String, Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -378,7 +410,75 @@ pub fn build(raw: &HashMap<&str, Value>, checked_at: i64, source_modified: Optio
         bench,
         crafted_mods: crafted.into_values().collect(),
         extra_mods,
+        search: build_search(all_mods, all_bases),
     })
+}
+
+/// Search texts for the Regex module. Domains/tags as RePoE exports them.
+fn build_search(all_mods: &Map<String, Value>, all_bases: &Map<String, Value>) -> SearchData {
+    let pick = |domain: &str, keep: &dyn Fn(&[String]) -> bool| -> Vec<SearchMod> {
+        let mut v: Vec<SearchMod> = all_mods
+            .iter()
+            .filter(|(_, m)| m.get("domain").and_then(Value::as_str) == Some(domain))
+            .filter_map(|(id, m)| {
+                let gen = m.get("generation_type").and_then(Value::as_str)?;
+                if gen != "prefix" && gen != "suffix" {
+                    return None;
+                }
+                let text = clean_text(m.get("text").and_then(Value::as_str)?);
+                if text.trim().is_empty() {
+                    return None;
+                }
+                let tags: Vec<String> = m
+                    .get("spawn_weights")
+                    .and_then(Value::as_array)
+                    .into_iter()
+                    .flatten()
+                    .filter(|w| w.get("weight").and_then(Value::as_i64).unwrap_or(0) > 0)
+                    .filter_map(|w| w.get("tag").and_then(Value::as_str).map(|t| t.trim().to_owned()))
+                    .collect();
+                keep(&tags).then(|| SearchMod { id: id.clone(), text, gen: gen.to_owned(), tags })
+            })
+            .collect();
+        v.sort_by(|a, b| a.id.cmp(&b.id));
+        v
+    };
+    let map_tag = |tags: &[String]| tags.iter().any(|t| t.ends_with("_tier_map"));
+    let mut bases: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for b in all_bases.values() {
+        if b.get("release_state").and_then(Value::as_str) != Some("released") {
+            continue;
+        }
+        let (Some(class), Some(name)) = (b.get("item_class").and_then(Value::as_str), b.get("name").and_then(Value::as_str)) else { continue };
+        let keep = matches!(
+            class,
+            "Map" | "LifeFlask" | "ManaFlask" | "HybridFlask" | "UtilityFlask" | "Jewel" | "AbyssJewel" | "HeistContract" | "HeistBlueprint" | "ExpeditionLogbook" | "Tincture"
+        ) || (class == "MapFragment" && name.ends_with(" Thread"))
+            || name.starts_with("Tattoo of ")
+            || name.ends_with(" Thread")
+            || name.contains("of Threads");
+        if keep && !name.is_empty() {
+            let key = if name.starts_with("Tattoo of ") { "Tattoo" } else if name.contains("Thread") { "Thread" } else { class };
+            bases.entry(key.to_owned()).or_default().push(name.to_owned());
+        }
+    }
+    for v in bases.values_mut() {
+        v.sort();
+        v.dedup();
+    }
+    SearchData {
+        map_mods: pick("area", &|t| map_tag(t)),
+        logbook_mods: pick("area", &|t| t.iter().any(|x| x == "expedition_logbook")),
+        flask_mods: pick("flask", &|_| true),
+        jewel_mods: {
+            let mut v = pick("misc", &|t| !t.is_empty());
+            v.extend(pick("abyss_jewel", &|t| !t.is_empty()));
+            v
+        },
+        cluster_mods: pick("affliction_jewel", &|t| !t.is_empty()),
+        heist_mods: pick("heist_area", &|t| !t.is_empty()),
+        bases,
+    }
 }
 
 // ---------- service ----------

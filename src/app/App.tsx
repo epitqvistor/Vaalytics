@@ -4,6 +4,8 @@ import { GAMES } from "@/core/game-context/games";
 import { PreferencesProvider, usePreferences } from "@/core/settings/PreferencesContext";
 import { ErrorBoundary, ToastProvider } from "@/shared/components";
 import { transition } from "@/shared/design/motion";
+import { LootCaptureIndicator, LootNotifier } from "@/games/poe2/loot-journal/LootNotifier";
+import { SessionNotifier } from "@/games/poe2/session-intelligence/SessionNotifier";
 import { Icon } from "@/shared/icons/Icon";
 import { Atmosphere } from "./Atmosphere";
 import { GameSelection } from "./GameSelection";
@@ -26,6 +28,8 @@ function MotionRoot() {
     // "user" follows the OS setting; the in-app preference can force it on.
     <MotionConfig reducedMotion={prefs.reduceMotion ? "always" : "user"} transition={transition.base}>
       <ToastProvider>
+        <SessionNotifier />
+        <LootNotifier />
         <div className="relative isolate flex h-full flex-col">
           <AppAtmosphere />
           <AppTitleBar />
@@ -55,6 +59,7 @@ function AppTitleBar() {
           <span className="text-fg-muted">{GAMES[game].title}</span>
         </span>
       )}
+      {game === "poe2" && <LootCaptureIndicator />}
     </TitleBar>
   );
 }

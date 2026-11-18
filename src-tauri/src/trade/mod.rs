@@ -73,6 +73,47 @@ struct SearchRecord {
     ids: Vec<String>,
 }
 
+/// A gem the Trade site addresses as base type + discriminator
+/// (transfigured gems: "Static Strike of Gathering Lightning" = "Static Strike" + "alt_x").
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct GemVariant {
+    /// Name as shown in game.
+    pub text: String,
+    /// Base gem name sent as `type.option`.
+    #[serde(rename = "type")]
+    pub base: String,
+    /// Sent as `type.discriminator`.
+    pub disc: String,
+}
+
+/// Gem entries with a discriminator from `/data/items` (group id "gem").
+pub fn parse_gem_variants(body: &[u8]) -> AppResult<Vec<GemVariant>> {
+    #[derive(Deserialize)]
+    struct Entry {
+        #[serde(rename = "type")]
+        base: String,
+        text: Option<String>,
+        disc: Option<String>,
+    }
+    #[derive(Deserialize)]
+    struct Group {
+        id: String,
+        entries: Vec<Entry>,
+    }
+    #[derive(Deserialize)]
+    struct Resp {
+        result: Vec<Group>,
+    }
+    let resp: Resp = serde_json::from_slice(body)?;
+    Ok(resp
+        .result
+        .into_iter()
+        .filter(|g| g.id == "gem")
+        .flat_map(|g| g.entries)
+        .filter_map(|e| Some(GemVariant { text: e.text?, base: e.base, disc: e.disc? }))
+        .collect())
+}
+
 pub struct TradeService {
     db: Arc<Database>,
     market: Arc<MarketEngine>,
@@ -81,6 +122,7 @@ pub struct TradeService {
     limiter: tokio::sync::Mutex<RateLimiter>,
     searches: Mutex<VecDeque<SearchRecord>>,
     stats: Mutex<HashMap<GameId, Arc<Vec<StatEntry>>>>,
+    gems: Mutex<HashMap<GameId, Arc<Vec<GemVariant>>>>,
 }
 
 fn api(game: GameId) -> &'static str {
@@ -128,6 +170,7 @@ impl TradeService {
             limiter: tokio::sync::Mutex::new(RateLimiter::default()),
             searches: Mutex::new(VecDeque::new()),
             stats: Mutex::new(HashMap::new()),
+            gems: Mutex::new(HashMap::new()),
         }
     }
 
@@ -189,6 +232,56 @@ impl TradeService {
             return Err(AppError::InvalidInput(format!("Trade returned an error: {msg}")));
         }
         Ok(resp)
+    }
+
+    // ---------- item data: gem variants ----------
+
+    /// Transfigured gems and other base+discriminator gems, cached on disk like the stat list.
+    pub async fn gem_variants(&self, game: GameId) -> AppResult<Arc<Vec<GemVariant>>> {
+        if let Some(g) = self.gems.lock().map_err(|_| AppError::StatePoisoned)?.get(&game) {
+            return Ok(Arc::clone(g));
+        }
+        let path = self.data_dir.join(format!("trade-gem-variants-{}.json", game.as_str()));
+        let fresh = std::fs::metadata(&path)
+            .and_then(|m| m.modified())
+            .map(|t| t.elapsed().map(|e| e.as_secs() < STATS_TTL_SECS).unwrap_or(false))
+            .unwrap_or(false);
+        let list = if fresh {
+            serde_json::from_slice::<Vec<GemVariant>>(&std::fs::read(&path)?)?
+        } else {
+            match self.download_items(game).await {
+                Ok(body) => {
+                    let list = parse_gem_variants(&body)?;
+                    std::fs::write(&path, serde_json::to_vec(&list)?)?;
+                    log::info!("downloaded {} trade gem variants for {game}", list.len());
+                    list
+                }
+                Err(e) if path.exists() => {
+                    log::warn!("gem variant refresh failed, using cached copy: {e}");
+                    serde_json::from_slice::<Vec<GemVariant>>(&std::fs::read(&path)?)?
+                }
+                Err(e) => return Err(e),
+            }
+        };
+        let list = Arc::new(list);
+        self.gems.lock().map_err(|_| AppError::StatePoisoned)?.insert(game, Arc::clone(&list));
+        Ok(list)
+    }
+
+    async fn download_items(&self, game: GameId) -> AppResult<Vec<u8>> {
+        let ua = self.user_agent().unwrap_or_else(|_| format!("Vaalytics/{} (Windows desktop companion)", env!("CARGO_PKG_VERSION")));
+        let url = format!("{BASE}/{}/data/items", api(game));
+        let resp = self
+            .http
+            .get(&url)
+            .header(header::USER_AGENT, ua)
+            .send()
+            .await
+            .map_err(|e| AppError::InvalidInput(format!("Could not download Trade item data ({}).", e.without_url())))?;
+        if !resp.status().is_success() {
+            return Err(AppError::InvalidInput(format!("Trade item data unavailable (HTTP {}).", resp.status().as_u16())));
+        }
+        Ok(resp.bytes().await.map_err(|e| AppError::InvalidInput(format!("Trade item data incomplete ({}).", e.without_url())))?.to_vec())
     }
 
     // ---------- stats data ----------
@@ -357,6 +450,22 @@ impl TradeService {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn parses_gem_variants() {
+        let body = br#"{"result":[
+          {"id":"gem","label":"Gems","entries":[
+            {"type":"Static Strike"},
+            {"type":"Static Strike","text":"Static Strike of Gathering Lightning","disc":"alt_x"}
+          ]},
+          {"id":"currency","label":"Currency","entries":[{"type":"Divine Orb","text":"Divine Orb","disc":"x"}]}
+        ]}"#;
+        let v = super::parse_gem_variants(body).unwrap();
+        assert_eq!(
+            v,
+            vec![super::GemVariant { text: "Static Strike of Gathering Lightning".into(), base: "Static Strike".into(), disc: "alt_x".into() }]
+        );
+    }
+
     use super::*;
 
     #[test]

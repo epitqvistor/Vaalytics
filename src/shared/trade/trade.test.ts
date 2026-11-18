@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest } from "./test-fixtures";
+import { parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
 import { estimatePrice } from "./estimate";
 import { buildFilters, buildQuery, defaultOptions, suggestedMin } from "./query";
 import { buildStatIndex, matchMod, templateKey, type TradeStat } from "./stats";
@@ -69,7 +69,7 @@ describe("filters and query", () => {
 
     const q = buildQuery(item, stats, defaultOptions(item)) as { query: Record<string, unknown>; sort: unknown };
     expect(q.sort).toEqual({ price: "asc" });
-    expect(q.query).toMatchObject({ status: { option: "online" }, type: "Two-Stone Ring", filters: { type_filters: { filters: { rarity: { option: "rare" } } } } });
+    expect(q.query).toMatchObject({ status: { option: "available" }, type: "Two-Stone Ring", filters: { type_filters: { filters: { rarity: { option: "rare" } } } } });
     const filters = (q.query.stats as { filters: { id: string }[] }[])[0]!.filters.map((f) => f.id);
     expect(filters).toContain("pseudo.pseudo_total_elemental_resistance");
     expect(filters).not.toContain("explicit.stat_3299347043");
@@ -161,5 +161,43 @@ describe("all-elemental resistances stay one number", () => {
     });
     expect(stats.find((s) => s.statId === "pseudo.pseudo_total_elemental_resistance")?.enabled).toBe(true);
     expect(stats.find((s) => s.statId === "pseudo.pseudo_total_all_elemental_resistances")?.enabled).toBe(false);
+  });
+});
+
+describe("user report: transfigured gems", () => {
+  const variants = [{ text: "Static Strike of Gathering Lightning", type: "Static Strike", disc: "alt_x" }];
+  it("searches base gem + discriminator", () => {
+    const gem = parseTransfiguredGemForTest();
+    expect(gem.rarity).toBe("Gem");
+    expect(gem.baseType).toBe("Static Strike of Gathering Lightning");
+    const q = buildQuery(gem, [], defaultOptions(gem), variants).query as Record<string, unknown>;
+    expect(q.type).toEqual({ option: "Static Strike", discriminator: "alt_x" });
+    expect((q.filters as { misc_filters: { filters: Record<string, unknown> } }).misc_filters.filters.gem_level).toEqual({ min: 15 });
+  });
+
+  it("defaults: comparable level and quality, exact corruption, instant buyout + online", () => {
+    const gem = parseTransfiguredGemForTest();
+    const o = defaultOptions(gem);
+    expect(o).toMatchObject({ status: "available", corrupted: "no", gemLevel: { min: 15, max: null }, gemQuality: { min: 5, max: null } });
+    expect(gem.requirements).toEqual({ level: 59, str: 83, dex: undefined, int: 58 });
+    expect(gem.unparsed).toEqual([]);
+    expect(gem.properties.find((p) => p.name === "Tags")?.value).toBe("Attack, Melee, Strike, Duration, Lightning, Chaining");
+  });
+
+  it("user-chosen level, quality and corruption go into misc filters", () => {
+    const gem = parseTransfiguredGemForTest();
+    const opts = { ...defaultOptions(gem), corrupted: "yes" as const, gemLevel: { min: 20, max: 20 }, gemQuality: { min: null, max: null }, status: "any" as const };
+    const q = buildQuery(gem, [], opts, variants).query as { status: unknown; filters: { misc_filters: { filters: Record<string, unknown> } } };
+    expect(q.status).toEqual({ option: "any" });
+    expect(q.filters.misc_filters.filters).toEqual({ corrupted: { option: "true" }, gem_level: { min: 20, max: 20 } });
+  });
+
+  it("PoE 2 defaults to online sellers (no instant buyout there)", () => {
+    expect(defaultOptions(parsePoe2ItemForTest()).status).toBe("online");
+  });
+
+  it("plain gems keep their name", () => {
+    const gem = { ...parseTransfiguredGemForTest(), baseType: "Static Strike" };
+    expect((buildQuery(gem, [], defaultOptions(gem), variants).query as Record<string, unknown>).type).toBe("Static Strike");
   });
 });

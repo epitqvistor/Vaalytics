@@ -22,6 +22,8 @@ pub struct Listing {
     /// inherited from the stash tab name, otherwise "unknown".
     pub price_source: &'static str,
     pub whisper: Option<String>,
+    /// PoE 1 3.30 instant-buyout listing (has a gold `fee`): buyable without the seller online.
+    pub instant_buyout: bool,
     pub item: ListingItem,
 }
 
@@ -55,6 +57,8 @@ struct RawListing {
     price: Option<RawPrice>,
     account: RawAccount,
     whisper: Option<String>,
+    /// Gold fee of an instant-buyout listing.
+    fee: Option<serde_json::Value>,
 }
 
 #[derive(Deserialize)]
@@ -179,6 +183,7 @@ pub fn normalize(raw: RawResult, to_base: impl Fn(&str, f64) -> Option<f64>) -> 
         indexed: listing.indexed,
         price_source,
         whisper: listing.whisper,
+        instant_buyout: listing.fee.is_some(),
         item: ListingItem {
             name: item.name,
             type_line: item.type_line,
@@ -234,6 +239,18 @@ mod tests {
         assert_eq!(l.item.mods, vec!["Adds 10 to 14 Fire damage to Attacks"]);
         assert_eq!(l.item.icon, None, "non-CDN icons are dropped");
         assert_eq!(l.whisper, None);
+        assert!(!l.instant_buyout);
+    }
+
+    #[test]
+    fn detects_instant_buyout() {
+        let json = r#"{"result":[{"id":"ib","listing":{"method":"psapi","indexed":"2026-11-17T11:24:41Z","stash":{"name":"etc"},
+          "price":{"type":"~b/o","amount":39,"currency":"chaos"},"fee":148,
+          "account":{"name":"Seller#0001","online":null,"lastCharacterName":"Char"}},
+          "item":{"name":"","typeLine":"Static Strike of Gathering Lightning","ilvl":0}}]}"#;
+        let l = &parse(json)[0];
+        assert!(l.instant_buyout);
+        assert_eq!(l.status, "offline");
     }
 
     #[test]
