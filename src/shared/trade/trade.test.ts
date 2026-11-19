@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseClusterForTest, parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
+import { parseClusterForTest, parseCorpseForTest, parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
 import { estimatePrice } from "./estimate";
 import { buildFilters, buildQuery, defaultOptions, splitOptionId, suggestedMin } from "./query";
 import { buildStatIndex, matchMod, templateKey, type TradeStat } from "./stats";
@@ -254,5 +254,20 @@ describe("user report: cluster jewels (0 results)", () => {
     expect(item.baseType).toBe("Lustrous Small Cluster Jewel of the Sample");
     const q = buildQuery(item, buildFilters(item, index).stats, defaultOptions(item)).query as Record<string, unknown>;
     expect(q.type).toBe("Small Cluster Jewel");
+  });
+});
+
+describe("user report: corpses (no search, 4 'unmatched' mods)", () => {
+  // The real stat list contains "#% chance to inflict Withered for 2 seconds on Hit": it must not match a corpse ability.
+  const index = buildStatIndex([{ id: "explicit.stat_1957711555", text: "#% chance to inflict Withered for 2 seconds on Hit", type: "explicit" }]);
+
+  it("searches by base type only, without warnings about the monster's abilities", () => {
+    const item = parseCorpseForTest();
+    expect(item).toMatchObject({ itemClass: "Corpses", rarity: "Currency", baseType: "Perfect Serpent Warrior", itemLevel: 83 });
+    expect(item.mods).toHaveLength(4);
+    const f = buildFilters(item, index);
+    expect(f).toEqual({ stats: [], unmatched: [] });
+    const q = buildQuery(item, f.stats, defaultOptions(item)).query as Record<string, unknown>;
+    expect(q).toEqual({ status: { option: "available" }, type: "Perfect Serpent Warrior" });
   });
 });

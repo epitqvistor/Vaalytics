@@ -29,6 +29,8 @@ Advanced headers `{ Prefix Modifier "Name" (Tier: N) — tags }` give kind, pref
 - **Default selection** (modifiers are not equally valuable): pseudo elemental-resistance / chaos-resistance / life totals and tier ≤ 2 explicit or fractured mods. Mods already covered by an enabled pseudo total, implicits, crafted, enchant and rune mods start disabled; totals made only of crafted mods start disabled. Uniques, gems, currency and cards search by name/base only. Every filter has editable min/max.
 - **Suggested minimums are whole numbers:** 90 % of the roll, floored, for rolls ≥ 10; smaller rolls keep their own floored value (1.4 → 1). Rolls below 1 (e.g. 0.4 % leech) stay as they are.
 - **Option stats.** Trade lists some stats per option as `id|option` (cluster jewel "Added Small Passive Skills grant: …", `enchant.stat_3948993189|42`). They are sent as `{ id, value: { option } }` and shown as *exact match* without min/max — a `min` on them makes Trade return 0 results (verified live, Nov 2026).
+- **Corpses (PoE 1, `Item Class: Corpses`, rarity Currency):** searched by base type (e.g. `Perfect Serpent Warrior`). Their lines are the monster's fixed abilities — defined by the base, not searchable on Trade — so they are neither filters nor reported as unmatched.
+- The automatic search runs once the filters for the item are built, even when the item has no searchable stats (before, an item whose every line was unmatched never searched).
 - **Cluster jewels (PoE 1):** their enchants (passive count, jewel sockets, passive type) start enabled and match exactly (count min = max). Magic cluster jewels are searched by the base found in their name (`Small|Medium|Large Cluster Jewel`).
 
 ## 4. Trade API (`src-tauri/src/trade`)

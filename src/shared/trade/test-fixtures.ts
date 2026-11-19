@@ -151,3 +151,22 @@ Added Small Passive Skills also grant: +10 to Maximum Life
 Place into an allocated Medium or Large Jewel Socket on the Passive Skill Tree. Added passives do not interact with jewel radiuses. Right click to remove from the Socket.
 `;
 export const parseClusterForTest = (rarity: "Rare" | "Magic" = "Rare") => parse("poe1", CLUSTER_TEXT(rarity));
+
+/** Necropolis corpse — real item text from the PoE 1 Trade API (item.extended.text, Covens, Nov 2026). */
+export const CORPSE_TEXT = `Item Class: Corpses
+Rarity: Currency
+Perfect Serpent Warrior
+--------
+Corpse Level: 83
+Monster Category: Eldritch
+--------
+Item Level: 83
+--------
+Attacks with swords when not Defensive
+Fires Mortars when Defensive
+Inflicts Withered for 2 seconds on Hit
+Creates Aura of Chaos when hitting Poisoned enemies
+--------
+Right click this item to create this corpse.
+`;
+export const parseCorpseForTest = () => parse("poe1", CORPSE_TEXT);

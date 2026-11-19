@@ -136,10 +136,13 @@ export function buildFilters(item: ParsedItem, index: StatIndex): FilterSet {
   }
 
   const cluster = item.game === "poe1" && clusterBase(item) != null;
+  // Corpses (Necropolis): their lines are the monster's fixed abilities, defined by the base type
+  // and not searchable on Trade — the base type is the search, nothing is "unmatched".
+  const corpse = item.itemClass === "Corpses";
   for (const mod of mergeMultiline(item.mods, index)) {
-    const match = matchMod(mod, index);
+    const match = corpse ? null : matchMod(mod, index);
     if (!match) {
-      unmatched.push({ id: mod.id, text: mod.text });
+      if (!corpse) unmatched.push({ id: mod.id, text: mod.text });
       continue;
     }
     const { id: statId, option } = splitOptionId(match.stat.id);

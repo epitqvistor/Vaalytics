@@ -32,6 +32,8 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   const { contact } = useTradeContact();
   const [stats, setStats] = useState<StatFilter[]>([]);
   const [unmatched, setUnmatched] = useState<{ id: string; text: string }[]>([]);
+  /** Item whose filters are built — the auto search waits for it (an item may have no searchable stats at all). */
+  const [filtersFor, setFiltersFor] = useState<string | null>(null);
   const [opts, setOpts] = useState<SearchOptions>(() => defaultOptions(item));
   const [result, setResult] = useState<TradePriceCheck | null>(null);
   const [listings, setListings] = useState<TradeListing[]>([]);
@@ -49,6 +51,7 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
     const f = buildFilters(item, index);
     setStats(f.stats);
     setUnmatched(f.unmatched);
+    setFiltersFor(item.raw);
     setOpts(defaultOptions(item));
     setResult(null);
     setListings([]);
@@ -85,11 +88,11 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   // before a re-render (e.g. React StrictMode) — every search costs rate limit.
   const autoSearched = useRef<string | null>(null);
   useEffect(() => {
-    if (!index || !contact || (stats.length === 0 && item.mods.length > 0)) return;
+    if (!index || !contact || filtersFor !== item.raw) return;
     if (autoSearched.current === item.raw) return;
     autoSearched.current = item.raw;
     void search(stats, opts);
-  }, [index, contact, stats, opts, item, search]);
+  }, [index, contact, stats, opts, item, search, filtersFor]);
 
   const loadMore = async () => {
     if (!result) return;
