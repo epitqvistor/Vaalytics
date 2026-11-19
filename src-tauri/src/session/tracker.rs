@@ -756,6 +756,8 @@ impl Tracker {
             | LogEvent::PassivePoints { .. }
             | LogEvent::PlayerJoined { .. }
             | LogEvent::PlayerLeft { .. } => false,
+            // PoE 1 lines (Act Tracker); never a session event.
+            LogEvent::PassiveBreakdown(_) | LogEvent::RespecPoints { .. } => false,
         };
         Ok(session || campaign)
     }

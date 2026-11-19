@@ -37,6 +37,21 @@ const CONTENT_PREFIXES: &[&str] = &[
 
 /// `G1_4`, `G3_10_Airlock`, `P2_1` — campaign acts (G) and interludes (P).
 fn is_campaign(id: &str) -> bool {
+    is_poe1_campaign(id) || is_poe2_campaign(id)
+}
+
+/// PoE 1 campaign ids: `1_1_2`, `1_3_10_1`, `2_6_town` (part, act, area…); not `1_Labyrinth_…`.
+fn is_poe1_campaign(id: &str) -> bool {
+    let b = id.as_bytes();
+    if b.len() < 5 || !(b[0] == b'1' || b[0] == b'2') || b[1] != b'_' {
+        return false;
+    }
+    let digits = b[2..].iter().take_while(|c| c.is_ascii_digit()).count();
+    digits > 0 && b.get(2 + digits) == Some(&b'_')
+}
+
+/// PoE 2 campaign ids: `G1_4`, `G3_10_Airlock`, `P2_1`.
+fn is_poe2_campaign(id: &str) -> bool {
     let b = id.as_bytes();
     if b.len() < 3 || !(b[0] == b'G' || b[0] == b'P') {
         return false;
@@ -83,6 +98,14 @@ mod tests {
         for id in ["G1_4", "G3_10_Airlock", "G4_11_1b", "P2_1", "G2_3a"] {
             assert_eq!(classify(id), AreaKind::Campaign, "{id}");
         }
+        // PoE 1 (verified in a real PoE 1 log, 3.26–3.30).
+        for id in ["1_1_2", "1_1_2a", "1_3_10_1", "2_8_7_1_", "2_9_SubareaRefinery", "2_10_9"] {
+            assert_eq!(classify(id), AreaKind::Campaign, "{id}");
+        }
+        for id in ["1_1_town", "2_6_town", "2_11_endgame_town"] {
+            assert_eq!(classify(id), AreaKind::Town, "{id}");
+        }
+        assert_ne!(classify("1_Labyrinth_boss_3"), AreaKind::Campaign);
         for id in ["Abyss_Depths1", "ExpeditionLogBook_Wastes", "RitualLeagueBoss", "BreachDomain_01", "IncursionTemple", "Sanctum_4_Foyer_1", "Delirium_Act1Town", "ChayulaLeague"] {
             assert_eq!(classify(id), AreaKind::Content, "{id}");
         }

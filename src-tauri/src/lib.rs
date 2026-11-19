@@ -1,6 +1,8 @@
 //! Vaalytics native host. See docs/architecture/overview.md.
 
 mod browser;
+mod act_tracker;
+mod atlas;
 mod campaign;
 mod commands;
 mod crafting;
@@ -132,6 +134,15 @@ pub fn run() {
             commands::campaign_reward_marks,
             commands::campaign_set_reward_mark,
             commands::campaign_build_stats,
+            commands::atlas_open,
+            commands::atlas_sync,
+            commands::atlas_set_log_path,
+            commands::act_tracker_open,
+            commands::act_tracker_hide,
+            commands::act_tracker_close,
+            commands::act_tracker_state,
+            commands::act_tracker_set_click_through,
+            commands::act_tracker_set_hotkey,
             commands::session_export,
             commands::loot_status,
             commands::loot_config,

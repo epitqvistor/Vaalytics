@@ -675,7 +675,8 @@ export interface CampaignMark {
 /** One normalised campaign log event (`campaign::store::EventRow`). */
 export interface CampaignEventRow {
   at: number;
-  kind: "zone" | "passive_points" | "weapon_set_points" | "level" | "ascended" | "death";
+  /** `passives` / `respec_points`: PoE 1 only (Act Tracker) — a `/passives` output line and respec point grants. */
+  kind: "zone" | "passive_points" | "weapon_set_points" | "level" | "ascended" | "death" | "passives" | "respec_points";
   areaId: string | null;
   areaName: string | null;
   areaLevel: number | null;
@@ -695,6 +696,22 @@ export const campaignSetHidden = (game: GameId, characterId: number, hidden: boo
 export const campaignDeleteCharacter = (game: GameId, characterId: number) => invoke<void>("campaign_delete_character", { game, characterId });
 /** Reads the whole Client.txt once (explicit user action). */
 export const campaignImportLog = (game: GameId) => invoke<{ lines: number; eventsStored: number; characters: number }>("campaign_import_log", { game });
+
+/** Location Atlas (PoE 1): result of reading what was appended to the PoE 1 Client.txt. */
+export interface AtlasSyncSummary {
+  lines: number;
+  eventsStored: number;
+  /** The log was replaced or truncated since the last read. */
+  reset: boolean;
+  /** Bytes still waiting (a very large backlog is read over several calls). */
+  remaining: number;
+}
+/** Opens (or focuses) the Location Atlas window, optionally on a campaign area id. */
+export const atlasOpen = (game: GameId, area: string | null = null) => invoke<void>("atlas_open", { game, area });
+/** Reads new PoE 1 log lines through the shared reader/parser/campaign hook (read-only). */
+export const atlasSync = (game: GameId) => invoke<AtlasSyncSummary>("atlas_sync", { game });
+/** Chooses the PoE 1 Client.txt (validated as a PoE 1 log). */
+export const atlasSetLogPath = (game: GameId, path: string) => invoke<void>("atlas_set_log_path", { game, path });
 
 export type CampaignRewardStage = "not-claimed" | "boss-defeated" | "item-acquired" | "submitted" | "applied" | "complete";
 export interface CampaignRewardMark {
@@ -718,3 +735,30 @@ export interface CampaignBuildStats {
 }
 /** `rel` = "folder/name" as listed by `pobBuilds` (folder may be empty). */
 export const campaignBuildStats = (game: GameId, rel: string) => invoke<CampaignBuildStats>("campaign_build_stats", { game, rel });
+
+// ---------- Act Tracker (PoE 1) overlay window (src-tauri/src/act_tracker.rs) ----------
+
+export interface ActTrackerWindowState {
+  open: boolean;
+  visible: boolean;
+  clickThrough: boolean;
+}
+/** Emitted by Rust whenever the overlay is shown, hidden, closed or click-through changes. */
+export const ACT_TRACKER_STATE_EVENT = "act-tracker:state";
+/** Shows the overlay (created on first use) without taking focus from the game. */
+export const actTrackerOpen = (game: GameId) => invoke<ActTrackerWindowState>("act_tracker_open", { game });
+export const actTrackerHide = (game: GameId) => invoke<ActTrackerWindowState>("act_tracker_hide", { game });
+/** Destroys the overlay window. */
+export const actTrackerClose = (game: GameId) => invoke<ActTrackerWindowState>("act_tracker_close", { game });
+export const actTrackerState = (game: GameId) => invoke<ActTrackerWindowState>("act_tracker_state", { game });
+export const actTrackerSetClickThrough = (game: GameId, on: boolean) =>
+  invoke<ActTrackerWindowState>("act_tracker_set_click_through", { game, on });
+/** "" turns the show/hide hotkey off; it is registered only while PoE 1 is the foreground window. */
+export const actTrackerSetHotkey = (game: GameId, hotkey: string) => invoke<void>("act_tracker_set_hotkey", { game, hotkey });
+/** The foreground-only hotkeys currently registered (`overlay::OverlayStatus`). */
+export interface HotkeyStatus {
+  foregroundGame: GameId | null;
+  registeredHotkey: string | null;
+  trackerHotkey: string | null;
+}
+export const hotkeyStatus = () => invoke<HotkeyStatus>("overlay_status");

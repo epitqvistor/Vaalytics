@@ -4,7 +4,7 @@ import type { ParsedItem } from "@/shared/item-parser/types";
 
 const rules = (game: "poe1" | "poe2"): ParserRules => ({
   game,
-  lineMarkers: { " (implicit)": "implicit", " (crafted)": "crafted", " (fractured)": "fractured", " (rune)": "rune" },
+  lineMarkers: { " (implicit)": "implicit", " (crafted)": "crafted", " (fractured)": "fractured", " (rune)": "rune", " (enchant)": "enchant" },
   flags: { Corrupted: (i) => (i.corrupted = true) },
   sections: [],
 });
@@ -128,3 +128,26 @@ Experience: 4997158/9400731
 Place into an item socket to gain this skill. Right click to remove from a socket.
 `,
   );
+
+/**
+ * Small Cluster Jewel (user report, Nov 2026: 0 results). Constructed in the PoE 1 copy format;
+ * the enchant lines match the screenshot. `rarity`/`name` lines vary per test.
+ */
+export const CLUSTER_TEXT = (rarity: "Rare" | "Magic") => `Item Class: Jewels
+Rarity: ${rarity}
+${rarity === "Rare" ? "Sample Spark\nSmall Cluster Jewel" : "Lustrous Small Cluster Jewel of the Sample"}
+--------
+Requirements:
+Level: 54
+--------
+Item Level: 84
+--------
+Adds 2 Passive Skills (enchant)
+Added Small Passive Skills grant: 15% increased Armour (enchant)
+--------
+{ Prefix Modifier "Fervent" (Tier: 1) — Life }
+Added Small Passive Skills also grant: +10 to Maximum Life
+--------
+Place into an allocated Medium or Large Jewel Socket on the Passive Skill Tree. Added passives do not interact with jewel radiuses. Right click to remove from the Socket.
+`;
+export const parseClusterForTest = (rarity: "Rare" | "Magic" = "Rare") => parse("poe1", CLUSTER_TEXT(rarity));

@@ -27,6 +27,8 @@ export type ModuleId =
   | "loot-intelligence"
   // Character
   | "campaign-intelligence"
+  | "location-atlas"
+  | "act-tracker"
   | "builds"
   | "tools"
   // Tools
@@ -148,6 +150,22 @@ export const MODULES: readonly ModuleMeta[] = [
     group: "character",
     summary: "Where to go next in the PoE 2 campaign and what to do there — step-by-step objectives and permanent rewards, from your Client.txt progress and verified 0.5.5 campaign data.",
     availability: { poe2: "ready" },
+  },
+  {
+    id: "location-atlas",
+    label: "Location Atlas",
+    icon: "atlas",
+    group: "character",
+    summary: "The Acts 1–10 campaign in a separate window: real connections between areas, waypoints, community navigation hints and the area you are in, from your Client.txt.",
+    availability: { poe1: "ready" },
+  },
+  {
+    id: "act-tracker",
+    label: "Act Tracker",
+    icon: "waypoint",
+    group: "character",
+    summary: "Live campaign guide for Acts 1–10 in a small overlay that stays on top of the game: your current objective, the next steps and all 24 quest passive points, from your Client.txt.",
+    availability: { poe1: "ready" },
   },
   { id: "builds", label: "Builds", icon: "builds", group: "character", summary: "Your Path of Building builds for this game.", availability: BOTH },
   { id: "tools", label: "Path of Building & Tools", icon: "tools", group: "character", summary: "Launch Path of Building and open trusted community tools.", availability: BOTH },

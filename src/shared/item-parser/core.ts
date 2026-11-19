@@ -167,7 +167,13 @@ function looksLikeMods(section: string[], rules: ParserRules): boolean {
   return section.some((l) => markers.some((m) => l.endsWith(m)));
 }
 
-const PROPERTY = /^([^:]+):\s*(.+)$/;
+const PROPERTY_LINE = /^([^:]+):\s*(.+)$/;
+/** Modifier lines that contain a colon, e.g. cluster jewels' "Added Small Passive Skills also grant: +10 to Maximum Life". */
+const MOD_WITH_COLON = /^Added Small Passive Skills (?:also )?grant: /;
+/** "Name: value" property line (not a modifier that happens to contain a colon). */
+function propertyOf(line: string): RegExpExecArray | null {
+  return MOD_WITH_COLON.test(line) ? null : PROPERTY_LINE.exec(line);
+}
 
 export function parseWith(rules: ParserRules, rawText: string): ParseResult {
   const text = rawText.replace(/^﻿/, "");
@@ -245,7 +251,7 @@ export function parseWith(rules: ParserRules, rawText: string): ParseResult {
     }
 
     // 4) classify the rest
-    const isPropertySection = section.some((l) => PROPERTY.test(l) || l === "Requirements:");
+    const isPropertySection = section.some((l) => propertyOf(l) != null || l === "Requirements:");
     const hasModSyntax = looksLikeMods(section, rules);
     const hasNumbers = section.some((l) => numbersIn(l).length > 0);
 
@@ -278,7 +284,7 @@ export function parseWith(rules: ParserRules, rawText: string): ParseResult {
           inReq = true;
           continue;
         }
-        const m = PROPERTY.exec(line);
+        const m = propertyOf(line);
         if (!m) {
           // A gem's tag line ("Attack, Melee, Strike, …") has no "name: value" form.
           if (item.rarity === "Gem" && !inReq && GEM_TAGS.test(line)) item.properties.push({ name: "Tags", value: line });

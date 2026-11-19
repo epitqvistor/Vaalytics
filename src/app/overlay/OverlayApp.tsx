@@ -15,6 +15,7 @@ import { Icon } from "@/shared/icons/Icon";
 import { ItemCard } from "@/shared/item-renderer/ItemCard";
 import { toDisplayItem } from "@/shared/item-renderer/adapt";
 import { cn } from "@/shared/utilities/cn";
+import { matchesShortcut } from "@/shared/utilities/shortcut";
 import { LeagueSelect } from "@/shared/views/market-ui";
 import { PriceCheckSession } from "@/shared/views/price-check/PriceCheckSession";
 import { GAME_MODULES } from "../gameModules";
@@ -27,6 +28,7 @@ interface CaptureEvent {
 }
 
 const isOpacity = (v: unknown): v is number => typeof v === "number" && v >= 0.5 && v <= 1;
+const isShortcut = (v: unknown): v is string => typeof v === "string" && v.length > 0 && v.length <= 32;
 
 /** Root of the always-on-top price-check overlay window. */
 export default function OverlayApp() {
@@ -88,6 +90,19 @@ function OverlayFrame({ capture }: { capture: CaptureEvent }) {
   const [clickThrough, setClickThrough] = useState(false);
   const [showItem, setShowItem] = useState(false);
   const parsed = useMemo(() => (capture.text ? mod.parse(capture.text) : null), [capture.text, mod]);
+  const [hotkey] = useGameSetting<string>(capture.game, "priceCheck.hotkey", "Ctrl+D", isShortcut);
+
+  // Pressing the price-check hotkey again closes the overlay. While the overlay has focus the game
+  // isn't in the foreground, so the global hotkey is unregistered and the key arrives here.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat || !matchesShortcut(e, hotkey)) return;
+      e.preventDefault();
+      void getCurrentWindow().hide();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [hotkey]);
 
   const toggleClickThrough = () => {
     const next = !clickThrough;
@@ -113,11 +128,11 @@ function OverlayFrame({ capture }: { capture: CaptureEvent }) {
         <IconButton
           icon="cursor"
           size="sm"
-          label={clickThrough ? "Click-through on — press the hotkey again to interact" : "Click-through (let clicks pass to the game)"}
+          label={clickThrough ? "Click-through on — price-check an item to interact again" : "Click-through (let clicks pass to the game)"}
           onClick={toggleClickThrough}
           className={clickThrough ? "text-accent-2!" : undefined}
         />
-        <IconButton icon="close" size="sm" label="Close (Esc)" onClick={() => void getCurrentWindow().hide()} />
+        <IconButton icon="close" size="sm" label={`Close (Esc or ${hotkey})`} onClick={() => void getCurrentWindow().hide()} />
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3">

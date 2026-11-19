@@ -17,6 +17,12 @@ export interface StatFilter {
   source: "mod" | "pseudo";
   kind: string;
   tier?: number;
+  /**
+   * Option stats (cluster jewel "Added Small Passive Skills grant: …", Trade id
+   * `stat|option`) have no numeric value: they are searched as `{ option }`.
+   * Sending a min for them makes Trade return 0 results.
+   */
+  option?: number | string;
 }
 
 export interface FilterSet {
@@ -62,12 +68,32 @@ export interface SearchOptions {
 
 const PRICE_BY_NAME = new Set(["Unique", "Gem", "Currency", "Divination Card"]);
 
-/** Suggested minimum: 90 % of the item's roll, floored (keeps comparable items in range). */
+/**
+ * Suggested minimum in whole numbers: 90 % of the item's roll, floored, for
+ * rolls ≥ 10; smaller rolls keep their own (floored) value, since 90 % of a
+ * small number only drops a step. Rolls below 1 (e.g. 0.4 % leech) stay as
+ * they are — rounding would make the filter meaningless.
+ */
 export function suggestedMin(value: number | null): number | null {
   if (value == null) return null;
-  if (value <= 0) return Math.round(value * 100) / 100;
-  const v = value * 0.9;
-  return value >= 10 ? Math.floor(v) : Math.floor(v * 10) / 10;
+  if (value < 0) return Math.round(value);
+  if (value < 1) return Math.round(value * 100) / 100;
+  return value >= 10 ? Math.floor(value * 0.9) : Math.floor(value);
+}
+
+/** Trade lists option values as separate stats with ids like `enchant.stat_3948993189|42`. */
+export function splitOptionId(id: string): { id: string; option?: number | string } {
+  const i = id.indexOf("|");
+  if (i < 0) return { id };
+  const raw = id.slice(i + 1);
+  return { id: id.slice(0, i), option: /^\d+$/.test(raw) ? Number(raw) : raw };
+}
+
+const CLUSTER_BASE = /(?:Small|Medium|Large) Cluster Jewel/;
+
+/** Cluster jewel base, also from a magic item's affixed name ("Lustrous Small Cluster Jewel of …"). */
+export function clusterBase(item: ParsedItem): string | null {
+  return CLUSTER_BASE.exec(item.baseType)?.[0] ?? null;
 }
 
 /**
@@ -109,29 +135,36 @@ export function buildFilters(item: ParsedItem, index: StatIndex): FilterSet {
     });
   }
 
+  const cluster = item.game === "poe1" && clusterBase(item) != null;
   for (const mod of mergeMultiline(item.mods, index)) {
     const match = matchMod(mod, index);
     if (!match) {
       unmatched.push({ id: mod.id, text: mod.text });
       continue;
     }
+    const { id: statId, option } = splitOptionId(match.stat.id);
+    // A cluster jewel is defined by its enchants (passive count, sockets, passive type): match them exactly.
+    const clusterEnchant = cluster && mod.kind === "enchant";
     const highTier = mod.tier != null ? mod.tier <= 2 : true;
     const enabledByDefault =
-      !priceByName &&
-      !coveredByPseudo.has(mod.id) &&
-      (mod.kind === "fractured" || (mod.kind === "explicit" && highTier)) &&
-      match.value != null;
+      clusterEnchant ||
+      (!priceByName &&
+        !coveredByPseudo.has(mod.id) &&
+        (mod.kind === "fractured" || (mod.kind === "explicit" && highTier)) &&
+        (match.value != null || option != null));
+    const value = option != null ? null : match.value;
     stats.push({
       key: mod.id,
-      statId: match.stat.id,
+      statId,
       label: mod.text,
-      value: match.value,
-      min: suggestedMin(match.value),
-      max: null,
+      value,
+      min: clusterEnchant ? value : suggestedMin(value),
+      max: clusterEnchant ? value : null,
       enabled: enabledByDefault,
       source: "mod",
       kind: mod.kind,
       tier: mod.tier,
+      ...(option != null ? { option } : {}),
     });
   }
   return { stats, unmatched };
@@ -172,8 +205,12 @@ export function buildQuery(
     if (item.name) query.name = item.name;
     query.type = item.baseType;
   } else if (item.rarity !== "Magic") {
-    // Magic items carry affixes in their name; the base can't be isolated without base-type data.
     query.type = item.baseType;
+  } else {
+    // Magic items carry affixes in their name; the base can't be isolated without base-type data,
+    // except for bases we can recognise inside the name (cluster jewels).
+    const base = clusterBase(item);
+    if (base) query.type = base;
   }
 
   const enabled = stats.filter((s) => s.enabled);
@@ -183,7 +220,7 @@ export function buildQuery(
         type: "and",
         filters: enabled.map((s) => ({
           id: s.statId,
-          value: { ...(s.min != null ? { min: s.min } : {}), ...(s.max != null ? { max: s.max } : {}) },
+          value: s.option != null ? { option: s.option } : { ...(s.min != null ? { min: s.min } : {}), ...(s.max != null ? { max: s.max } : {}) },
           disabled: false,
         })),
       },

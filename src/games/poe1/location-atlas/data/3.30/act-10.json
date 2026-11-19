@@ -1,0 +1,374 @@
+{
+  "act": 10,
+  "areas": [
+    {
+      "id": "2_10_1",
+      "name": "The Cathedral Rooftop",
+      "act": 10,
+      "level": 64,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_10_town",
+      "connections": [
+        "2_10_2",
+        "2_10_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_CathedralRoof",
+        "P2_CathedralRoof"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Plaguewing"
+      ]
+    },
+    {
+      "id": "2_10_2",
+      "name": "The Ravaged Square",
+      "act": 10,
+      "level": 64,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_10_town",
+      "connections": [
+        "2_10_1",
+        "2_10_3",
+        "2_10_5",
+        "2_10_7",
+        "2_10_8",
+        "2_10_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Square",
+        "P2_Square"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_10_3",
+      "name": "The Torched Courts",
+      "act": 10,
+      "level": 65,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_10_town",
+      "connections": [
+        "2_10_2",
+        "2_10_4"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Courts_1",
+        "Augury_P2_Courts_2",
+        "Augury_P2_Courts_3",
+        "Augury_P2_Courts_4",
+        "P2_Courts_1",
+        "P2_Courts_2",
+        "P2_Courts_3",
+        "P2_Courts_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_10_4",
+      "name": "The Desecrated Chambers",
+      "act": 10,
+      "level": 65,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_10_town",
+      "connections": [
+        "2_10_3"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Chamber_1",
+        "P2_Chamber_2",
+        "P2_Chamber_3",
+        "P2_Chamber_4"
+      ],
+      "craftingRecipes": [
+        "Accuracy - Rank 2"
+      ],
+      "bossNames": [
+        "Avarius, Reassembled"
+      ]
+    },
+    {
+      "id": "2_10_5",
+      "name": "The Canals",
+      "act": 10,
+      "level": 66,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_10_town",
+      "connections": [
+        "2_10_2",
+        "2_10_6"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Canals_1",
+        "Augury_P2_Canals_2",
+        "Augury_P2_Canals_3",
+        "Augury_P2_Canals_4",
+        "P2_Canals_1",
+        "P2_Canals_2",
+        "P2_Canals_3",
+        "P2_Canals_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_10_6",
+      "name": "The Feeding Trough",
+      "act": 10,
+      "level": 67,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_10_town",
+      "connections": [
+        "2_10_5",
+        "2_10_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "P2_FeedingTrough1",
+        "P2_FeedingTrough2",
+        "P2_FeedingTrough3",
+        "P2_FeedingTrough4"
+      ],
+      "craftingRecipes": [
+        "Life and Mana - Rank 3"
+      ],
+      "bossNames": [
+        "Kitava, the Insatiable"
+      ]
+    },
+    {
+      "id": "2_10_7",
+      "name": "The Control Blocks",
+      "act": 10,
+      "level": 66,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_10_town",
+      "connections": [
+        "2_10_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_ControlBlocks_1",
+        "P2_ControlBlocks_2",
+        "P2_ControlBlocks_3",
+        "P2_ControlBlocks_4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Vilenta"
+      ]
+    },
+    {
+      "id": "2_10_8",
+      "name": "The Reliquary",
+      "act": 10,
+      "level": 67,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_10_town",
+      "connections": [
+        "2_10_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Reliquary_1",
+        "P2_Reliquary_2",
+        "P2_Reliquary_3",
+        "P2_Reliquary_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_10_9",
+      "name": "The Ossuary",
+      "act": 10,
+      "level": 67,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_10_town",
+      "connections": [
+        "2_10_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Ossuary_1",
+        "P2_Ossuary_2",
+        "P2_Ossuary_3",
+        "P2_Ossuary_4",
+        "P2_Ossuary_5",
+        "P2_Ossuary_6"
+      ],
+      "craftingRecipes": [
+        "Chaos Damage - Rank 2"
+      ]
+    },
+    {
+      "id": "2_10_town",
+      "name": "Oriath Docks",
+      "act": 10,
+      "level": 69,
+      "kind": "town",
+      "waypoint": true,
+      "town": null,
+      "connections": [
+        "2_10_1",
+        "2_10_6",
+        "2_9_10_2"
+      ],
+      "otherConnections": [
+        "2_11_endgame_town"
+      ],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "P2_ShipTown"
+      ],
+      "craftingRecipes": []
+    }
+  ],
+  "hints": [
+    {
+      "area": "2_10_1",
+      "step": "→ Cathedral Apex, kill Plaguewing",
+      "text": "Go up",
+      "direction": 0,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_10_2",
+      "toward": "2_10_7",
+      "step": "→ The Control Blocks",
+      "text": "Go down",
+      "direction": 180,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_10_town",
+      "step": "Get the waypoint",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_10_9",
+      "step": "Complete the Labyrinth trial",
+      "text": "Interact with the switch just before the zig-zagging walls, go to the opposite side to access Hidden Gem: Facetor's Lens",
+      "leagueStartOnly": true
+    },
+    {
+      "area": "2_10_2",
+      "toward": "2_10_3",
+      "step": "→ The Torched Courts",
+      "text": "Go down-right",
+      "direction": 135,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_10_3",
+      "toward": "2_10_4",
+      "step": "→ The Desecrated Chambers",
+      "text": "Loop around clockwise",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_10_4",
+      "step": "→ Sanctum of Innocence, kill Avarius, Reassembled, take The Staff of Purity",
+      "text": "Go up-left counter-clockwise spiral",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_10_2",
+      "step": "Talk to Innocence",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    }
+  ],
+  "quests": [
+    {
+      "id": "a10q1",
+      "name": "Safe Passage",
+      "act": 10,
+      "npcs": [
+        "Lani"
+      ]
+    },
+    {
+      "id": "a10q2",
+      "name": "Death and Rebirth",
+      "act": 10,
+      "npcs": [
+        "Lani"
+      ]
+    },
+    {
+      "id": "a10q3",
+      "name": "An End to Hunger",
+      "act": 10,
+      "npcs": [
+        "Lani"
+      ]
+    },
+    {
+      "id": "a10q4",
+      "name": "No Love for Old Ghosts",
+      "act": 10,
+      "npcs": [
+        "Weylam Roth"
+      ]
+    },
+    {
+      "id": "a10q5",
+      "name": "Map to Tsoatha",
+      "act": 10,
+      "npcs": [
+        "Lilly Roth"
+      ]
+    },
+    {
+      "id": "a10q6",
+      "name": "Vilenta's Vengeance",
+      "act": 10,
+      "npcs": [
+        "Lani"
+      ]
+    },
+    {
+      "id": "A11q0",
+      "name": "Toward the Future",
+      "act": 10,
+      "npcs": []
+    }
+  ]
+}

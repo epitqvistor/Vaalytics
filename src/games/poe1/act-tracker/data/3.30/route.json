@@ -1,0 +1,8193 @@
+{
+ "steps": [
+  {
+   "id": "a1.001",
+   "act": 1,
+   "area": "1_1_1",
+   "kind": "kill",
+   "text": "Find and kill Hillock",
+   "kills": [
+    "Hillock"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.002",
+   "act": 1,
+   "area": "1_1_1",
+   "kind": "enter",
+   "text": "→ Lioneye's Watch",
+   "enters": [
+    "1_1_town"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.003",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in Enemy at the Gate",
+   "quests": [
+    {
+     "id": "a1q1",
+     "name": "Enemy at the Gate",
+     "npc": "Tarkleigh"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.004",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "enter",
+   "text": "→ The Coast",
+   "enters": [
+    "1_1_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.005",
+   "act": 1,
+   "area": "1_1_2",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a1.b1"
+   },
+   "hints": []
+  },
+  {
+   "id": "a1.006",
+   "act": 1,
+   "area": "1_1_2",
+   "kind": "enter",
+   "text": "→ The Mud Flats",
+   "enters": [
+    "1_1_3"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.007",
+   "act": 1,
+   "area": "1_1_3",
+   "kind": "quest-item",
+   "text": "Find 3× Glyph",
+   "items": [
+    "Glyph"
+   ],
+   "hints": [
+    {
+     "text": "Little streams connect the 3 Rhoa nests"
+    },
+    {
+     "text": "Usually form a triangle, but will rarely form a line"
+    }
+   ]
+  },
+  {
+   "id": "a1.008",
+   "act": 1,
+   "area": "1_1_3",
+   "kind": "enter",
+   "text": "→ The Submerged Passage",
+   "enters": [
+    "1_1_4_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.009",
+   "act": 1,
+   "area": "1_1_4_1",
+   "kind": "waypoint",
+   "text": "Waypoint to The Coast",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a1.b2"
+   },
+   "waypointTo": "1_1_2",
+   "hints": []
+  },
+  {
+   "id": "a1.010",
+   "act": 1,
+   "area": "1_1_2",
+   "kind": "enter",
+   "text": "→ The Tidal Island",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a1.b2"
+   },
+   "enters": [
+    "1_1_2a"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.011",
+   "act": 1,
+   "area": "1_1_2a",
+   "kind": "kill",
+   "text": "Find and kill Hailrake, take Medicine Chest",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a1.b2"
+   },
+   "kills": [
+    "Hailrake"
+   ],
+   "items": [
+    "Medicine Chest"
+   ],
+   "hints": [
+    {
+     "text": "Go left",
+     "direction": 270
+    },
+    {
+     "text": "If you find a ledge, turn around and go right",
+     "direction": 90
+    }
+   ],
+   "recommendedLevel": "4"
+  },
+  {
+   "id": "a1.012",
+   "act": 1,
+   "area": "1_1_2a",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a1.b2"
+   },
+   "hints": []
+  },
+  {
+   "id": "a1.013",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in Breaking Some Eggs",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a1.b2"
+   },
+   "quests": [
+    {
+     "id": "a1q4",
+     "name": "Breaking Some Eggs",
+     "npc": "Tarkleigh"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.014",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in Mercy Mission",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a1.b2"
+   },
+   "quests": [
+    {
+     "id": "a1q5",
+     "name": "Mercy Mission",
+     "npc": "Nessa"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.015",
+   "act": 1,
+   "area": "1_1_4_1",
+   "kind": "waypoint",
+   "text": "Waypoint to Lioneye's Watch",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": true,
+    "block": "a1.b3"
+   },
+   "waypointTo": "1_1_town",
+   "hints": []
+  },
+  {
+   "id": "a1.016",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in Breaking Some Eggs",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": true,
+    "block": "a1.b3"
+   },
+   "quests": [
+    {
+     "id": "a1q4",
+     "name": "Breaking Some Eggs",
+     "npc": "Tarkleigh"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.017",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Submerged Passage",
+   "waypointTo": "1_1_4_1",
+   "hints": []
+  },
+  {
+   "id": "a1.018",
+   "act": 1,
+   "area": "1_1_4_1",
+   "kind": "enter",
+   "text": "→ The Flooded Depths",
+   "enters": [
+    "1_1_4_0"
+   ],
+   "hints": [
+    {
+     "text": "Go right of the bridge"
+    }
+   ]
+  },
+  {
+   "id": "a1.019",
+   "act": 1,
+   "area": "1_1_4_0",
+   "kind": "kill",
+   "text": "Find and kill The Dweller of the Deep",
+   "kills": [
+    "The Dweller of the Deep"
+   ],
+   "hints": [
+    {
+     "text": "Search opposite the entrance"
+    },
+    {
+     "text": "Look for the large empty room"
+    }
+   ]
+  },
+  {
+   "id": "a1.020",
+   "act": 1,
+   "area": "1_1_4_0",
+   "kind": "enter",
+   "text": "Take the Boat → The Submerged Passage",
+   "enters": [
+    "1_1_4_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.021",
+   "act": 1,
+   "area": "1_1_4_1",
+   "kind": "enter",
+   "text": "→ The Ledge",
+   "enters": [
+    "1_1_5"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.022",
+   "act": 1,
+   "area": "1_1_5",
+   "kind": "enter",
+   "text": "→ The Climb",
+   "enters": [
+    "1_1_6"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.023",
+   "act": 1,
+   "area": "1_1_6",
+   "kind": "enter",
+   "text": "→ The Lower Prison",
+   "enters": [
+    "1_1_7_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.024",
+   "act": 1,
+   "area": "1_1_7_1",
+   "kind": "waypoint",
+   "text": "Waypoint to Lioneye's Watch",
+   "waypointTo": "1_1_town",
+   "hints": []
+  },
+  {
+   "id": "a1.025",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in The Dweller of the Deep",
+   "quests": [
+    {
+     "id": "a1q7",
+     "name": "The Dweller of the Deep",
+     "npc": "Tarkleigh"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.026",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in The Caged Brute",
+   "quests": [
+    {
+     "id": "a1q2",
+     "name": "The Caged Brute",
+     "npc": "Nessa"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.027",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Lower Prison",
+   "waypointTo": "1_1_7_1",
+   "hints": []
+  },
+  {
+   "id": "a1.028",
+   "act": 1,
+   "area": "1_1_7_1",
+   "kind": "trial",
+   "text": "Complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a1.b4"
+   },
+   "hints": [
+    {
+     "text": "Usually up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a1.029",
+   "act": 1,
+   "area": "1_1_7_1",
+   "kind": "enter",
+   "text": "→ The Upper Prison",
+   "enters": [
+    "1_1_7_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.030",
+   "act": 1,
+   "area": "1_1_7_2",
+   "kind": "other",
+   "text": "Find Chemist's Strongbox",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a1.b5"
+   },
+   "hints": [
+    {
+     "text": "Look for map icon, access with nearby switch"
+    },
+    {
+     "text": "High chance for Quicksilver Flask"
+    },
+    {
+     "text": "Vendor Quicksilver Flask + Orb of Augmentation + Normal Boots"
+    },
+    {
+     "text": "Vendor Quicksilver Flask + Orb of Augmentation + Movement Speed Boots"
+    }
+   ]
+  },
+  {
+   "id": "a1.031",
+   "act": 1,
+   "area": "1_1_7_2",
+   "kind": "kill",
+   "text": "→ The Warden's Quarters, kill Brutus, Lord Incarcerator",
+   "kills": [
+    "Brutus, Lord Incarcerator"
+   ],
+   "arena": "The Warden's Quarters",
+   "hints": [],
+   "recommendedLevel": "8"
+  },
+  {
+   "id": "a1.032",
+   "act": 1,
+   "area": "1_1_7_2",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a1.033",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in The Caged Brute",
+   "quests": [
+    {
+     "id": "a1q2",
+     "name": "The Caged Brute",
+     "npc": "Tarkleigh"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.034",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "waypoint",
+   "text": "Waypoint to Prisoner's Gate",
+   "waypointTo": "1_1_8",
+   "hints": []
+  },
+  {
+   "id": "a1.035",
+   "act": 1,
+   "area": "1_1_8",
+   "kind": "enter",
+   "text": "→ The Ship Graveyard",
+   "enters": [
+    "1_1_9"
+   ],
+   "hints": [
+    {
+     "text": "Go down the ledge next to the road"
+    }
+   ]
+  },
+  {
+   "id": "a1.036",
+   "act": 1,
+   "area": "1_1_9",
+   "kind": "kill",
+   "text": "Kill Captain Fairgraves, take Allflame",
+   "kills": [
+    "Captain Fairgraves"
+   ],
+   "items": [
+    "Allflame"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.037",
+   "act": 1,
+   "area": "1_1_9",
+   "kind": "enter",
+   "text": "→ The Cavern of Wrath",
+   "enters": [
+    "1_1_11_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.038",
+   "act": 1,
+   "area": "1_1_11_1",
+   "kind": "waypoint",
+   "text": "Waypoint to Lioneye's Watch",
+   "waypointTo": "1_1_town",
+   "hints": []
+  },
+  {
+   "id": "a1.039",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in The Marooned Mariner",
+   "quests": [
+    {
+     "id": "a1q6",
+     "name": "The Marooned Mariner",
+     "npc": "Bestel"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.040",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in The Siren's Cadence",
+   "quests": [
+    {
+     "id": "a1q3",
+     "name": "The Siren's Cadence",
+     "npc": "Nessa"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a1.041",
+   "act": 1,
+   "area": "1_1_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Cavern of Wrath",
+   "waypointTo": "1_1_11_1",
+   "hints": []
+  },
+  {
+   "id": "a1.042",
+   "act": 1,
+   "area": "1_1_11_1",
+   "kind": "enter",
+   "text": "→ The Cavern of Anger",
+   "enters": [
+    "1_1_11_2"
+   ],
+   "hints": [
+    {
+     "text": "Follow the water"
+    }
+   ]
+  },
+  {
+   "id": "a1.043",
+   "act": 1,
+   "area": "1_1_11_2",
+   "kind": "kill",
+   "text": "→ Merveil's Lair, kill Merveil, the Siren",
+   "kills": [
+    "Merveil, the Siren"
+   ],
+   "arena": "Merveil's Lair",
+   "hints": [
+    {
+     "text": "Follow the water"
+    }
+   ],
+   "recommendedLevel": "12"
+  },
+  {
+   "id": "a2.001",
+   "act": 2,
+   "area": "1_1_11_2",
+   "kind": "enter",
+   "text": "→ The Southern Forest",
+   "enters": [
+    "1_2_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.002",
+   "act": 2,
+   "area": "1_2_1",
+   "kind": "enter",
+   "text": "→ The Forest Encampment",
+   "enters": [
+    "1_2_town"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.003",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "enter",
+   "text": "→ The Old Fields",
+   "enters": [
+    "1_2_2"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a2.004",
+   "act": 2,
+   "area": "1_2_2",
+   "kind": "other",
+   "text": "Find The Den, place a town portal",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a2.b1"
+   },
+   "portal": "set",
+   "hints": []
+  },
+  {
+   "id": "a2.005",
+   "act": 2,
+   "area": "1_2_2",
+   "kind": "enter",
+   "text": "→ The Crossroads",
+   "enters": [
+    "1_2_3"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a2.006",
+   "act": 2,
+   "area": "1_2_3",
+   "kind": "waypoint",
+   "text": "Waypoint to The Forest Encampment",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a2.b2"
+   },
+   "waypointTo": "1_2_town",
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a2.007",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "portal",
+   "text": "Take the town portal",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a2.b2"
+   },
+   "portal": "use",
+   "hints": []
+  },
+  {
+   "id": "a2.008",
+   "act": 2,
+   "area": "1_2_2",
+   "kind": "enter",
+   "text": "→ The Den",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a2.b2"
+   },
+   "enters": [
+    "1_2_2a"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.009",
+   "act": 2,
+   "area": "1_2_2a",
+   "kind": "kill",
+   "text": "Find and kill The Great White Beast",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a2.b2"
+   },
+   "kills": [
+    "The Great White Beast"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.010",
+   "act": 2,
+   "area": "1_2_2a",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a2.b2"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.011",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "hand-in",
+   "text": "Hand in The Great White Beast",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a2.b2"
+   },
+   "quests": [
+    {
+     "id": "a2q10",
+     "name": "The Great White Beast",
+     "npc": "Yeena"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.012",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Crossroads",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a2.b2"
+   },
+   "waypointTo": "1_2_3",
+   "hints": []
+  },
+  {
+   "id": "a2.013",
+   "act": 2,
+   "area": "1_2_3",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": true,
+    "block": "a2.b3"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.014",
+   "act": 2,
+   "area": "1_2_3",
+   "kind": "enter",
+   "text": "→ The Chamber of Sins Level 1",
+   "enters": [
+    "1_2_6_1"
+   ],
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a2.015",
+   "act": 2,
+   "area": "1_2_6_1",
+   "kind": "enter",
+   "text": "→ The Chamber of Sins Level 2",
+   "enters": [
+    "1_2_6_2"
+   ],
+   "hints": [
+    {
+     "text": "Go in same direction as the waypoint"
+    }
+   ]
+  },
+  {
+   "id": "a2.016",
+   "act": 2,
+   "area": "1_2_6_2",
+   "kind": "trial",
+   "text": "Complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a2.b4"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.017",
+   "act": 2,
+   "area": "1_2_6_2",
+   "kind": "kill",
+   "text": "Kill Fidelitas, the Mourning, take Baleful Gem",
+   "kills": [
+    "Fidelitas, the Mourning"
+   ],
+   "items": [
+    "Baleful Gem"
+   ],
+   "hints": [
+    {
+     "text": "Look for the long hallway"
+    }
+   ],
+   "recommendedLevel": "14-15"
+  },
+  {
+   "id": "a2.018",
+   "act": 2,
+   "area": "1_2_6_2",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a2.019",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "hand-in",
+   "text": "Hand in Intruders in Black",
+   "quests": [
+    {
+     "id": "a2q6",
+     "name": "Intruders in Black",
+     "npc": "Greust"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.020",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Crossroads",
+   "waypointTo": "1_2_3",
+   "hints": []
+  },
+  {
+   "id": "a2.021",
+   "act": 2,
+   "area": "1_2_3",
+   "kind": "enter",
+   "text": "→ The Fellshrine Ruins",
+   "enters": [
+    "1_2_15"
+   ],
+   "hints": [
+    {
+     "text": "Go down-right",
+     "direction": 135
+    }
+   ]
+  },
+  {
+   "id": "a2.022",
+   "act": 2,
+   "area": "1_2_15",
+   "kind": "enter",
+   "text": "→ The Crypt Level 1",
+   "enters": [
+    "1_2_5_1"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a2.023",
+   "act": 2,
+   "area": "1_2_5_1",
+   "kind": "trial",
+   "text": "Complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a2.b5"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.024",
+   "act": 2,
+   "area": "1_2_5_1",
+   "kind": "enter",
+   "text": "→ The Crypt Level 2",
+   "enters": [
+    "1_2_5_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.025",
+   "act": 2,
+   "area": "1_2_5_2",
+   "kind": "quest-item",
+   "text": "Find Altar, take Golden Hand",
+   "items": [
+    "Altar",
+    "Golden Hand"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.026",
+   "act": 2,
+   "area": "1_2_5_2",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a2.027",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "hand-in",
+   "text": "Hand in Through Sacred Ground",
+   "quests": [
+    {
+     "id": "a2q5",
+     "name": "Through Sacred Ground",
+     "npc": "Yeena"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.028",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "enter",
+   "text": "→ The Riverways",
+   "enters": [
+    "1_2_7"
+   ],
+   "hints": [
+    {
+     "text": "Go down-left",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a2.029",
+   "act": 2,
+   "area": "1_2_7",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a2.030",
+   "act": 2,
+   "area": "1_2_7",
+   "kind": "enter",
+   "text": "→ The Western Forest",
+   "enters": [
+    "1_2_9"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a2.031",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a2.032",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "enter",
+   "text": "→ The Weaver's Chambers",
+   "enters": [
+    "1_2_10"
+   ],
+   "hints": [
+    {
+     "text": "Search the side of road opposite the waypoint"
+    }
+   ]
+  },
+  {
+   "id": "a2.033",
+   "act": 2,
+   "area": "1_2_10",
+   "kind": "kill",
+   "text": "→ The Weaver's Nest, kill The Weaver, take Maligaro's Spike",
+   "kills": [
+    "The Weaver"
+   ],
+   "items": [
+    "Maligaro's Spike"
+   ],
+   "arena": "The Weaver's Nest",
+   "hints": [
+    {
+     "text": "Try go left, if it's blocked go up-right",
+     "direction": 270
+    }
+   ],
+   "recommendedLevel": "16"
+  },
+  {
+   "id": "a2.034",
+   "act": 2,
+   "area": "1_2_10",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a2.035",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "hand-in",
+   "text": "Hand in Sharp and Cruel",
+   "quests": [
+    {
+     "id": "a2q4",
+     "name": "Sharp and Cruel",
+     "npc": "Silk"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.036",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Crossroads",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "waypointTo": "1_2_3",
+   "hints": []
+  },
+  {
+   "id": "a2.037",
+   "act": 2,
+   "area": "1_2_3",
+   "kind": "enter",
+   "text": "→ The Broken Bridge",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "enters": [
+    "1_2_4"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a2.038",
+   "act": 2,
+   "area": "1_2_4",
+   "kind": "kill",
+   "text": "Kill Kraityn, Scarbearer, take Kraityn's Amulet",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "kills": [
+    "Kraityn, Scarbearer"
+   ],
+   "items": [
+    "Kraityn's Amulet"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a2.039",
+   "act": 2,
+   "area": "1_2_4",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.040",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Riverways",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "waypointTo": "1_2_7",
+   "hints": []
+  },
+  {
+   "id": "a2.041",
+   "act": 2,
+   "area": "1_2_7",
+   "kind": "enter",
+   "text": "→ The Wetlands",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "enters": [
+    "1_2_12"
+   ],
+   "hints": [
+    {
+     "text": "Look for 2 pillars near the waypoint, follow the trail"
+    }
+   ]
+  },
+  {
+   "id": "a2.042",
+   "act": 2,
+   "area": "1_2_12",
+   "kind": "kill",
+   "text": "Find and kill Oak, Skullbreaker, take Oak's Amulet",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "kills": [
+    "Oak, Skullbreaker"
+   ],
+   "items": [
+    "Oak's Amulet"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.043",
+   "act": 2,
+   "area": "1_2_12",
+   "kind": "waypoint",
+   "text": "Waypoint to The Western Forest",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "waypointTo": "1_2_9",
+   "hints": [
+    {
+     "text": "Search opposite direction of the encampment entrance"
+    }
+   ]
+  },
+  {
+   "id": "a2.044",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "kill",
+   "text": "Kill Alira Darktongue, take Alira's Amulet",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "kills": [
+    "Alira Darktongue"
+   ],
+   "items": [
+    "Alira's Amulet"
+   ],
+   "hints": [
+    {
+     "text": "Go down look for the torch touching the road",
+     "direction": 180
+    },
+    {
+     "text": "Follow the trail in the direction of the torch"
+    }
+   ]
+  },
+  {
+   "id": "a2.045",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "kill",
+   "text": "Kill Captain Arteri",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "kills": [
+    "Captain Arteri"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road down-left",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a2.046",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "quest-item",
+   "text": "Take Thaumetic Emblem, activate Thaumetic Seal",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "items": [
+    "Thaumetic Emblem",
+    "Thaumetic Seal"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.047",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.048",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "hand-in",
+   "text": "Hand in Deal with the Bandits, take The Apex",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "quests": [
+    {
+     "id": "a2q7",
+     "name": "Deal with the Bandits",
+     "npc": "Eramir"
+    }
+   ],
+   "items": [
+    "The Apex"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.049",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to Lioneye's Watch",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "waypointTo": "1_1_town",
+   "hints": []
+  },
+  {
+   "id": "a2.050",
+   "act": 2,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in The Way Forward",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "quests": [
+    {
+     "id": "a1q9",
+     "name": "The Way Forward",
+     "npc": "Bestel"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.051",
+   "act": 2,
+   "area": "1_1_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Wetlands",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "waypointTo": "1_2_12",
+   "hints": []
+  },
+  {
+   "id": "a2.052",
+   "act": 2,
+   "area": "1_2_12",
+   "kind": "enter",
+   "text": "Poison the Tree Roots → The Vaal Ruins",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a2.b6"
+   },
+   "enters": [
+    "1_2_11"
+   ],
+   "items": [
+    "Tree Roots"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.053",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Crossroads",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "waypointTo": "1_2_3",
+   "hints": []
+  },
+  {
+   "id": "a2.054",
+   "act": 2,
+   "area": "1_2_3",
+   "kind": "enter",
+   "text": "→ The Broken Bridge",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "enters": [
+    "1_2_4"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a2.055",
+   "act": 2,
+   "area": "1_2_4",
+   "kind": "kill",
+   "text": "Kill Kraityn, Scarbearer, take Kraityn's Amulet",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "kills": [
+    "Kraityn, Scarbearer"
+   ],
+   "items": [
+    "Kraityn's Amulet"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a2.056",
+   "act": 2,
+   "area": "1_2_4",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.057",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Riverways",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "waypointTo": "1_2_7",
+   "hints": []
+  },
+  {
+   "id": "a2.058",
+   "act": 2,
+   "area": "1_2_7",
+   "kind": "enter",
+   "text": "→ The Wetlands",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "enters": [
+    "1_2_12"
+   ],
+   "hints": [
+    {
+     "text": "Look for 2 pillars near the waypoint, follow the trail"
+    }
+   ]
+  },
+  {
+   "id": "a2.059",
+   "act": 2,
+   "area": "1_2_12",
+   "kind": "kill",
+   "text": "Find and kill Oak, Skullbreaker, take Oak's Amulet",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "kills": [
+    "Oak, Skullbreaker"
+   ],
+   "items": [
+    "Oak's Amulet"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.060",
+   "act": 2,
+   "area": "1_2_12",
+   "kind": "waypoint",
+   "text": "Waypoint to The Western Forest",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "waypointTo": "1_2_9",
+   "hints": [
+    {
+     "text": "Search opposite direction of the encampment entrance"
+    }
+   ]
+  },
+  {
+   "id": "a2.061",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "kill",
+   "text": "Help Alira Darktongue, take The Apex",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "kills": [
+    "Alira Darktongue"
+   ],
+   "items": [
+    "The Apex"
+   ],
+   "hints": [
+    {
+     "text": "Go down look for the torch touching the road",
+     "direction": 180
+    },
+    {
+     "text": "Follow the trail in the direction of the torch"
+    }
+   ]
+  },
+  {
+   "id": "a2.062",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "kill",
+   "text": "Kill Captain Arteri",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "kills": [
+    "Captain Arteri"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road down-left",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a2.063",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "quest-item",
+   "text": "Take Thaumetic Emblem, activate Thaumetic Seal",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "items": [
+    "Thaumetic Emblem",
+    "Thaumetic Seal"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.064",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.065",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to Lioneye's Watch",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "waypointTo": "1_1_town",
+   "hints": []
+  },
+  {
+   "id": "a2.066",
+   "act": 2,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in The Way Forward",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "quests": [
+    {
+     "id": "a1q9",
+     "name": "The Way Forward",
+     "npc": "Bestel"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.067",
+   "act": 2,
+   "area": "1_1_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Wetlands",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "waypointTo": "1_2_12",
+   "hints": []
+  },
+  {
+   "id": "a2.068",
+   "act": 2,
+   "area": "1_2_12",
+   "kind": "enter",
+   "text": "Poison the Tree Roots → The Vaal Ruins",
+   "when": {
+    "flag": "BANDIT_ALIRA",
+    "negate": false,
+    "block": "a2.b7"
+   },
+   "enters": [
+    "1_2_11"
+   ],
+   "items": [
+    "Tree Roots"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.069",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Riverways",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "waypointTo": "1_2_7",
+   "hints": []
+  },
+  {
+   "id": "a2.070",
+   "act": 2,
+   "area": "1_2_7",
+   "kind": "enter",
+   "text": "→ The Wetlands",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "enters": [
+    "1_2_12"
+   ],
+   "hints": [
+    {
+     "text": "Look for 2 pillars near the waypoint, follow the trail"
+    }
+   ]
+  },
+  {
+   "id": "a2.071",
+   "act": 2,
+   "area": "1_2_12",
+   "kind": "kill",
+   "text": "Find and kill Oak, Skullbreaker, take Oak's Amulet",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "kills": [
+    "Oak, Skullbreaker"
+   ],
+   "items": [
+    "Oak's Amulet"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.072",
+   "act": 2,
+   "area": "1_2_12",
+   "kind": "waypoint",
+   "text": "Waypoint to The Western Forest",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "waypointTo": "1_2_9",
+   "hints": [
+    {
+     "text": "Search opposite direction of the encampment entrance"
+    }
+   ]
+  },
+  {
+   "id": "a2.073",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "kill",
+   "text": "Kill Alira Darktongue, take Alira's Amulet",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "kills": [
+    "Alira Darktongue"
+   ],
+   "items": [
+    "Alira's Amulet"
+   ],
+   "hints": [
+    {
+     "text": "Go down look for the torch touching the road",
+     "direction": 180
+    },
+    {
+     "text": "Follow the trail in the direction of the torch"
+    }
+   ]
+  },
+  {
+   "id": "a2.074",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "kill",
+   "text": "Kill Captain Arteri",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "kills": [
+    "Captain Arteri"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road down-left",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a2.075",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "quest-item",
+   "text": "Take Thaumetic Emblem, activate Thaumetic Seal",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "items": [
+    "Thaumetic Emblem",
+    "Thaumetic Seal"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.076",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.077",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to Lioneye's Watch",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "waypointTo": "1_1_town",
+   "hints": []
+  },
+  {
+   "id": "a2.078",
+   "act": 2,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in The Way Forward",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "quests": [
+    {
+     "id": "a1q9",
+     "name": "The Way Forward",
+     "npc": "Bestel"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.079",
+   "act": 2,
+   "area": "1_1_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Crossroads",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "waypointTo": "1_2_3",
+   "hints": []
+  },
+  {
+   "id": "a2.080",
+   "act": 2,
+   "area": "1_2_3",
+   "kind": "enter",
+   "text": "→ The Broken Bridge",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "enters": [
+    "1_2_4"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a2.081",
+   "act": 2,
+   "area": "1_2_4",
+   "kind": "kill",
+   "text": "Help Kraityn, Scarbearer, take The Apex",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "kills": [
+    "Kraityn, Scarbearer"
+   ],
+   "items": [
+    "The Apex"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a2.082",
+   "act": 2,
+   "area": "1_2_4",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.083",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Wetlands",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "waypointTo": "1_2_12",
+   "hints": []
+  },
+  {
+   "id": "a2.084",
+   "act": 2,
+   "area": "1_2_12",
+   "kind": "enter",
+   "text": "Poison the Tree Roots → The Vaal Ruins",
+   "when": {
+    "flag": "BANDIT_KRAITYN",
+    "negate": false,
+    "block": "a2.b8"
+   },
+   "enters": [
+    "1_2_11"
+   ],
+   "items": [
+    "Tree Roots"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.085",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Crossroads",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "waypointTo": "1_2_3",
+   "hints": []
+  },
+  {
+   "id": "a2.086",
+   "act": 2,
+   "area": "1_2_3",
+   "kind": "enter",
+   "text": "→ The Broken Bridge",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "enters": [
+    "1_2_4"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a2.087",
+   "act": 2,
+   "area": "1_2_4",
+   "kind": "kill",
+   "text": "Kill Kraityn, Scarbearer, take Kraityn's Amulet",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "kills": [
+    "Kraityn, Scarbearer"
+   ],
+   "items": [
+    "Kraityn's Amulet"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a2.088",
+   "act": 2,
+   "area": "1_2_4",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.089",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Western Forest",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "waypointTo": "1_2_9",
+   "hints": []
+  },
+  {
+   "id": "a2.090",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "kill",
+   "text": "Kill Alira Darktongue, take Alira's Amulet",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "kills": [
+    "Alira Darktongue"
+   ],
+   "items": [
+    "Alira's Amulet"
+   ],
+   "hints": [
+    {
+     "text": "Go down look for the torch touching the road",
+     "direction": 180
+    },
+    {
+     "text": "Follow the trail in the direction of the torch"
+    }
+   ]
+  },
+  {
+   "id": "a2.091",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "kill",
+   "text": "Kill Captain Arteri",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "kills": [
+    "Captain Arteri"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road down-left",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a2.092",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "quest-item",
+   "text": "Take Thaumetic Emblem, activate Thaumetic Seal",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "items": [
+    "Thaumetic Emblem",
+    "Thaumetic Seal"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.093",
+   "act": 2,
+   "area": "1_2_9",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "hints": []
+  },
+  {
+   "id": "a2.094",
+   "act": 2,
+   "area": "1_2_town",
+   "kind": "waypoint",
+   "text": "Waypoint to Lioneye's Watch",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "waypointTo": "1_1_town",
+   "hints": []
+  },
+  {
+   "id": "a2.095",
+   "act": 2,
+   "area": "1_1_town",
+   "kind": "hand-in",
+   "text": "Hand in The Way Forward",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "quests": [
+    {
+     "id": "a1q9",
+     "name": "The Way Forward",
+     "npc": "Bestel"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.096",
+   "act": 2,
+   "area": "1_1_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Riverways",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "waypointTo": "1_2_7",
+   "hints": []
+  },
+  {
+   "id": "a2.097",
+   "act": 2,
+   "area": "1_2_7",
+   "kind": "enter",
+   "text": "→ The Wetlands",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "enters": [
+    "1_2_12"
+   ],
+   "hints": [
+    {
+     "text": "Look for 2 pillars near the waypoint, follow the trail"
+    }
+   ]
+  },
+  {
+   "id": "a2.098",
+   "act": 2,
+   "area": "1_2_12",
+   "kind": "kill",
+   "text": "Find and help Oak, Skullbreaker, take The Apex",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "kills": [
+    "Oak, Skullbreaker"
+   ],
+   "items": [
+    "The Apex"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.099",
+   "act": 2,
+   "area": "1_2_12",
+   "kind": "enter",
+   "text": "Poison the Tree Roots → The Vaal Ruins",
+   "when": {
+    "flag": "BANDIT_OAK",
+    "negate": false,
+    "block": "a2.b9"
+   },
+   "enters": [
+    "1_2_11"
+   ],
+   "items": [
+    "Tree Roots"
+   ],
+   "hints": [
+    {
+     "text": "Search opposite direction of the encampment entrance"
+    }
+   ]
+  },
+  {
+   "id": "a2.100",
+   "act": 2,
+   "area": "1_2_11",
+   "kind": "enter",
+   "text": "→ The Northern Forest",
+   "enters": [
+    "1_2_8"
+   ],
+   "hints": [
+    {
+     "text": "S shape or L shape leads to exit"
+    }
+   ]
+  },
+  {
+   "id": "a2.101",
+   "act": 2,
+   "area": "1_2_8",
+   "kind": "enter",
+   "text": "→ The Caverns",
+   "enters": [
+    "1_2_14_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.102",
+   "act": 2,
+   "area": "1_2_14_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a2.103",
+   "act": 2,
+   "area": "1_2_14_2",
+   "kind": "enter",
+   "text": "→ The Ancient Pyramid",
+   "enters": [
+    "1_2_14_3"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a2.104",
+   "act": 2,
+   "area": "1_2_14_3",
+   "kind": "kill",
+   "text": "→ Pyramid Apex, kill Vaal Oversoul",
+   "kills": [
+    "Vaal Oversoul"
+   ],
+   "arena": "Pyramid Apex",
+   "hints": [
+    {
+     "text": "First floor exit will be in one of the 3 corners"
+    },
+    {
+     "text": "Remaining floors will have the exit diagonally across from the entrance"
+    }
+   ],
+   "recommendedLevel": "20-22"
+  },
+  {
+   "id": "a2.105",
+   "act": 2,
+   "area": "1_2_14_3",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a3.001",
+   "act": 3,
+   "area": "1_2_14_3",
+   "kind": "enter",
+   "text": "→ The City of Sarn",
+   "enters": [
+    "1_3_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.002",
+   "act": 3,
+   "area": "1_3_1",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a3.003",
+   "act": 3,
+   "area": "1_3_1",
+   "kind": "other",
+   "text": "Help and talk to Clarissa",
+   "hints": []
+  },
+  {
+   "id": "a3.004",
+   "act": 3,
+   "area": "1_3_1",
+   "kind": "enter",
+   "text": "→ The Sarn Encampment",
+   "enters": [
+    "1_3_town"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.005",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "enter",
+   "text": "→ The Slums",
+   "enters": [
+    "1_3_2"
+   ],
+   "hints": [
+    {
+     "text": "Go up",
+     "direction": 0
+    }
+   ]
+  },
+  {
+   "id": "a3.006",
+   "act": 3,
+   "area": "1_3_2",
+   "kind": "enter",
+   "text": "→ The Crematorium",
+   "enters": [
+    "1_3_3_1"
+   ],
+   "hints": [
+    {
+     "text": "Follow Stairs"
+    }
+   ]
+  },
+  {
+   "id": "a3.007",
+   "act": 3,
+   "area": "1_3_3_1",
+   "kind": "trial",
+   "text": "Complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a3.b1"
+   },
+   "hints": []
+  },
+  {
+   "id": "a3.008",
+   "act": 3,
+   "area": "1_3_3_1",
+   "kind": "kill",
+   "text": "Find and kill Piety, take Tolman's Bracelet",
+   "kills": [
+    "Piety"
+   ],
+   "items": [
+    "Tolman's Bracelet"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.009",
+   "act": 3,
+   "area": "1_3_3_1",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a3.010",
+   "act": 3,
+   "area": "1_3_3_1",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a3.011",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "quest-item",
+   "text": "Talk to Clarissa, take Sewer Keys",
+   "items": [
+    "Sewer Keys"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.012",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "hand-in",
+   "text": "Hand in Lost in Love",
+   "quests": [
+    {
+     "id": "a3q1",
+     "name": "Lost in Love",
+     "npc": "Maramoa"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.013",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "enter",
+   "text": "→ The Slums",
+   "enters": [
+    "1_3_2"
+   ],
+   "hints": [
+    {
+     "text": "Go up",
+     "direction": 0
+    }
+   ]
+  },
+  {
+   "id": "a3.014",
+   "act": 3,
+   "area": "1_3_2",
+   "kind": "enter",
+   "text": "→ The Sewers",
+   "enters": [
+    "1_3_10_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.015",
+   "act": 3,
+   "area": "1_3_10_1",
+   "kind": "quest-item",
+   "text": "Find 1× Platinum Bust",
+   "items": [
+    "Platinum Bust"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.016",
+   "act": 3,
+   "area": "1_3_10_1",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": []
+  },
+  {
+   "id": "a3.017",
+   "act": 3,
+   "area": "1_3_10_1",
+   "kind": "quest-item",
+   "text": "Find 2× Platinum Bust",
+   "items": [
+    "Platinum Bust"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.018",
+   "act": 3,
+   "area": "1_3_10_1",
+   "kind": "enter",
+   "text": "→ The Marketplace",
+   "enters": [
+    "1_3_5"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.019",
+   "act": 3,
+   "area": "1_3_5",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": []
+  },
+  {
+   "id": "a3.020",
+   "act": 3,
+   "area": "1_3_5",
+   "kind": "enter",
+   "text": "→ The Catacombs",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a3.b2"
+   },
+   "enters": [
+    "1_3_6"
+   ],
+   "hints": [
+    {
+     "text": "Look around nearby"
+    }
+   ]
+  },
+  {
+   "id": "a3.021",
+   "act": 3,
+   "area": "1_3_6",
+   "kind": "trial",
+   "text": "Complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a3.b2"
+   },
+   "hints": []
+  },
+  {
+   "id": "a3.022",
+   "act": 3,
+   "area": "1_3_6",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a3.b2"
+   },
+   "hints": []
+  },
+  {
+   "id": "a3.023",
+   "act": 3,
+   "area": "1_3_6",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a3.024",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "hand-in",
+   "text": "Hand in Victario's Secrets",
+   "quests": [
+    {
+     "id": "a3q11",
+     "name": "Victario's Secrets",
+     "npc": "Hargan"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.025",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Marketplace",
+   "waypointTo": "1_3_5",
+   "hints": []
+  },
+  {
+   "id": "a3.026",
+   "act": 3,
+   "area": "1_3_5",
+   "kind": "enter",
+   "text": "→ The Battlefront",
+   "enters": [
+    "1_3_7"
+   ],
+   "hints": [
+    {
+     "text": "Search up",
+     "direction": 0
+    }
+   ]
+  },
+  {
+   "id": "a3.027",
+   "act": 3,
+   "area": "1_3_7",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a3.028",
+   "act": 3,
+   "area": "1_3_7",
+   "kind": "quest-item",
+   "text": "Find and take Ribbon Spool",
+   "items": [
+    "Ribbon Spool"
+   ],
+   "hints": [
+    {
+     "text": "Go down-left",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a3.029",
+   "act": 3,
+   "area": "1_3_7",
+   "kind": "enter",
+   "text": "→ The Solaris Temple Level 1",
+   "enters": [
+    "1_3_8_1"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a3.030",
+   "act": 3,
+   "area": "1_3_8_1",
+   "kind": "enter",
+   "text": "→ The Solaris Temple Level 2",
+   "enters": [
+    "1_3_8_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.031",
+   "act": 3,
+   "area": "1_3_8_2",
+   "kind": "crafting",
+   "text": "→ Eternal Laboratory, get the crafting recipe",
+   "arena": "Eternal Laboratory",
+   "hints": []
+  },
+  {
+   "id": "a3.032",
+   "act": 3,
+   "area": "1_3_8_2",
+   "kind": "waypoint",
+   "text": "Waypoint to The Battlefront",
+   "waypointTo": "1_3_7",
+   "hints": []
+  },
+  {
+   "id": "a3.033",
+   "act": 3,
+   "area": "1_3_7",
+   "kind": "enter",
+   "text": "→ The Docks",
+   "enters": [
+    "1_3_9"
+   ],
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a3.034",
+   "act": 3,
+   "area": "1_3_9",
+   "kind": "quest-item",
+   "text": "Find and take Thaumetic Sulphite",
+   "items": [
+    "Thaumetic Sulphite"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.035",
+   "act": 3,
+   "area": "1_3_9",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a3.036",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Solaris Temple Level 2",
+   "waypointTo": "1_3_8_2",
+   "hints": []
+  },
+  {
+   "id": "a3.037",
+   "act": 3,
+   "area": "1_3_8_2",
+   "kind": "other",
+   "text": "Talk to Lady Dialla",
+   "hints": []
+  },
+  {
+   "id": "a3.038",
+   "act": 3,
+   "area": "1_3_8_2",
+   "kind": "hand-in",
+   "text": "Hand in The Ribbon Spool",
+   "quests": [
+    {
+     "id": "a3q4",
+     "name": "The Ribbon Spool",
+     "npc": "Lady Dialla"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.039",
+   "act": 3,
+   "area": "1_3_8_2",
+   "kind": "hand-in",
+   "text": "Hand in Fiery Dust, take Infernal Talc",
+   "quests": [
+    {
+     "id": "a3q5",
+     "name": "Fiery Dust",
+     "npc": "Lady Dialla"
+    }
+   ],
+   "items": [
+    "Infernal Talc"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.040",
+   "act": 3,
+   "area": "1_3_8_2",
+   "kind": "waypoint",
+   "text": "Waypoint to The Sewers",
+   "waypointTo": "1_3_10_1",
+   "hints": []
+  },
+  {
+   "id": "a3.041",
+   "act": 3,
+   "area": "1_3_10_1",
+   "kind": "quest-item",
+   "text": "Burn the Undying Blockage",
+   "items": [
+    "Undying Blockage"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.042",
+   "act": 3,
+   "area": "1_3_10_1",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a3.043",
+   "act": 3,
+   "area": "1_3_10_1",
+   "kind": "enter",
+   "text": "→ The Ebony Barracks",
+   "enters": [
+    "1_3_13"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.044",
+   "act": 3,
+   "area": "1_3_13",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": []
+  },
+  {
+   "id": "a3.045",
+   "act": 3,
+   "area": "1_3_13",
+   "kind": "kill",
+   "text": "Kill General Gravicius",
+   "kills": [
+    "General Gravicius"
+   ],
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a3.046",
+   "act": 3,
+   "area": "1_3_13",
+   "kind": "enter",
+   "text": "→ The Lunaris Temple Level 1",
+   "enters": [
+    "1_3_14_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.047",
+   "act": 3,
+   "area": "1_3_14_1",
+   "kind": "enter",
+   "text": "→ The Lunaris Temple Level 2",
+   "enters": [
+    "1_3_14_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.048",
+   "act": 3,
+   "area": "1_3_14_2",
+   "kind": "kill",
+   "text": "Find and kill Piety, take Tower Key",
+   "kills": [
+    "Piety"
+   ],
+   "items": [
+    "Tower Key"
+   ],
+   "hints": [
+    {
+     "text": "Follow stairs that are going up"
+    },
+    {
+     "text": "At the fork in the road with wagons, go the route with 1 wagon, not 2"
+    }
+   ]
+  },
+  {
+   "id": "a3.049",
+   "act": 3,
+   "area": "1_3_14_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a3.050",
+   "act": 3,
+   "area": "1_3_14_2",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a3.051",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "hand-in",
+   "text": "Hand in Piety's Pets",
+   "quests": [
+    {
+     "id": "a3q9",
+     "name": "Piety's Pets",
+     "npc": "Grigor"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.052",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "hand-in",
+   "text": "Hand in Sever the Right Hand",
+   "quests": [
+    {
+     "id": "a3q8",
+     "name": "Sever the Right Hand",
+     "npc": "Maramoa"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.053",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Ebony Barracks",
+   "waypointTo": "1_3_13",
+   "hints": []
+  },
+  {
+   "id": "a3.054",
+   "act": 3,
+   "area": "1_3_13",
+   "kind": "enter",
+   "text": "→ The Imperial Gardens",
+   "enters": [
+    "1_3_15"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a3.055",
+   "act": 3,
+   "area": "1_3_15",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a3.056",
+   "act": 3,
+   "area": "1_3_15",
+   "kind": "trial",
+   "text": "Complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a3.b3"
+   },
+   "hints": [
+    {
+     "text": "Go up",
+     "direction": 0
+    }
+   ]
+  },
+  {
+   "id": "a3.057",
+   "act": 3,
+   "area": "1_3_15",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a3.b3"
+   },
+   "hints": []
+  },
+  {
+   "id": "a3.058",
+   "act": 3,
+   "area": "1_3_15",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a3.b3"
+   },
+   "hints": []
+  },
+  {
+   "id": "a3.059",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Imperial Gardens",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a3.b3"
+   },
+   "waypointTo": "1_3_15",
+   "hints": []
+  },
+  {
+   "id": "a3.060",
+   "act": 3,
+   "area": "1_3_15",
+   "kind": "enter",
+   "text": "→ The Library",
+   "when": {
+    "flag": "LIBRARY",
+    "negate": false,
+    "block": "a3.b4"
+   },
+   "enters": [
+    "1_3_17_1"
+   ],
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a3.061",
+   "act": 3,
+   "area": "1_3_17_1",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "when": {
+    "flag": "LIBRARY",
+    "negate": false,
+    "block": "a3.b4"
+   },
+   "hints": []
+  },
+  {
+   "id": "a3.062",
+   "act": 3,
+   "area": "1_3_17_1",
+   "kind": "enter",
+   "text": "Find Loose Candle → The Archives",
+   "when": {
+    "flag": "LIBRARY",
+    "negate": false,
+    "block": "a3.b4"
+   },
+   "enters": [
+    "1_3_17_2"
+   ],
+   "hints": [
+    {
+     "text": "Look for a candle in a narrow corridor"
+    }
+   ]
+  },
+  {
+   "id": "a3.063",
+   "act": 3,
+   "area": "1_3_17_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "when": {
+    "flag": "LIBRARY",
+    "negate": false,
+    "block": "a3.b4"
+   },
+   "hints": []
+  },
+  {
+   "id": "a3.064",
+   "act": 3,
+   "area": "1_3_17_2",
+   "kind": "quest-item",
+   "text": "Find 4× Golden Page",
+   "when": {
+    "flag": "LIBRARY",
+    "negate": false,
+    "block": "a3.b4"
+   },
+   "items": [
+    "Golden Page"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.065",
+   "act": 3,
+   "area": "1_3_17_2",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "LIBRARY",
+    "negate": false,
+    "block": "a3.b4"
+   },
+   "hints": []
+  },
+  {
+   "id": "a3.066",
+   "act": 3,
+   "area": "1_3_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Library",
+   "when": {
+    "flag": "LIBRARY",
+    "negate": false,
+    "block": "a3.b4"
+   },
+   "waypointTo": "1_3_17_1",
+   "hints": [
+    {
+     "text": "Put currency needed to buy skill gems in inventory"
+    }
+   ]
+  },
+  {
+   "id": "a3.067",
+   "act": 3,
+   "area": "1_3_17_1",
+   "kind": "hand-in",
+   "text": "Hand in A Fixture of Fate",
+   "when": {
+    "flag": "LIBRARY",
+    "negate": false,
+    "block": "a3.b4"
+   },
+   "quests": [
+    {
+     "id": "a3q12",
+     "name": "A Fixture of Fate",
+     "npc": "Siosa"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.068",
+   "act": 3,
+   "area": "1_3_17_1",
+   "kind": "waypoint",
+   "text": "Waypoint to The Imperial Gardens",
+   "when": {
+    "flag": "LIBRARY",
+    "negate": false,
+    "block": "a3.b4"
+   },
+   "waypointTo": "1_3_15",
+   "hints": []
+  },
+  {
+   "id": "a3.069",
+   "act": 3,
+   "area": "1_3_15",
+   "kind": "enter",
+   "text": "→ The Sceptre of God",
+   "enters": [
+    "1_3_18_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a3.070",
+   "act": 3,
+   "area": "1_3_18_1",
+   "kind": "enter",
+   "text": "→ The Upper Sceptre of God",
+   "enters": [
+    "1_3_18_2"
+   ],
+   "hints": [
+    {
+     "text": "Stairs spawn in one of the corners"
+    }
+   ]
+  },
+  {
+   "id": "a3.071",
+   "act": 3,
+   "area": "1_3_18_2",
+   "kind": "kill",
+   "text": "→ Tower Rooftop, Kill Dominus, High Templar",
+   "kills": [
+    "Dominus, High Templar"
+   ],
+   "arena": "Tower Rooftop",
+   "hints": [
+    {
+     "text": "Look for barricades"
+    }
+   ]
+  },
+  {
+   "id": "a4.001",
+   "act": 4,
+   "area": "1_3_18_2",
+   "kind": "enter",
+   "text": "→ The Aqueduct",
+   "enters": [
+    "1_4_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.002",
+   "act": 4,
+   "area": "1_4_1",
+   "kind": "enter",
+   "text": "→ Highgate",
+   "enters": [
+    "1_4_town"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.003",
+   "act": 4,
+   "area": "1_4_town",
+   "kind": "enter",
+   "text": "→ The Dried Lake",
+   "enters": [
+    "1_4_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.004",
+   "act": 4,
+   "area": "1_4_2",
+   "kind": "kill",
+   "text": "Find and kill Voll, Emperor of Purity, take Deshret's Banner",
+   "kills": [
+    "Voll, Emperor of Purity"
+   ],
+   "items": [
+    "Deshret's Banner"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.005",
+   "act": 4,
+   "area": "1_4_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a4.006",
+   "act": 4,
+   "area": "1_4_2",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a4.007",
+   "act": 4,
+   "area": "1_4_town",
+   "kind": "quest-item",
+   "text": "Break Deshret's Seal",
+   "items": [
+    "Deshret's Seal"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.008",
+   "act": 4,
+   "area": "1_4_town",
+   "kind": "hand-in",
+   "text": "Hand in Breaking the Seal",
+   "quests": [
+    {
+     "id": "a4q2",
+     "name": "Breaking the Seal",
+     "npc": "Oyun"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.009",
+   "act": 4,
+   "area": "1_4_town",
+   "kind": "enter",
+   "text": "→ The Mines Level 1",
+   "enters": [
+    "1_4_3_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.010",
+   "act": 4,
+   "area": "1_4_3_1",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a4.011",
+   "act": 4,
+   "area": "1_4_3_1",
+   "kind": "enter",
+   "text": "→ The Mines Level 2",
+   "enters": [
+    "1_4_3_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.012",
+   "act": 4,
+   "area": "1_4_3_2",
+   "kind": "quest-item",
+   "text": "Free Deshret",
+   "items": [
+    "Deshret"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.013",
+   "act": 4,
+   "area": "1_4_3_2",
+   "kind": "enter",
+   "text": "→ The Crystal Veins",
+   "enters": [
+    "1_4_3_3"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.014",
+   "act": 4,
+   "area": "1_4_3_3",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a4.015",
+   "act": 4,
+   "area": "1_4_3_3",
+   "kind": "waypoint",
+   "text": "Waypoint to Highgate",
+   "waypointTo": "1_4_town",
+   "hints": []
+  },
+  {
+   "id": "a4.016",
+   "act": 4,
+   "area": "1_4_town",
+   "kind": "hand-in",
+   "text": "Hand in An Indomitable Spirit",
+   "quests": [
+    {
+     "id": "a4q6",
+     "name": "An Indomitable Spirit",
+     "npc": "Tasuni"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.017",
+   "act": 4,
+   "area": "1_4_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Sarn Encampment",
+   "waypointTo": "1_3_town",
+   "hints": [],
+   "labTrip": "normal"
+  },
+  {
+   "id": "a4.018",
+   "act": 4,
+   "area": "1_3_town",
+   "kind": "enter",
+   "text": "→ Aspirants' Plaza, get the waypoint",
+   "enters": [
+    "Labyrinth_Airlock"
+   ],
+   "hints": [],
+   "labTrip": "normal"
+  },
+  {
+   "id": "a4.019",
+   "act": 4,
+   "area": "Labyrinth_Airlock",
+   "kind": "labyrinth",
+   "text": "the Normal Labyrinth",
+   "labyrinth": "normal",
+   "hints": [],
+   "labTrip": "normal"
+  },
+  {
+   "id": "a4.020",
+   "act": 4,
+   "area": "Labyrinth_Airlock",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": [],
+   "labTrip": "normal"
+  },
+  {
+   "id": "a4.021",
+   "act": 4,
+   "area": "Labyrinth_Airlock",
+   "kind": "waypoint",
+   "text": "Waypoint to The Crystal Veins",
+   "waypointTo": "1_4_3_3",
+   "hints": []
+  },
+  {
+   "id": "a4.022",
+   "act": 4,
+   "area": "1_4_3_3",
+   "kind": "enter",
+   "text": "→ Daresso's Dream",
+   "enters": [
+    "1_4_5_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.023",
+   "act": 4,
+   "area": "1_4_5_1",
+   "kind": "enter",
+   "text": "→ The Grand Arena",
+   "enters": [
+    "1_4_5_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.024",
+   "act": 4,
+   "area": "1_4_5_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a4.025",
+   "act": 4,
+   "area": "1_4_5_2",
+   "kind": "waypoint",
+   "text": "Waypoint to The Crystal Veins",
+   "waypointTo": "1_4_3_3",
+   "hints": []
+  },
+  {
+   "id": "a4.026",
+   "act": 4,
+   "area": "1_4_3_3",
+   "kind": "enter",
+   "text": "→ Kaom's Dream",
+   "enters": [
+    "1_4_4_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.027",
+   "act": 4,
+   "area": "1_4_4_1",
+   "kind": "enter",
+   "text": "→ Kaom's Stronghold",
+   "enters": [
+    "1_4_4_3"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    },
+    {
+     "text": "Follow Bridges"
+    }
+   ]
+  },
+  {
+   "id": "a4.028",
+   "act": 4,
+   "area": "1_4_4_3",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a4.029",
+   "act": 4,
+   "area": "1_4_4_3",
+   "kind": "kill",
+   "text": "→ Caldera of the King, kill King Kaom, take The Eye of Fury",
+   "kills": [
+    "King Kaom"
+   ],
+   "items": [
+    "The Eye of Fury"
+   ],
+   "arena": "Caldera of the King",
+   "hints": []
+  },
+  {
+   "id": "a4.030",
+   "act": 4,
+   "area": "1_4_4_3",
+   "kind": "portal",
+   "text": "the town portal",
+   "portal": "use",
+   "hints": []
+  },
+  {
+   "id": "a4.031",
+   "act": 4,
+   "area": "1_4_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Grand Arena",
+   "waypointTo": "1_4_5_2",
+   "hints": []
+  },
+  {
+   "id": "a4.032",
+   "act": 4,
+   "area": "1_4_5_2",
+   "kind": "kill",
+   "text": "→ The Ring of Blades, kill Daresso, King of Swords, take The Eye of Desire",
+   "kills": [
+    "Daresso, King of Swords"
+   ],
+   "items": [
+    "The Eye of Desire"
+   ],
+   "arena": "The Ring of Blades",
+   "hints": [
+    {
+     "text": "Go down-left follow the exits keeping left",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a4.033",
+   "act": 4,
+   "area": "1_4_5_2",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a4.034",
+   "act": 4,
+   "area": "1_4_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Crystal Veins",
+   "waypointTo": "1_4_3_3",
+   "hints": []
+  },
+  {
+   "id": "a4.035",
+   "act": 4,
+   "area": "1_4_3_3",
+   "kind": "other",
+   "text": "Talk to Lady Dialla",
+   "hints": []
+  },
+  {
+   "id": "a4.036",
+   "act": 4,
+   "area": "1_4_3_3",
+   "kind": "enter",
+   "text": "→ The Belly of the Beast Level 1",
+   "enters": [
+    "1_4_6_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.037",
+   "act": 4,
+   "area": "1_4_6_1",
+   "kind": "enter",
+   "text": "→ The Belly of the Beast Level 2",
+   "enters": [
+    "1_4_6_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.038",
+   "act": 4,
+   "area": "1_4_6_2",
+   "kind": "kill",
+   "text": "→ The Bowels of the Beast, kill Piety, the Abomination",
+   "kills": [
+    "Piety, the Abomination"
+   ],
+   "arena": "The Bowels of the Beast",
+   "hints": []
+  },
+  {
+   "id": "a4.039",
+   "act": 4,
+   "area": "1_4_6_2",
+   "kind": "other",
+   "text": "Talk to Piety",
+   "hints": []
+  },
+  {
+   "id": "a4.040",
+   "act": 4,
+   "area": "1_4_6_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a4.041",
+   "act": 4,
+   "area": "1_4_6_2",
+   "kind": "enter",
+   "text": "→ The Harvest",
+   "enters": [
+    "1_4_6_3"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.042",
+   "act": 4,
+   "area": "1_4_6_3",
+   "kind": "kill",
+   "text": "Find and kill Doedre Darktongue, take Malachai's Lungs",
+   "kills": [
+    "Doedre Darktongue"
+   ],
+   "items": [
+    "Malachai's Lungs"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.043",
+   "act": 4,
+   "area": "1_4_6_3",
+   "kind": "kill",
+   "text": "Find and kill Maligaro, The Inquisitor, take Malachai's Heart",
+   "kills": [
+    "Maligaro, The Inquisitor"
+   ],
+   "items": [
+    "Malachai's Heart"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.044",
+   "act": 4,
+   "area": "1_4_6_3",
+   "kind": "kill",
+   "text": "Find and kill Shavronne of Umbra, take Malachai's Entrails",
+   "kills": [
+    "Shavronne of Umbra"
+   ],
+   "items": [
+    "Malachai's Entrails"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.045",
+   "act": 4,
+   "area": "1_4_6_3",
+   "kind": "hand-in",
+   "text": "Hand in Corpus Malachus",
+   "quests": [
+    {
+     "id": "a4q5",
+     "name": "Corpus Malachus"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.046",
+   "act": 4,
+   "area": "1_4_6_3",
+   "kind": "kill",
+   "text": "→ The Black Core, kill Malachai, The Nightmare",
+   "kills": [
+    "Malachai, The Nightmare"
+   ],
+   "arena": "The Black Core",
+   "hints": []
+  },
+  {
+   "id": "a4.047",
+   "act": 4,
+   "area": "1_4_6_3",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a4.048",
+   "act": 4,
+   "area": "1_4_town",
+   "kind": "hand-in",
+   "text": "Hand in The Eternal Nightmare",
+   "quests": [
+    {
+     "id": "a4q1",
+     "name": "The Eternal Nightmare",
+     "npc": "Dialla"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.049",
+   "act": 4,
+   "area": "1_4_town",
+   "kind": "enter",
+   "text": "→ The Ascent",
+   "enters": [
+    "1_4_7"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a4.050",
+   "act": 4,
+   "area": "1_4_7",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a4.051",
+   "act": 4,
+   "area": "1_4_7",
+   "kind": "quest-item",
+   "text": "Activate The Resonator, use Oriath Portal",
+   "items": [
+    "The Resonator",
+    "Oriath Portal"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.001",
+   "act": 5,
+   "area": "1_4_7",
+   "kind": "enter",
+   "text": "→ The Slave Pens",
+   "enters": [
+    "1_5_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.002",
+   "act": 5,
+   "area": "1_5_1",
+   "kind": "kill",
+   "text": "Find and kill Overseer Krow",
+   "kills": [
+    "Overseer Krow"
+   ],
+   "hints": [
+    {
+     "text": "Go down until you find the hanged Karui",
+     "direction": 180
+    },
+    {
+     "text": "Loop around clockwise to go left",
+     "direction": 270
+    }
+   ]
+  },
+  {
+   "id": "a5.003",
+   "act": 5,
+   "area": "1_5_1",
+   "kind": "enter",
+   "text": "→ Overseer's Tower",
+   "enters": [
+    "1_5_town"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.004",
+   "act": 5,
+   "area": "1_5_town",
+   "kind": "hand-in",
+   "text": "Hand in Return to Oriath",
+   "quests": [
+    {
+     "id": "a5q1b",
+     "name": "Return to Oriath",
+     "npc": "Lani"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.005",
+   "act": 5,
+   "area": "1_5_town",
+   "kind": "enter",
+   "text": "→ The Control Blocks",
+   "enters": [
+    "1_5_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.006",
+   "act": 5,
+   "area": "1_5_2",
+   "kind": "quest-item",
+   "text": "Find and take Miasmeter",
+   "items": [
+    "Miasmeter"
+   ],
+   "hints": [
+    {
+     "text": "Go left as much as possible",
+     "direction": 270
+    }
+   ]
+  },
+  {
+   "id": "a5.007",
+   "act": 5,
+   "area": "1_5_2",
+   "kind": "kill",
+   "text": "Find and kill Justicar Casticus, take Eyes of Zeal",
+   "kills": [
+    "Justicar Casticus"
+   ],
+   "items": [
+    "Eyes of Zeal"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right from Miasmeter",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a5.008",
+   "act": 5,
+   "area": "1_5_2",
+   "kind": "enter",
+   "text": "→ Oriath Square",
+   "enters": [
+    "1_5_3"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.009",
+   "act": 5,
+   "area": "1_5_3",
+   "kind": "enter",
+   "text": "→ The Templar Courts",
+   "enters": [
+    "1_5_4"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a5.010",
+   "act": 5,
+   "area": "1_5_4",
+   "kind": "enter",
+   "text": "→ The Chamber of Innocence",
+   "enters": [
+    "1_5_5"
+   ],
+   "hints": [
+    {
+     "text": "Loop around clockwise"
+    },
+    {
+     "text": "Farm Level: 40-42"
+    }
+   ]
+  },
+  {
+   "id": "a5.011",
+   "act": 5,
+   "area": "1_5_5",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a5.012",
+   "act": 5,
+   "area": "1_5_5",
+   "kind": "kill",
+   "text": "→ Sanctum of Innocence, kill High Templar Avarius",
+   "kills": [
+    "High Templar Avarius"
+   ],
+   "arena": "Sanctum of Innocence",
+   "hints": [
+    {
+     "text": "Go up-left counter-clockwise spiral",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a5.013",
+   "act": 5,
+   "area": "1_5_5",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a5.014",
+   "act": 5,
+   "area": "1_5_town",
+   "kind": "hand-in",
+   "text": "Hand in The Key to Freedom",
+   "quests": [
+    {
+     "id": "a5q2",
+     "name": "The Key to Freedom",
+     "npc": "Lani"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.015",
+   "act": 5,
+   "area": "1_5_town",
+   "kind": "hand-in",
+   "text": "Hand in In Service to Science",
+   "quests": [
+    {
+     "id": "a5q3",
+     "name": "In Service to Science",
+     "npc": "Vilenta"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.016",
+   "act": 5,
+   "area": "1_5_town",
+   "kind": "hand-in",
+   "text": "Hand in Death to Purity",
+   "quests": [
+    {
+     "id": "a5q4",
+     "name": "Death to Purity",
+     "npc": "Lani"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.017",
+   "act": 5,
+   "area": "1_5_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Chamber of Innocence",
+   "waypointTo": "1_5_5",
+   "hints": []
+  },
+  {
+   "id": "a5.018",
+   "act": 5,
+   "area": "1_5_5",
+   "kind": "enter",
+   "text": "→ The Torched Courts",
+   "enters": [
+    "1_5_4b"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.019",
+   "act": 5,
+   "area": "1_5_4b",
+   "kind": "enter",
+   "text": "→ The Ruined Square",
+   "enters": [
+    "1_5_3b"
+   ],
+   "hints": [
+    {
+     "text": "Loop around counter-clockwise"
+    }
+   ]
+  },
+  {
+   "id": "a5.020",
+   "act": 5,
+   "area": "1_5_3b",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a5.021",
+   "act": 5,
+   "area": "1_5_3b",
+   "kind": "enter",
+   "text": "→ The Ossuary",
+   "enters": [
+    "1_5_6"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.022",
+   "act": 5,
+   "area": "1_5_6",
+   "kind": "quest-item",
+   "text": "Find and take Sign of Purity",
+   "items": [
+    "Sign of Purity"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.023",
+   "act": 5,
+   "area": "1_5_6",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a5.024",
+   "act": 5,
+   "area": "1_5_6",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a5.025",
+   "act": 5,
+   "area": "1_5_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Ruined Square",
+   "waypointTo": "1_5_3b",
+   "hints": []
+  },
+  {
+   "id": "a5.026",
+   "act": 5,
+   "area": "1_5_3b",
+   "kind": "enter",
+   "text": "→ The Reliquary",
+   "enters": [
+    "1_5_7"
+   ],
+   "hints": [
+    {
+     "text": "Go down-left find the plaza",
+     "direction": 225
+    },
+    {
+     "text": "Go down",
+     "direction": 180
+    }
+   ]
+  },
+  {
+   "id": "a5.027",
+   "act": 5,
+   "area": "1_5_7",
+   "kind": "quest-item",
+   "text": "Find 3× Kitava's Torment, search in the corners of the map",
+   "items": [
+    "Kitava's Torment"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.028",
+   "act": 5,
+   "area": "1_5_7",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a5.029",
+   "act": 5,
+   "area": "1_5_7",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a5.030",
+   "act": 5,
+   "area": "1_5_town",
+   "kind": "hand-in",
+   "text": "Hand in Kitava's Torments",
+   "quests": [
+    {
+     "id": "a5q7",
+     "name": "Kitava's Torments",
+     "npc": "Lani"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a5.031",
+   "act": 5,
+   "area": "1_5_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Ruined Square",
+   "waypointTo": "1_5_3b",
+   "hints": []
+  },
+  {
+   "id": "a5.032",
+   "act": 5,
+   "area": "1_5_3b",
+   "kind": "enter",
+   "text": "→ The Cathedral Rooftop",
+   "enters": [
+    "1_5_8"
+   ],
+   "hints": [
+    {
+     "text": "Go down-left",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a5.033",
+   "act": 5,
+   "area": "1_5_8",
+   "kind": "kill",
+   "text": "→ Cathedral Apex, kill Kitava, the Insatiable",
+   "kills": [
+    "Kitava, the Insatiable"
+   ],
+   "arena": "Cathedral Apex",
+   "hints": []
+  },
+  {
+   "id": "a5.034",
+   "act": 5,
+   "area": "1_5_8",
+   "kind": "other",
+   "text": "Talk to Lilly Roth, Sail to Wraeclast",
+   "hints": []
+  },
+  {
+   "id": "a6.001",
+   "act": 6,
+   "area": "1_5_8",
+   "kind": "enter",
+   "text": "→ Lioneye's Watch",
+   "enters": [
+    "2_6_town"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.002",
+   "act": 6,
+   "area": "2_6_town",
+   "kind": "enter",
+   "text": "→ The Twilight Strand",
+   "enters": [
+    "2_6_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.003",
+   "act": 6,
+   "area": "2_6_1",
+   "kind": "kill",
+   "text": "Kill Everything",
+   "kills": [
+    "Everything"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.004",
+   "act": 6,
+   "area": "2_6_1",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a6.005",
+   "act": 6,
+   "area": "2_6_town",
+   "kind": "hand-in",
+   "text": "Hand in Fallen from Grace",
+   "quests": [
+    {
+     "id": "a6q4",
+     "name": "Fallen from Grace",
+     "npc": "Lilly Roth"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.006",
+   "act": 6,
+   "area": "2_6_town",
+   "kind": "enter",
+   "text": "→ The Coast",
+   "enters": [
+    "2_6_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.007",
+   "act": 6,
+   "area": "2_6_2",
+   "kind": "enter",
+   "text": "→ The Mud Flats",
+   "enters": [
+    "2_6_4"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.008",
+   "act": 6,
+   "area": "2_6_4",
+   "kind": "kill",
+   "text": "Find and kill The Dishonoured Queen, take Eye of Conquest",
+   "kills": [
+    "The Dishonoured Queen"
+   ],
+   "items": [
+    "Eye of Conquest"
+   ],
+   "hints": [
+    {
+     "text": "up-right corner of area, normally by a house",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a6.009",
+   "act": 6,
+   "area": "2_6_4",
+   "kind": "enter",
+   "text": "→ The Karui Fortress",
+   "enters": [
+    "2_6_5"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.010",
+   "act": 6,
+   "area": "2_6_5",
+   "kind": "kill",
+   "text": "→ Tukohama's Keep, kill Tukohama, Karui God of War",
+   "kills": [
+    "Tukohama, Karui God of War"
+   ],
+   "arena": "Tukohama's Keep",
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    },
+    {
+     "text": "Find and kill the pack of monster on the island down-left for a Tattoo",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a6.011",
+   "act": 6,
+   "area": "2_6_5",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a6.012",
+   "act": 6,
+   "area": "2_6_5",
+   "kind": "enter",
+   "text": "→ The Ridge",
+   "enters": [
+    "2_6_6"
+   ],
+   "hints": [
+    {
+     "text": "Go up",
+     "direction": 0
+    }
+   ]
+  },
+  {
+   "id": "a6.013",
+   "act": 6,
+   "area": "2_6_6",
+   "kind": "enter",
+   "text": "→ The Lower Prison",
+   "enters": [
+    "2_6_7_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.014",
+   "act": 6,
+   "area": "2_6_7_1",
+   "kind": "trial",
+   "text": "Complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a6.b2"
+   },
+   "hints": []
+  },
+  {
+   "id": "a6.015",
+   "act": 6,
+   "area": "2_6_7_1",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a6.016",
+   "act": 6,
+   "area": "2_6_7_1",
+   "kind": "enter",
+   "text": "→ Shavronne's Tower",
+   "enters": [
+    "2_6_7_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.017",
+   "act": 6,
+   "area": "2_6_7_2",
+   "kind": "kill",
+   "text": "→ Prison Rooftop, kill Shavronne the Returned & Reassembled Brutus",
+   "kills": [
+    "Shavronne the Returned",
+    "Reassembled Brutus"
+   ],
+   "arena": "Prison Rooftop",
+   "hints": []
+  },
+  {
+   "id": "a6.018",
+   "act": 6,
+   "area": "2_6_7_2",
+   "kind": "other",
+   "text": "→ The Warden's Chambers",
+   "arena": "The Warden's Chambers",
+   "hints": []
+  },
+  {
+   "id": "a6.019",
+   "act": 6,
+   "area": "2_6_7_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a6.020",
+   "act": 6,
+   "area": "2_6_7_2",
+   "kind": "enter",
+   "text": "→ Prisoner's Gate",
+   "enters": [
+    "2_6_8"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.021",
+   "act": 6,
+   "area": "2_6_8",
+   "kind": "kill",
+   "text": "→ Valley of the Fire Drinker, kill Abberath, the Cloven One",
+   "kills": [
+    "Abberath, the Cloven One"
+   ],
+   "arena": "Valley of the Fire Drinker",
+   "hints": [
+    {
+     "text": "Go down the ledge next to the road"
+    }
+   ]
+  },
+  {
+   "id": "a6.022",
+   "act": 6,
+   "area": "2_6_8",
+   "kind": "portal",
+   "text": "the town portal",
+   "portal": "use",
+   "hints": []
+  },
+  {
+   "id": "a6.023",
+   "act": 6,
+   "area": "2_6_town",
+   "kind": "hand-in",
+   "text": "Hand in The Cloven One",
+   "quests": [
+    {
+     "id": "a6q7",
+     "name": "The Cloven One",
+     "npc": "Bestel"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.024",
+   "act": 6,
+   "area": "2_6_town",
+   "kind": "waypoint",
+   "text": "Waypoint to Prisoner's Gate",
+   "waypointTo": "2_6_8",
+   "hints": []
+  },
+  {
+   "id": "a6.025",
+   "act": 6,
+   "area": "2_6_8",
+   "kind": "enter",
+   "text": "→ The Western Forest",
+   "enters": [
+    "2_6_9"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a6.026",
+   "act": 6,
+   "area": "2_6_9",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": [
+    {
+     "text": "Look for the torch touching the road"
+    },
+    {
+     "text": "Follow the trail in the direction of the torch"
+    }
+   ]
+  },
+  {
+   "id": "a6.027",
+   "act": 6,
+   "area": "2_6_9",
+   "kind": "enter",
+   "text": "→ The Riverways",
+   "enters": [
+    "2_6_10"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a6.028",
+   "act": 6,
+   "area": "2_6_10",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a6.029",
+   "act": 6,
+   "area": "2_6_10",
+   "kind": "enter",
+   "text": "→ The Wetlands",
+   "enters": [
+    "2_6_11"
+   ],
+   "hints": [
+    {
+     "text": "Look for 2 pillars near the waypoint, follow the trail"
+    }
+   ]
+  },
+  {
+   "id": "a6.030",
+   "act": 6,
+   "area": "2_6_11",
+   "kind": "kill",
+   "text": "→ The Spawning Ground, kill Ryslatha, the Puppet Mistress",
+   "kills": [
+    "Ryslatha, the Puppet Mistress"
+   ],
+   "arena": "The Spawning Ground",
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a6.031",
+   "act": 6,
+   "area": "2_6_11",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a6.032",
+   "act": 6,
+   "area": "2_6_town",
+   "kind": "hand-in",
+   "text": "Hand in The Father of War",
+   "quests": [
+    {
+     "id": "a6q3",
+     "name": "The Father of War",
+     "npc": "Tarkleigh"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.033",
+   "act": 6,
+   "area": "2_6_town",
+   "kind": "hand-in",
+   "text": "Hand in Essence of Umbra",
+   "quests": [
+    {
+     "id": "a6q2",
+     "name": "Essence of Umbra",
+     "npc": "Tarkleigh"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.034",
+   "act": 6,
+   "area": "2_6_town",
+   "kind": "hand-in",
+   "text": "Hand in The Puppet Mistress",
+   "quests": [
+    {
+     "id": "a6q6",
+     "name": "The Puppet Mistress",
+     "npc": "Tarkleigh"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.035",
+   "act": 6,
+   "area": "2_6_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Riverways",
+   "waypointTo": "2_6_10",
+   "hints": []
+  },
+  {
+   "id": "a6.036",
+   "act": 6,
+   "area": "2_6_10",
+   "kind": "enter",
+   "text": "→ The Southern Forest",
+   "enters": [
+    "2_6_12"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road until it ends"
+    },
+    {
+     "text": "Go down-right",
+     "direction": 135
+    }
+   ]
+  },
+  {
+   "id": "a6.037",
+   "act": 6,
+   "area": "2_6_12",
+   "kind": "enter",
+   "text": "→ The Cavern of Anger",
+   "enters": [
+    "2_6_13"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.038",
+   "act": 6,
+   "area": "2_6_13",
+   "kind": "quest-item",
+   "text": "Take The Black Flag",
+   "items": [
+    "The Black Flag"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.039",
+   "act": 6,
+   "area": "2_6_13",
+   "kind": "enter",
+   "text": "→ The Beacon",
+   "enters": [
+    "2_6_14"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.040",
+   "act": 6,
+   "area": "2_6_14",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": [
+    {
+     "text": "Follow the shore"
+    }
+   ]
+  },
+  {
+   "id": "a6.041",
+   "act": 6,
+   "area": "2_6_14",
+   "kind": "quest-item",
+   "text": "Complete Pillar Push",
+   "items": [
+    "Pillar Push"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.042",
+   "act": 6,
+   "area": "2_6_14",
+   "kind": "quest-item",
+   "text": "Light the Beacon, throw in The Black Flag",
+   "items": [
+    "Beacon",
+    "The Black Flag"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.043",
+   "act": 6,
+   "area": "2_6_14",
+   "kind": "enter",
+   "text": "Talk to Weylam Roth, sail to The Brine King's Reef",
+   "enters": [
+    "2_6_15"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a6.044",
+   "act": 6,
+   "area": "2_6_15",
+   "kind": "kill",
+   "text": "→ The Bring King's Throne, kill Tsoagoth, The Brine King",
+   "kills": [
+    "Tsoagoth, The Brine King"
+   ],
+   "arena": "The Bring King's Throne",
+   "hints": []
+  },
+  {
+   "id": "a6.045",
+   "act": 6,
+   "area": "2_6_15",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a6.046",
+   "act": 6,
+   "area": "2_6_town",
+   "kind": "other",
+   "text": "Select Pantheons",
+   "hints": []
+  },
+  {
+   "id": "a7.001",
+   "act": 7,
+   "area": "2_6_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Bridge Encampment",
+   "waypointTo": "2_7_town",
+   "hints": []
+  },
+  {
+   "id": "a7.002",
+   "act": 7,
+   "area": "2_7_town",
+   "kind": "enter",
+   "text": "→ The Broken Bridge",
+   "enters": [
+    "2_7_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.003",
+   "act": 7,
+   "area": "2_7_1",
+   "kind": "quest-item",
+   "text": "Find and take Silver Locket",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a7.b1"
+   },
+   "items": [
+    "Silver Locket"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road, look for the broken the waypoint"
+    }
+   ]
+  },
+  {
+   "id": "a7.004",
+   "act": 7,
+   "area": "2_7_1",
+   "kind": "enter",
+   "text": "→ The Crossroads",
+   "enters": [
+    "2_7_2"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a7.005",
+   "act": 7,
+   "area": "2_7_2",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": []
+  },
+  {
+   "id": "a7.006",
+   "act": 7,
+   "area": "2_7_2",
+   "kind": "enter",
+   "text": "→ The Fellshrine Ruins",
+   "enters": [
+    "2_7_3"
+   ],
+   "hints": [
+    {
+     "text": "Go down-right",
+     "direction": 135
+    }
+   ]
+  },
+  {
+   "id": "a7.007",
+   "act": 7,
+   "area": "2_7_3",
+   "kind": "enter",
+   "text": "→ The Crypt",
+   "enters": [
+    "2_7_4"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road"
+    }
+   ]
+  },
+  {
+   "id": "a7.008",
+   "act": 7,
+   "area": "2_7_4",
+   "kind": "trial",
+   "text": "Complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a7.b2"
+   },
+   "hints": []
+  },
+  {
+   "id": "a7.009",
+   "act": 7,
+   "area": "2_7_4",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a7.b2"
+   },
+   "hints": []
+  },
+  {
+   "id": "a7.010",
+   "act": 7,
+   "area": "2_7_4",
+   "kind": "other",
+   "text": "Find Sarcophagus to next floor",
+   "hints": []
+  },
+  {
+   "id": "a7.011",
+   "act": 7,
+   "area": "2_7_4",
+   "kind": "quest-item",
+   "text": "Find and take Maligaro's Map",
+   "items": [
+    "Maligaro's Map"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.012",
+   "act": 7,
+   "area": "2_7_4",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a7.013",
+   "act": 7,
+   "area": "2_7_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Crossroads",
+   "waypointTo": "2_7_2",
+   "hints": []
+  },
+  {
+   "id": "a7.014",
+   "act": 7,
+   "area": "2_7_2",
+   "kind": "enter",
+   "text": "→ The Chamber of Sins Level 1",
+   "enters": [
+    "2_7_5_1"
+   ],
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a7.015",
+   "act": 7,
+   "area": "2_7_5_1",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a7.016",
+   "act": 7,
+   "area": "2_7_5_1",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": []
+  },
+  {
+   "id": "a7.017",
+   "act": 7,
+   "area": "2_7_5_1",
+   "kind": "quest-item",
+   "text": "Activate Map Device with Maligaro's Map",
+   "items": [
+    "Map Device",
+    "Maligaro's Map"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.018",
+   "act": 7,
+   "area": "2_7_5_1",
+   "kind": "enter",
+   "text": "→ Maligaro's Sanctum",
+   "enters": [
+    "2_7_5_map"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.019",
+   "act": 7,
+   "area": "2_7_5_map",
+   "kind": "kill",
+   "text": "→ Maligaro's Workshop, kill Maligaro, the Artist, take Black Venom",
+   "kills": [
+    "Maligaro, the Artist"
+   ],
+   "items": [
+    "Black Venom"
+   ],
+   "arena": "Maligaro's Workshop",
+   "hints": [
+    {
+     "text": "Follow edges of the zone and cross bridges in the corners"
+    },
+    {
+     "text": "Typically bridges spawn in the opposite diagonal corners"
+    }
+   ]
+  },
+  {
+   "id": "a7.020",
+   "act": 7,
+   "area": "2_7_5_map",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a7.021",
+   "act": 7,
+   "area": "2_7_town",
+   "kind": "hand-in",
+   "text": "Hand in Essence of the Artist",
+   "quests": [
+    {
+     "id": "a7q2",
+     "name": "Essence of the Artist",
+     "npc": "Helena"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.022",
+   "act": 7,
+   "area": "2_7_town",
+   "kind": "hand-in",
+   "text": "Hand in The Silver Locket",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a7.b3"
+   },
+   "quests": [
+    {
+     "id": "a7q5",
+     "name": "The Silver Locket",
+     "npc": "Weylam Roth"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.023",
+   "act": 7,
+   "area": "2_7_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Chamber of Sins Level 1",
+   "waypointTo": "2_7_5_1",
+   "hints": []
+  },
+  {
+   "id": "a7.024",
+   "act": 7,
+   "area": "2_7_5_1",
+   "kind": "hand-in",
+   "text": "Hand in Web of Secrets, take Obsidian Key",
+   "quests": [
+    {
+     "id": "a7q3",
+     "name": "Web of Secrets",
+     "npc": "Silk"
+    }
+   ],
+   "items": [
+    "Obsidian Key"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.025",
+   "act": 7,
+   "area": "2_7_5_1",
+   "kind": "enter",
+   "text": "→ The Chamber of Sins Level 2",
+   "enters": [
+    "2_7_5_2"
+   ],
+   "hints": [
+    {
+     "text": "Go in same direction as the waypoint"
+    }
+   ]
+  },
+  {
+   "id": "a7.026",
+   "act": 7,
+   "area": "2_7_5_2",
+   "kind": "trial",
+   "text": "Complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a7.b4"
+   },
+   "hints": [
+    {
+     "text": "Find the switch hidden behind Trial of Ascendancy Plaque to access Hidden Gem: Quality"
+    }
+   ]
+  },
+  {
+   "id": "a7.027",
+   "act": 7,
+   "area": "2_7_5_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a7.b4"
+   },
+   "hints": []
+  },
+  {
+   "id": "a7.028",
+   "act": 7,
+   "area": "2_7_5_2",
+   "kind": "enter",
+   "text": "Open Secret Passage → The Den",
+   "enters": [
+    "2_7_6"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.029",
+   "act": 7,
+   "area": "2_7_6",
+   "kind": "enter",
+   "text": "→ The Ashen Fields",
+   "enters": [
+    "2_7_7"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.030",
+   "act": 7,
+   "area": "2_7_7",
+   "kind": "kill",
+   "text": "→ The Forest Encampment, kill Greust, Lord of the Forest",
+   "kills": [
+    "Greust, Lord of the Forest"
+   ],
+   "arena": "The Forest Encampment",
+   "hints": [
+    {
+     "text": "Go down-left",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a7.031",
+   "act": 7,
+   "area": "2_7_7",
+   "kind": "enter",
+   "text": "→ The Northern Forest",
+   "enters": [
+    "2_7_8"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.032",
+   "act": 7,
+   "area": "2_7_8",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": []
+  },
+  {
+   "id": "a7.033",
+   "act": 7,
+   "area": "2_7_8",
+   "kind": "enter",
+   "text": "→ The Causeway",
+   "enters": [
+    "2_7_10"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.034",
+   "act": 7,
+   "area": "2_7_10",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a7.035",
+   "act": 7,
+   "area": "2_7_10",
+   "kind": "quest-item",
+   "text": "Find and take Kishara's Star",
+   "items": [
+    "Kishara's Star"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.036",
+   "act": 7,
+   "area": "2_7_10",
+   "kind": "enter",
+   "text": "→ The Vaal City",
+   "enters": [
+    "2_7_11"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.037",
+   "act": 7,
+   "area": "2_7_11",
+   "kind": "get-waypoint",
+   "text": "Find the waypoint",
+   "hints": []
+  },
+  {
+   "id": "a7.038",
+   "act": 7,
+   "area": "2_7_11",
+   "kind": "waypoint",
+   "text": "Waypoint to The Northern Forest",
+   "waypointTo": "2_7_8",
+   "hints": []
+  },
+  {
+   "id": "a7.039",
+   "act": 7,
+   "area": "2_7_8",
+   "kind": "enter",
+   "text": "→ The Dread Thicket",
+   "enters": [
+    "2_7_9"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.040",
+   "act": 7,
+   "area": "2_7_9",
+   "kind": "quest-item",
+   "text": "Find and take 7× Firefly",
+   "items": [
+    "Firefly"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.041",
+   "act": 7,
+   "area": "2_7_9",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a7.042",
+   "act": 7,
+   "area": "2_7_9",
+   "kind": "kill",
+   "text": "→ Den of Despair, kill Gruthkul, Mother of Despair",
+   "kills": [
+    "Gruthkul, Mother of Despair"
+   ],
+   "arena": "Den of Despair",
+   "hints": []
+  },
+  {
+   "id": "a7.043",
+   "act": 7,
+   "area": "2_7_9",
+   "kind": "portal",
+   "text": "the town portal",
+   "portal": "use",
+   "hints": []
+  },
+  {
+   "id": "a7.044",
+   "act": 7,
+   "area": "2_7_town",
+   "kind": "hand-in",
+   "text": "Hand in The Master of a Million Faces",
+   "quests": [
+    {
+     "id": "a7q1",
+     "name": "The Master of a Million Faces",
+     "npc": "Eramir"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.045",
+   "act": 7,
+   "area": "2_7_town",
+   "kind": "hand-in",
+   "text": "Hand in Queen of Despair",
+   "quests": [
+    {
+     "id": "a7q9",
+     "name": "Queen of Despair",
+     "npc": "Eramir"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.046",
+   "act": 7,
+   "area": "2_7_town",
+   "kind": "hand-in",
+   "text": "Hand in Kishara's Star",
+   "quests": [
+    {
+     "id": "a7q6",
+     "name": "Kishara's Star",
+     "npc": "Weylam Roth"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.047",
+   "act": 7,
+   "area": "2_7_town",
+   "kind": "waypoint",
+   "text": "Waypoint to Aspirants' Plaza",
+   "waypointTo": "Labyrinth_Airlock",
+   "hints": [],
+   "labTrip": "cruel"
+  },
+  {
+   "id": "a7.048",
+   "act": 7,
+   "area": "Labyrinth_Airlock",
+   "kind": "labyrinth",
+   "text": "the Cruel Labyrinth",
+   "labyrinth": "cruel",
+   "hints": [],
+   "labTrip": "cruel"
+  },
+  {
+   "id": "a7.049",
+   "act": 7,
+   "area": "Labyrinth_Airlock",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": [],
+   "labTrip": "cruel"
+  },
+  {
+   "id": "a7.050",
+   "act": 7,
+   "area": "Labyrinth_Airlock",
+   "kind": "waypoint",
+   "text": "Waypoint to The Vaal City",
+   "waypointTo": "2_7_11",
+   "hints": []
+  },
+  {
+   "id": "a7.051",
+   "act": 7,
+   "area": "2_7_11",
+   "kind": "hand-in",
+   "text": "Hand in Lighting the Way",
+   "quests": [
+    {
+     "id": "a7q7",
+     "name": "Lighting the Way"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.052",
+   "act": 7,
+   "area": "2_7_11",
+   "kind": "enter",
+   "text": "→ The Temple of Decay Level 1",
+   "enters": [
+    "2_7_12_1"
+   ],
+   "hints": [
+    {
+     "text": "In the room with a central pit, look down-left or up-right for a side area containing a Corrupted Unique",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a7.053",
+   "act": 7,
+   "area": "2_7_12_1",
+   "kind": "enter",
+   "text": "→ The Temple of Decay Level 2",
+   "enters": [
+    "2_7_12_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a7.054",
+   "act": 7,
+   "area": "2_7_12_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a7.055",
+   "act": 7,
+   "area": "2_7_12_2",
+   "kind": "kill",
+   "text": "→ Arakaali's Web, kill Arakaali, Spinner of Shadows",
+   "kills": [
+    "Arakaali, Spinner of Shadows"
+   ],
+   "arena": "Arakaali's Web",
+   "hints": []
+  },
+  {
+   "id": "a8.001",
+   "act": 8,
+   "area": "2_7_12_2",
+   "kind": "enter",
+   "text": "→ The Sarn Ramparts",
+   "enters": [
+    "2_8_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.002",
+   "act": 8,
+   "area": "2_8_1",
+   "kind": "enter",
+   "text": "→ The Sarn Encampment",
+   "enters": [
+    "2_8_town"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.003",
+   "act": 8,
+   "area": "2_8_town",
+   "kind": "enter",
+   "text": "→ The Toxic Conduits",
+   "enters": [
+    "2_8_2_1"
+   ],
+   "hints": [
+    {
+     "text": "Go left",
+     "direction": 270
+    }
+   ]
+  },
+  {
+   "id": "a8.004",
+   "act": 8,
+   "area": "2_8_2_1",
+   "kind": "enter",
+   "text": "→ Doedre's Cesspool",
+   "enters": [
+    "2_8_2_2"
+   ],
+   "hints": [
+    {
+     "text": "Black splashes of paint on ground points to the right direction to go"
+    }
+   ]
+  },
+  {
+   "id": "a8.005",
+   "act": 8,
+   "area": "2_8_2_2",
+   "kind": "kill",
+   "text": "→ The Cauldron, kill Doedre the Vile",
+   "kills": [
+    "Doedre the Vile"
+   ],
+   "arena": "The Cauldron",
+   "hints": []
+  },
+  {
+   "id": "a8.006",
+   "act": 8,
+   "area": "2_8_2_2",
+   "kind": "other",
+   "text": "→ Sewer Outlet",
+   "arena": "Sewer Outlet",
+   "hints": []
+  },
+  {
+   "id": "a8.007",
+   "act": 8,
+   "area": "2_8_2_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a8.008",
+   "act": 8,
+   "area": "2_8_2_2",
+   "kind": "enter",
+   "text": "→ The Quay",
+   "enters": [
+    "2_8_8"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a8.009",
+   "act": 8,
+   "area": "2_8_8",
+   "kind": "quest-item",
+   "text": "Find and take Ankh of Eternity",
+   "items": [
+    "Ankh of Eternity"
+   ],
+   "hints": [
+    {
+     "text": "Follow left wall",
+     "direction": 270
+    }
+   ]
+  },
+  {
+   "id": "a8.010",
+   "act": 8,
+   "area": "2_8_8",
+   "kind": "other",
+   "text": "→ Resurrection Site",
+   "arena": "Resurrection Site",
+   "hints": [
+    {
+     "text": "Go down-right",
+     "direction": 135
+    }
+   ]
+  },
+  {
+   "id": "a8.011",
+   "act": 8,
+   "area": "2_8_8",
+   "kind": "kill",
+   "text": "Talk to Clarissa, kill Tolman",
+   "kills": [
+    "Tolman"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.012",
+   "act": 8,
+   "area": "2_8_8",
+   "kind": "enter",
+   "text": "→ The Grain Gate",
+   "enters": [
+    "2_8_9"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.013",
+   "act": 8,
+   "area": "2_8_9",
+   "kind": "kill",
+   "text": "Find and kill Gemling Legionnaires",
+   "kills": [
+    "Gemling Legionnaires"
+   ],
+   "hints": [
+    {
+     "text": "Follow the dead guards by doorways"
+    },
+    {
+     "text": "Look for a book icon"
+    }
+   ]
+  },
+  {
+   "id": "a8.014",
+   "act": 8,
+   "area": "2_8_9",
+   "kind": "enter",
+   "text": "→ The Imperial Fields",
+   "enters": [
+    "2_8_10"
+   ],
+   "hints": [
+    {
+     "text": "Follow the dead guards by doorways"
+    }
+   ]
+  },
+  {
+   "id": "a8.015",
+   "act": 8,
+   "area": "2_8_10",
+   "kind": "enter",
+   "text": "→ The Solaris Temple Level 1",
+   "enters": [
+    "2_8_12_1"
+   ],
+   "hints": [
+    {
+     "text": "Follow the road until the waypoint"
+    },
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a8.016",
+   "act": 8,
+   "area": "2_8_12_1",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": []
+  },
+  {
+   "id": "a8.017",
+   "act": 8,
+   "area": "2_8_12_1",
+   "kind": "enter",
+   "text": "→ The Solaris Temple Level 2",
+   "enters": [
+    "2_8_12_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.018",
+   "act": 8,
+   "area": "2_8_12_2",
+   "kind": "kill",
+   "text": "Find and kill Dawn, Harbinger of Solaris, take Sun Orb",
+   "kills": [
+    "Dawn, Harbinger of Solaris"
+   ],
+   "items": [
+    "Sun Orb"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.019",
+   "act": 8,
+   "area": "2_8_12_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a8.020",
+   "act": 8,
+   "area": "2_8_12_2",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a8.021",
+   "act": 8,
+   "area": "2_8_town",
+   "kind": "hand-in",
+   "text": "Hand in Essence of the Hag",
+   "quests": [
+    {
+     "id": "a8q1",
+     "name": "Essence of the Hag",
+     "npc": "Hargan"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.022",
+   "act": 8,
+   "area": "2_8_town",
+   "kind": "hand-in",
+   "text": "Hand in The Gemling Legion",
+   "quests": [
+    {
+     "id": "a8q7",
+     "name": "The Gemling Legion",
+     "npc": "Maramoa"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.023",
+   "act": 8,
+   "area": "2_8_town",
+   "kind": "hand-in",
+   "text": "Hand in Love is Dead",
+   "quests": [
+    {
+     "id": "a8q6",
+     "name": "Love is Dead",
+     "npc": "Clarissa"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.024",
+   "act": 8,
+   "area": "2_8_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Solaris Temple Level 1",
+   "waypointTo": "2_8_12_1",
+   "hints": []
+  },
+  {
+   "id": "a8.025",
+   "act": 8,
+   "area": "2_8_12_1",
+   "kind": "enter",
+   "text": "→ The Solaris Concourse",
+   "enters": [
+    "2_8_11"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.026",
+   "act": 8,
+   "area": "2_8_11",
+   "kind": "enter",
+   "text": "→ The Harbour Bridge",
+   "enters": [
+    "2_8_13"
+   ],
+   "hints": [
+    {
+     "text": "Go down-left",
+     "direction": 225
+    }
+   ]
+  },
+  {
+   "id": "a8.027",
+   "act": 8,
+   "area": "2_8_13",
+   "kind": "enter",
+   "text": "→ The Lunaris Concourse",
+   "enters": [
+    "2_8_6"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.028",
+   "act": 8,
+   "area": "2_8_6",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a8.029",
+   "act": 8,
+   "area": "2_8_6",
+   "kind": "enter",
+   "text": "→ The Lunaris Temple Level 1",
+   "enters": [
+    "2_8_7_1_"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.030",
+   "act": 8,
+   "area": "2_8_7_1_",
+   "kind": "enter",
+   "text": "→ The Lunaris Temple Level 2",
+   "enters": [
+    "2_8_7_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.031",
+   "act": 8,
+   "area": "2_8_7_2",
+   "kind": "kill",
+   "text": "Find and kill Dusk, Harbinger of Lunaris, take Moon Orb",
+   "kills": [
+    "Dusk, Harbinger of Lunaris"
+   ],
+   "items": [
+    "Moon Orb"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.032",
+   "act": 8,
+   "area": "2_8_7_2",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a8.033",
+   "act": 8,
+   "area": "2_8_7_2",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a8.034",
+   "act": 8,
+   "area": "2_8_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Lunaris Concourse",
+   "waypointTo": "2_8_6",
+   "hints": []
+  },
+  {
+   "id": "a8.035",
+   "act": 8,
+   "area": "2_8_6",
+   "kind": "enter",
+   "text": "→ The Harbour Bridge",
+   "enters": [
+    "2_8_13"
+   ],
+   "hints": [
+    {
+     "text": "Go down-right",
+     "direction": 135
+    }
+   ]
+  },
+  {
+   "id": "a8.036",
+   "act": 8,
+   "area": "2_8_13",
+   "kind": "other",
+   "text": "→ The Sky Shrine, activate Statue of the Sisters",
+   "arena": "The Sky Shrine",
+   "hints": []
+  },
+  {
+   "id": "a8.037",
+   "act": 8,
+   "area": "2_8_13",
+   "kind": "kill",
+   "text": "Kill Lunaris, Eternal Moon & Solaris, Eternal Sun",
+   "kills": [
+    "Lunaris, Eternal Moon",
+    "Solaris, Eternal Sun"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.038",
+   "act": 8,
+   "area": "2_8_13",
+   "kind": "enter",
+   "text": "→ The Blood Aqueduct",
+   "enters": [
+    "2_9_1"
+   ],
+   "hints": [
+    {
+     "text": "Farm Level: 58-62"
+    }
+   ]
+  },
+  {
+   "id": "a8.039",
+   "act": 8,
+   "area": "2_9_1",
+   "kind": "enter",
+   "text": "→ Highgate",
+   "enters": [
+    "2_9_town"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a8.040",
+   "act": 8,
+   "area": "2_9_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Lunaris Concourse",
+   "waypointTo": "2_8_6",
+   "hints": []
+  },
+  {
+   "id": "a8.041",
+   "act": 8,
+   "area": "2_8_6",
+   "kind": "enter",
+   "text": "→ The Bath House",
+   "enters": [
+    "2_8_5"
+   ],
+   "hints": [
+    {
+     "text": "Go down",
+     "direction": 180
+    }
+   ]
+  },
+  {
+   "id": "a8.042",
+   "act": 8,
+   "area": "2_8_5",
+   "kind": "trial",
+   "text": "Complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a8.b1"
+   },
+   "hints": [
+    {
+     "text": "Search left side",
+     "direction": 270
+    }
+   ]
+  },
+  {
+   "id": "a8.043",
+   "act": 8,
+   "area": "2_8_5",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a8.b1"
+   },
+   "hints": []
+  },
+  {
+   "id": "a8.044",
+   "act": 8,
+   "area": "2_8_5",
+   "kind": "enter",
+   "text": "→ The High Gardens",
+   "enters": [
+    "2_8_4"
+   ],
+   "hints": [
+    {
+     "text": "Search left side",
+     "direction": 270
+    }
+   ]
+  },
+  {
+   "id": "a8.045",
+   "act": 8,
+   "area": "2_8_4",
+   "kind": "kill",
+   "text": "→ The Pools of Terror, kill Yugul, Reflection of Terror",
+   "kills": [
+    "Yugul, Reflection of Terror"
+   ],
+   "arena": "The Pools of Terror",
+   "hints": []
+  },
+  {
+   "id": "a8.046",
+   "act": 8,
+   "area": "2_8_4",
+   "kind": "portal",
+   "text": "the town portal",
+   "portal": "use",
+   "hints": []
+  },
+  {
+   "id": "a8.047",
+   "act": 8,
+   "area": "2_8_town",
+   "kind": "hand-in",
+   "text": "Hand in Reflection of Terror",
+   "quests": [
+    {
+     "id": "a8q4",
+     "name": "Reflection of Terror",
+     "npc": "Hargan"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.001",
+   "act": 9,
+   "area": "2_8_town",
+   "kind": "waypoint",
+   "text": "Waypoint to Highgate",
+   "waypointTo": "2_9_town",
+   "hints": []
+  },
+  {
+   "id": "a9.002",
+   "act": 9,
+   "area": "2_9_town",
+   "kind": "enter",
+   "text": "→ The Descent",
+   "enters": [
+    "2_9_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.003",
+   "act": 9,
+   "area": "2_9_2",
+   "kind": "enter",
+   "text": "→ The Vastiri Desert",
+   "enters": [
+    "2_9_3"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.004",
+   "act": 9,
+   "area": "2_9_3",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": [
+    {
+     "text": "Go right",
+     "direction": 90
+    }
+   ]
+  },
+  {
+   "id": "a9.005",
+   "act": 9,
+   "area": "2_9_3",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a9.006",
+   "act": 9,
+   "area": "2_9_3",
+   "kind": "quest-item",
+   "text": "Find and take The Storm Blade",
+   "items": [
+    "The Storm Blade"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.007",
+   "act": 9,
+   "area": "2_9_3",
+   "kind": "enter",
+   "text": "→ The Foothills",
+   "enters": [
+    "2_9_5"
+   ],
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a9.008",
+   "act": 9,
+   "area": "2_9_5",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": [
+    {
+     "text": "Go up-right until you find the cliff",
+     "direction": 45
+    },
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a9.009",
+   "act": 9,
+   "area": "2_9_5",
+   "kind": "enter",
+   "text": "→ The Boiling Lake",
+   "enters": [
+    "2_9_6"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.010",
+   "act": 9,
+   "area": "2_9_6",
+   "kind": "kill",
+   "text": "Find and Kill The Basilisk, take Basilisk Acid",
+   "kills": [
+    "The Basilisk"
+   ],
+   "items": [
+    "Basilisk Acid"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right look for petrified soldiers",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a9.011",
+   "act": 9,
+   "area": "2_9_6",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a9.012",
+   "act": 9,
+   "area": "2_9_6",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a9.013",
+   "act": 9,
+   "area": "2_9_town",
+   "kind": "other",
+   "text": "Talk to Sin",
+   "hints": []
+  },
+  {
+   "id": "a9.014",
+   "act": 9,
+   "area": "2_9_town",
+   "kind": "hand-in",
+   "text": "Hand in The Storm Blade",
+   "quests": [
+    {
+     "id": "a9q3",
+     "name": "The Storm Blade",
+     "npc": "Petarus and Vanja"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.015",
+   "act": 9,
+   "area": "2_9_town",
+   "kind": "hand-in",
+   "text": "Hand in Queen of the Sands, take Bottled Storm",
+   "quests": [
+    {
+     "id": "a9q5",
+     "name": "Queen of the Sands",
+     "npc": "Petarus and Vanja"
+    }
+   ],
+   "items": [
+    "Bottled Storm"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.016",
+   "act": 9,
+   "area": "2_9_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Vastiri Desert",
+   "waypointTo": "2_9_3",
+   "hints": []
+  },
+  {
+   "id": "a9.017",
+   "act": 9,
+   "area": "2_9_3",
+   "kind": "enter",
+   "text": "→ The Oasis",
+   "enters": [
+    "2_9_4"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a9.018",
+   "act": 9,
+   "area": "2_9_4",
+   "kind": "kill",
+   "text": "→ The Sand Pit, kill Shakari, Queen of the Sands",
+   "kills": [
+    "Shakari, Queen of the Sands"
+   ],
+   "arena": "The Sand Pit",
+   "hints": []
+  },
+  {
+   "id": "a9.019",
+   "act": 9,
+   "area": "2_9_4",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a9.020",
+   "act": 9,
+   "area": "2_9_town",
+   "kind": "hand-in",
+   "text": "Hand in Queen of the Sands",
+   "quests": [
+    {
+     "id": "a9q5",
+     "name": "Queen of the Sands",
+     "npc": "Irasha"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.021",
+   "act": 9,
+   "area": "2_9_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Foothills",
+   "waypointTo": "2_9_5",
+   "hints": []
+  },
+  {
+   "id": "a9.022",
+   "act": 9,
+   "area": "2_9_5",
+   "kind": "enter",
+   "text": "→ The Tunnel",
+   "enters": [
+    "2_9_7"
+   ],
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a9.023",
+   "act": 9,
+   "area": "2_9_7",
+   "kind": "trial",
+   "text": "Before the waypoint, complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a9.b1"
+   },
+   "hints": [
+    {
+     "text": "Look for the hidden switch halfway to Trial of Ascendancy Plaque in the corner opposite the entrance to access Hidden Gem: Transfigured"
+    }
+   ]
+  },
+  {
+   "id": "a9.024",
+   "act": 9,
+   "area": "2_9_7",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a9.b1"
+   },
+   "hints": []
+  },
+  {
+   "id": "a9.025",
+   "act": 9,
+   "area": "2_9_7",
+   "kind": "enter",
+   "text": "→ The Quarry",
+   "enters": [
+    "2_9_8"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.026",
+   "act": 9,
+   "area": "2_9_8",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": [
+    {
+     "text": "Go up-left",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a9.027",
+   "act": 9,
+   "area": "2_9_8",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a9.028",
+   "act": 9,
+   "area": "2_9_8",
+   "kind": "kill",
+   "text": "→ Shrine of the Winds, kill Garukhan, Queen of the Winds, take Sekhema Feather",
+   "kills": [
+    "Garukhan, Queen of the Winds"
+   ],
+   "items": [
+    "Sekhema Feather"
+   ],
+   "arena": "Shrine of the Winds",
+   "hints": [
+    {
+     "text": "up-right or down-left",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a9.029",
+   "act": 9,
+   "area": "2_9_8",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a9.030",
+   "act": 9,
+   "area": "2_9_town",
+   "kind": "hand-in",
+   "text": "Hand in The Ruler of Highgate",
+   "quests": [
+    {
+     "id": "a9q2",
+     "name": "The Ruler of Highgate",
+     "npc": "Irasha"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.031",
+   "act": 9,
+   "area": "2_9_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Quarry",
+   "waypointTo": "2_9_8",
+   "hints": []
+  },
+  {
+   "id": "a9.032",
+   "act": 9,
+   "area": "2_9_8",
+   "kind": "enter",
+   "text": "→ The Refinery",
+   "enters": [
+    "2_9_9"
+   ],
+   "hints": [
+    {
+     "text": "up-left or up-right",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a9.033",
+   "act": 9,
+   "area": "2_9_9",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": [
+    {
+     "text": "Look for a sewer grate leading to Refinery Tunnels, it is attached to the cart tracks"
+    }
+   ]
+  },
+  {
+   "id": "a9.034",
+   "act": 9,
+   "area": "2_9_9",
+   "kind": "kill",
+   "text": "Find and kill General Adus, take Trarthan Powder",
+   "kills": [
+    "General Adus"
+   ],
+   "items": [
+    "Trarthan Powder"
+   ],
+   "hints": [
+    {
+     "text": "Go up-right follow cart tracks",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a9.035",
+   "act": 9,
+   "area": "2_9_9",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a9.036",
+   "act": 9,
+   "area": "2_9_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Quarry",
+   "waypointTo": "2_9_8",
+   "hints": []
+  },
+  {
+   "id": "a9.037",
+   "act": 9,
+   "area": "2_9_8",
+   "kind": "other",
+   "text": "Talk to Sin",
+   "hints": []
+  },
+  {
+   "id": "a9.038",
+   "act": 9,
+   "area": "2_9_8",
+   "kind": "enter",
+   "text": "→ The Belly of the Beast",
+   "enters": [
+    "2_9_10_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.039",
+   "act": 9,
+   "area": "2_9_10_1",
+   "kind": "enter",
+   "text": "→ The Rotting Core",
+   "enters": [
+    "2_9_10_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a9.040",
+   "act": 9,
+   "area": "2_9_10_2",
+   "kind": "other",
+   "text": "→ The Black Core",
+   "arena": "The Black Core",
+   "hints": []
+  },
+  {
+   "id": "a9.041",
+   "act": 9,
+   "area": "2_9_10_2",
+   "kind": "other",
+   "text": "Talk to Sin",
+   "hints": []
+  },
+  {
+   "id": "a9.042",
+   "act": 9,
+   "area": "2_9_10_2",
+   "kind": "kill",
+   "text": "→ Doedre's Despair, kill Doedre, Darksoul",
+   "kills": [
+    "Doedre, Darksoul"
+   ],
+   "arena": "Doedre's Despair",
+   "hints": []
+  },
+  {
+   "id": "a9.043",
+   "act": 9,
+   "area": "2_9_10_2",
+   "kind": "kill",
+   "text": "→ Maligaro's Misery, kill Maligaro, The Broken",
+   "kills": [
+    "Maligaro, The Broken"
+   ],
+   "arena": "Maligaro's Misery",
+   "hints": []
+  },
+  {
+   "id": "a9.044",
+   "act": 9,
+   "area": "2_9_10_2",
+   "kind": "kill",
+   "text": "→ Shavronne's Sorrow, kill Shavronne, Unbound",
+   "kills": [
+    "Shavronne, Unbound"
+   ],
+   "arena": "Shavronne's Sorrow",
+   "hints": []
+  },
+  {
+   "id": "a9.045",
+   "act": 9,
+   "area": "2_9_10_2",
+   "kind": "kill",
+   "text": "Talk to Sin → The Black Heart, kill The Depraved Trinity",
+   "kills": [
+    "The Depraved Trinity"
+   ],
+   "arena": "The Black Heart",
+   "hints": []
+  },
+  {
+   "id": "a9.046",
+   "act": 9,
+   "area": "2_9_10_2",
+   "kind": "portal",
+   "text": "the town portal",
+   "portal": "use",
+   "hints": []
+  },
+  {
+   "id": "a10.001",
+   "act": 10,
+   "area": "2_9_town",
+   "kind": "waypoint",
+   "text": "Waypoint to Oriath Docks",
+   "waypointTo": "2_10_town",
+   "hints": []
+  },
+  {
+   "id": "a10.002",
+   "act": 10,
+   "area": "2_10_town",
+   "kind": "enter",
+   "text": "→ The Cathedral Rooftop",
+   "enters": [
+    "2_10_1"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a10.003",
+   "act": 10,
+   "area": "2_10_1",
+   "kind": "kill",
+   "text": "→ Cathedral Apex, kill Plaguewing",
+   "kills": [
+    "Plaguewing"
+   ],
+   "arena": "Cathedral Apex",
+   "hints": [
+    {
+     "text": "Go up",
+     "direction": 0
+    }
+   ]
+  },
+  {
+   "id": "a10.004",
+   "act": 10,
+   "area": "2_10_1",
+   "kind": "enter",
+   "text": "→ The Ravaged Square",
+   "enters": [
+    "2_10_2"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a10.005",
+   "act": 10,
+   "area": "2_10_2",
+   "kind": "other",
+   "text": "Place a town portal in the plaza",
+   "portal": "set",
+   "hints": []
+  },
+  {
+   "id": "a10.006",
+   "act": 10,
+   "area": "2_10_2",
+   "kind": "enter",
+   "text": "→ The Control Blocks",
+   "enters": [
+    "2_10_7"
+   ],
+   "hints": [
+    {
+     "text": "Go down",
+     "direction": 180
+    }
+   ]
+  },
+  {
+   "id": "a10.007",
+   "act": 10,
+   "area": "2_10_7",
+   "kind": "waypoint",
+   "text": "Waypoint to Oriath Docks",
+   "waypointTo": "2_10_town",
+   "hints": []
+  },
+  {
+   "id": "a10.008",
+   "act": 10,
+   "area": "2_10_town",
+   "kind": "hand-in",
+   "text": "Hand in Safe Passage",
+   "quests": [
+    {
+     "id": "a10q1",
+     "name": "Safe Passage",
+     "npc": "Lani"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a10.009",
+   "act": 10,
+   "area": "2_10_town",
+   "kind": "portal",
+   "text": "Take the town portal",
+   "portal": "use",
+   "hints": []
+  },
+  {
+   "id": "a10.010",
+   "act": 10,
+   "area": "2_10_2",
+   "kind": "get-waypoint",
+   "text": "Get the waypoint",
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a10.011",
+   "act": 10,
+   "area": "2_10_2",
+   "kind": "enter",
+   "text": "→ The Ossuary",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a10.b1"
+   },
+   "enters": [
+    "2_10_9"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a10.012",
+   "act": 10,
+   "area": "2_10_9",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a10.b1"
+   },
+   "hints": []
+  },
+  {
+   "id": "a10.013",
+   "act": 10,
+   "area": "2_10_9",
+   "kind": "trial",
+   "text": "Complete the Trial of Ascendancy",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a10.b1"
+   },
+   "hints": [
+    {
+     "text": "Interact with the switch just before the zig-zagging walls, go to the opposite side to access Hidden Gem: Facetor's Lens"
+    }
+   ]
+  },
+  {
+   "id": "a10.014",
+   "act": 10,
+   "area": "2_10_9",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "when": {
+    "flag": "LEAGUE_START",
+    "negate": false,
+    "block": "a10.b1"
+   },
+   "hints": []
+  },
+  {
+   "id": "a10.015",
+   "act": 10,
+   "area": "2_10_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Control Blocks",
+   "waypointTo": "2_10_7",
+   "hints": []
+  },
+  {
+   "id": "a10.016",
+   "act": 10,
+   "area": "2_10_7",
+   "kind": "kill",
+   "text": "Find and kill Vilenta",
+   "kills": [
+    "Vilenta"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a10.017",
+   "act": 10,
+   "area": "2_10_7",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a10.018",
+   "act": 10,
+   "area": "2_10_town",
+   "kind": "hand-in",
+   "text": "Hand in Vilenta's Vengeance",
+   "quests": [
+    {
+     "id": "a10q6",
+     "name": "Vilenta's Vengeance",
+     "npc": "Lani"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a10.019",
+   "act": 10,
+   "area": "2_10_town",
+   "kind": "waypoint",
+   "text": "Waypoint to Aspirants' Plaza",
+   "waypointTo": "Labyrinth_Airlock",
+   "hints": [],
+   "labTrip": "merciless"
+  },
+  {
+   "id": "a10.020",
+   "act": 10,
+   "area": "Labyrinth_Airlock",
+   "kind": "labyrinth",
+   "text": "the Merciless Labyrinth",
+   "labyrinth": "merciless",
+   "hints": [],
+   "labTrip": "merciless"
+  },
+  {
+   "id": "a10.021",
+   "act": 10,
+   "area": "Labyrinth_Airlock",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": [],
+   "labTrip": "merciless"
+  },
+  {
+   "id": "a10.022",
+   "act": 10,
+   "area": "Labyrinth_Airlock",
+   "kind": "waypoint",
+   "text": "Waypoint to The Ravaged Square",
+   "waypointTo": "2_10_2",
+   "hints": []
+  },
+  {
+   "id": "a10.023",
+   "act": 10,
+   "area": "2_10_2",
+   "kind": "enter",
+   "text": "→ The Torched Courts",
+   "enters": [
+    "2_10_3"
+   ],
+   "hints": [
+    {
+     "text": "Go down-right",
+     "direction": 135
+    }
+   ]
+  },
+  {
+   "id": "a10.024",
+   "act": 10,
+   "area": "2_10_3",
+   "kind": "enter",
+   "text": "→ The Desecrated Chambers",
+   "enters": [
+    "2_10_4"
+   ],
+   "hints": [
+    {
+     "text": "Loop around clockwise"
+    }
+   ]
+  },
+  {
+   "id": "a10.025",
+   "act": 10,
+   "area": "2_10_4",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a10.026",
+   "act": 10,
+   "area": "2_10_4",
+   "kind": "kill",
+   "text": "→ Sanctum of Innocence, kill Avarius, Reassembled, take The Staff of Purity",
+   "kills": [
+    "Avarius, Reassembled"
+   ],
+   "items": [
+    "The Staff of Purity"
+   ],
+   "arena": "Sanctum of Innocence",
+   "hints": [
+    {
+     "text": "Go up-left counter-clockwise spiral",
+     "direction": 315
+    }
+   ]
+  },
+  {
+   "id": "a10.027",
+   "act": 10,
+   "area": "2_10_4",
+   "kind": "logout",
+   "text": "Log out (back to town)",
+   "hints": []
+  },
+  {
+   "id": "a10.028",
+   "act": 10,
+   "area": "2_10_town",
+   "kind": "other",
+   "text": "Talk to Bannon",
+   "hints": []
+  },
+  {
+   "id": "a10.029",
+   "act": 10,
+   "area": "2_10_town",
+   "kind": "hand-in",
+   "text": "Hand in Death and Rebirth",
+   "quests": [
+    {
+     "id": "a10q2",
+     "name": "Death and Rebirth",
+     "npc": "Lani"
+    }
+   ],
+   "hints": []
+  },
+  {
+   "id": "a10.030",
+   "act": 10,
+   "area": "2_10_town",
+   "kind": "waypoint",
+   "text": "Waypoint to The Ravaged Square",
+   "waypointTo": "2_10_2",
+   "hints": []
+  },
+  {
+   "id": "a10.031",
+   "act": 10,
+   "area": "2_10_2",
+   "kind": "other",
+   "text": "Talk to Innocence",
+   "hints": [
+    {
+     "text": "Go up-right",
+     "direction": 45
+    }
+   ]
+  },
+  {
+   "id": "a10.032",
+   "act": 10,
+   "area": "2_10_2",
+   "kind": "enter",
+   "text": "→ The Canals",
+   "enters": [
+    "2_10_5"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a10.033",
+   "act": 10,
+   "area": "2_10_5",
+   "kind": "enter",
+   "text": "→ The Feeding Trough",
+   "enters": [
+    "2_10_6"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a10.034",
+   "act": 10,
+   "area": "2_10_6",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a10.035",
+   "act": 10,
+   "area": "2_10_6",
+   "kind": "other",
+   "text": "Talk to Sin",
+   "hints": []
+  },
+  {
+   "id": "a10.036",
+   "act": 10,
+   "area": "2_10_6",
+   "kind": "kill",
+   "text": "→ Altar of Hunger, kill Kitava, the Insatiable",
+   "kills": [
+    "Kitava, the Insatiable"
+   ],
+   "arena": "Altar of Hunger",
+   "hints": []
+  },
+  {
+   "id": "a10.037",
+   "act": 10,
+   "area": "2_10_6",
+   "kind": "enter",
+   "text": "Talk to Sin → Oriath Docks",
+   "enters": [
+    "2_10_town"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a10.038",
+   "act": 10,
+   "area": "2_10_town",
+   "kind": "other",
+   "text": "Talk to Lilly Roth, Set Sail from Oriath",
+   "hints": []
+  },
+  {
+   "id": "a10.039",
+   "act": 10,
+   "area": "2_10_town",
+   "kind": "enter",
+   "text": "→ Karui Shores",
+   "enters": [
+    "2_11_endgame_town"
+   ],
+   "hints": []
+  },
+  {
+   "id": "a10.040",
+   "act": 10,
+   "area": "2_11_endgame_town",
+   "kind": "crafting",
+   "text": "Get the crafting recipe",
+   "hints": []
+  },
+  {
+   "id": "a10.041",
+   "act": 10,
+   "area": "2_11_endgame_town",
+   "kind": "hand-in",
+   "text": "Hand in An End to Hunger",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": false,
+    "block": "a10.b2"
+   },
+   "quests": [
+    {
+     "id": "a10q3",
+     "name": "An End to Hunger",
+     "npc": "Lani"
+    }
+   ],
+   "hints": [
+    {
+     "text": "Type /passives in chat to confirm that you have all 24 passives from quests"
+    }
+   ]
+  },
+  {
+   "id": "a10.042",
+   "act": 10,
+   "area": "2_11_endgame_town",
+   "kind": "hand-in",
+   "text": "Hand in An End to Hunger",
+   "when": {
+    "flag": "BANDIT_KILL",
+    "negate": true,
+    "block": "a10.b3"
+   },
+   "quests": [
+    {
+     "id": "a10q3",
+     "name": "An End to Hunger",
+     "npc": "Lani"
+    }
+   ],
+   "hints": [
+    {
+     "text": "Type /passives in chat to confirm that you have all 23 passives from quests"
+    }
+   ]
+  }
+ ],
+ "blocks": {
+  "a1.b1": {
+   "act": 1,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": false,
+   "quests": []
+  },
+  "a1.b2": {
+   "act": 1,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": false,
+   "quests": [
+    "a1q4",
+    "a1q5"
+   ]
+  },
+  "a1.b3": {
+   "act": 1,
+   "flag": "LEAGUE_START",
+   "negate": true,
+   "trial": false,
+   "quests": [
+    "a1q4"
+   ]
+  },
+  "a1.b4": {
+   "act": 1,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a1.b5": {
+   "act": 1,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": false,
+   "quests": []
+  },
+  "a2.b1": {
+   "act": 2,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": false,
+   "quests": []
+  },
+  "a2.b2": {
+   "act": 2,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": false,
+   "quests": [
+    "a2q10"
+   ]
+  },
+  "a2.b3": {
+   "act": 2,
+   "flag": "LEAGUE_START",
+   "negate": true,
+   "trial": false,
+   "quests": []
+  },
+  "a2.b4": {
+   "act": 2,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a2.b5": {
+   "act": 2,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a2.b6": {
+   "act": 2,
+   "flag": "BANDIT_KILL",
+   "negate": false,
+   "trial": false,
+   "quests": [
+    "a2q7",
+    "a1q9"
+   ]
+  },
+  "a2.b7": {
+   "act": 2,
+   "flag": "BANDIT_ALIRA",
+   "negate": false,
+   "trial": false,
+   "quests": [
+    "a1q9"
+   ]
+  },
+  "a2.b8": {
+   "act": 2,
+   "flag": "BANDIT_KRAITYN",
+   "negate": false,
+   "trial": false,
+   "quests": [
+    "a1q9"
+   ]
+  },
+  "a2.b9": {
+   "act": 2,
+   "flag": "BANDIT_OAK",
+   "negate": false,
+   "trial": false,
+   "quests": [
+    "a1q9"
+   ]
+  },
+  "a3.b1": {
+   "act": 3,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a3.b2": {
+   "act": 3,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a3.b3": {
+   "act": 3,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a3.b4": {
+   "act": 3,
+   "flag": "LIBRARY",
+   "negate": false,
+   "trial": false,
+   "quests": [
+    "a3q12"
+   ]
+  },
+  "a6.b1": {
+   "act": 6,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": false,
+   "quests": []
+  },
+  "a6.b2": {
+   "act": 6,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a7.b1": {
+   "act": 7,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": false,
+   "quests": []
+  },
+  "a7.b2": {
+   "act": 7,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a7.b3": {
+   "act": 7,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": false,
+   "quests": [
+    "a7q5"
+   ]
+  },
+  "a7.b4": {
+   "act": 7,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a8.b1": {
+   "act": 8,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a9.b1": {
+   "act": 9,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a10.b1": {
+   "act": 10,
+   "flag": "LEAGUE_START",
+   "negate": false,
+   "trial": true,
+   "quests": []
+  },
+  "a10.b2": {
+   "act": 10,
+   "flag": "BANDIT_KILL",
+   "negate": false,
+   "trial": false,
+   "quests": [
+    "a10q3"
+   ]
+  },
+  "a10.b3": {
+   "act": 10,
+   "flag": "BANDIT_KILL",
+   "negate": true,
+   "trial": false,
+   "quests": [
+    "a10q3"
+   ]
+  }
+ },
+ "quests": {
+  "a1q1": {
+   "name": "Enemy at the Gate",
+   "act": 1,
+   "npcs": [
+    "Tarkleigh"
+   ],
+   "book": null,
+   "gemRewards": 25,
+   "vendorGems": 40,
+   "onRoute": true
+  },
+  "a1q5": {
+   "name": "Mercy Mission",
+   "act": 1,
+   "npcs": [
+    "Nessa"
+   ],
+   "book": null,
+   "gemRewards": 14,
+   "vendorGems": 16,
+   "onRoute": true
+  },
+  "a1q4": {
+   "name": "Breaking Some Eggs",
+   "act": 1,
+   "npcs": [
+    "Tarkleigh"
+   ],
+   "book": null,
+   "gemRewards": 21,
+   "vendorGems": 26,
+   "onRoute": true
+  },
+  "a1q8": {
+   "name": "A Dirty Job",
+   "act": 1,
+   "npcs": [
+    "Tarkleigh"
+   ],
+   "book": "Book-a1q8",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a1q7": {
+   "name": "The Dweller of the Deep",
+   "act": 1,
+   "npcs": [
+    "Tarkleigh"
+   ],
+   "book": "Book-a1q7",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a1q2": {
+   "name": "The Caged Brute",
+   "act": 1,
+   "npcs": [
+    "Nessa",
+    "Tarkleigh"
+   ],
+   "book": null,
+   "gemRewards": 37,
+   "vendorGems": 49,
+   "onRoute": true
+  },
+  "a1q6": {
+   "name": "The Marooned Mariner",
+   "act": 1,
+   "npcs": [
+    "Bestel"
+   ],
+   "book": "Book-a1q6",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a1q3": {
+   "name": "The Siren's Cadence",
+   "act": 1,
+   "npcs": [
+    "Nessa"
+   ],
+   "book": null,
+   "gemRewards": 40,
+   "vendorGems": 48,
+   "onRoute": true
+  },
+  "a1q9": {
+   "name": "The Way Forward",
+   "act": 1,
+   "npcs": [
+    "Bestel"
+   ],
+   "book": "Book-a1q9",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a2q11": {
+   "name": "The Way Forward",
+   "act": 2,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a2q5": {
+   "name": "Through Sacred Ground",
+   "act": 2,
+   "npcs": [
+    "Yeena"
+   ],
+   "book": "Book-a2q5",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a2q6": {
+   "name": "Intruders in Black",
+   "act": 2,
+   "npcs": [
+    "Greust"
+   ],
+   "book": null,
+   "gemRewards": 33,
+   "vendorGems": 36,
+   "onRoute": true
+  },
+  "a2q10": {
+   "name": "The Great White Beast",
+   "act": 2,
+   "npcs": [
+    "Yeena"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a2q4": {
+   "name": "Sharp and Cruel",
+   "act": 2,
+   "npcs": [
+    "Silk"
+   ],
+   "book": null,
+   "gemRewards": 25,
+   "vendorGems": 37,
+   "onRoute": true
+  },
+  "a2q9": {
+   "name": "The Root of the Problem",
+   "act": 2,
+   "npcs": [
+    "Tutorial NPC"
+   ],
+   "book": null,
+   "gemRewards": 13,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a2q7": {
+   "name": "Deal with the Bandits",
+   "act": 2,
+   "npcs": [
+    "Eramir"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a2q1": {
+   "name": "The Bandit Lord Kraityn",
+   "act": 2,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a2q2": {
+   "name": "The Bandit Lord Alira",
+   "act": 2,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a2q3": {
+   "name": "The Bandit Lord Oak",
+   "act": 2,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a2q8": {
+   "name": "Shadow of the Vaal",
+   "act": 2,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a2q8a3": {
+   "name": "Shadow of the Vaal",
+   "act": 3,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a3q1": {
+   "name": "Lost in Love",
+   "act": 3,
+   "npcs": [
+    "Maramoa"
+   ],
+   "book": null,
+   "gemRewards": 30,
+   "vendorGems": 37,
+   "onRoute": true
+  },
+  "a3q2": {
+   "name": "Lost in Love",
+   "act": 3,
+   "npcs": [
+    "Clarissa"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a3q11": {
+   "name": "Victario's Secrets",
+   "act": 3,
+   "npcs": [
+    "Hargan"
+   ],
+   "book": "Book-a3q11v2",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a3q3": {
+   "name": "The Gemling Queen",
+   "act": 3,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a3q4": {
+   "name": "The Ribbon Spool",
+   "act": 3,
+   "npcs": [
+    "Lady Dialla"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a3q5": {
+   "name": "Fiery Dust",
+   "act": 3,
+   "npcs": [
+    "Lady Dialla"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a3q8": {
+   "name": "Sever the Right Hand",
+   "act": 3,
+   "npcs": [
+    "Maramoa"
+   ],
+   "book": null,
+   "gemRewards": 51,
+   "vendorGems": 58,
+   "onRoute": true
+  },
+  "a3q12": {
+   "name": "A Fixture of Fate",
+   "act": 3,
+   "npcs": [
+    "Siosa"
+   ],
+   "book": null,
+   "gemRewards": 42,
+   "vendorGems": 392,
+   "onRoute": true
+  },
+  "a3q13": {
+   "name": "A Swig of Hope",
+   "act": 3,
+   "npcs": [
+    "Captain Fairgraves"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a3q9": {
+   "name": "Piety's Pets",
+   "act": 3,
+   "npcs": [
+    "Grigor"
+   ],
+   "book": "Book-a3q9",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a3q10": {
+   "name": "The Sceptre of God",
+   "act": 3,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a4q1": {
+   "name": "The Eternal Nightmare",
+   "act": 4,
+   "npcs": [
+    "Dialla"
+   ],
+   "book": null,
+   "gemRewards": 29,
+   "vendorGems": 37,
+   "onRoute": true
+  },
+  "a4q2": {
+   "name": "Breaking the Seal",
+   "act": 4,
+   "npcs": [
+    "Oyun"
+   ],
+   "book": null,
+   "gemRewards": 19,
+   "vendorGems": 25,
+   "onRoute": true
+  },
+  "a4q3": {
+   "name": "The King of Fury",
+   "act": 4,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a4q4": {
+   "name": "The King of Desire",
+   "act": 4,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a4q5": {
+   "name": "Corpus Malachus",
+   "act": 4,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a4q6": {
+   "name": "An Indomitable Spirit",
+   "act": 4,
+   "npcs": [
+    "Tasuni"
+   ],
+   "book": "Book-a4q6",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a5q1a": {
+   "name": "Return to Oriath",
+   "act": 4,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a5q1b": {
+   "name": "Return to Oriath",
+   "act": 5,
+   "npcs": [
+    "Lani"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a5q2": {
+   "name": "The Key to Freedom",
+   "act": 5,
+   "npcs": [
+    "Lani"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a5q3": {
+   "name": "In Service to Science",
+   "act": 5,
+   "npcs": [
+    "Vilenta"
+   ],
+   "book": "Book-a5q3",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a5q4": {
+   "name": "Death to Purity",
+   "act": 5,
+   "npcs": [
+    "Lani"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a5q5": {
+   "name": "The King's Feast",
+   "act": 5,
+   "npcs": [
+    "Bannon"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a5q6": {
+   "name": "The Ravenous God",
+   "act": 5,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a5q7": {
+   "name": "Kitava's Torments",
+   "act": 5,
+   "npcs": [
+    "Lani"
+   ],
+   "book": "Book-a5q7",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a6q1": {
+   "name": "The Brine King",
+   "act": 6,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a6q2": {
+   "name": "Essence of Umbra",
+   "act": 6,
+   "npcs": [
+    "Tarkleigh"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a6q3": {
+   "name": "The Father of War",
+   "act": 6,
+   "npcs": [
+    "Tarkleigh"
+   ],
+   "book": "Book-a6q3",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a6q4": {
+   "name": "Fallen from Grace",
+   "act": 6,
+   "npcs": [
+    "Lilly Roth"
+   ],
+   "book": "Book-a6q4",
+   "gemRewards": 0,
+   "vendorGems": 435,
+   "onRoute": true
+  },
+  "a6q5": {
+   "name": "Bestel's Epic",
+   "act": 6,
+   "npcs": [
+    "Bestel"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a6q6": {
+   "name": "The Puppet Mistress",
+   "act": 6,
+   "npcs": [
+    "Tarkleigh"
+   ],
+   "book": "Book-a6q6",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a6q7": {
+   "name": "The Cloven One",
+   "act": 6,
+   "npcs": [
+    "Bestel"
+   ],
+   "book": "Book-a6q7",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a7q1": {
+   "name": "The Master of a Million Faces",
+   "act": 7,
+   "npcs": [
+    "Eramir"
+   ],
+   "book": "Book-a7q1",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a7q2": {
+   "name": "Essence of the Artist",
+   "act": 7,
+   "npcs": [
+    "Helena"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a7q3": {
+   "name": "Web of Secrets",
+   "act": 7,
+   "npcs": [
+    "Silk"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a7q4": {
+   "name": "The Mother of Spiders",
+   "act": 7,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a7q5": {
+   "name": "The Silver Locket",
+   "act": 7,
+   "npcs": [
+    "Weylam Roth"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a7q6": {
+   "name": "Kishara's Star",
+   "act": 7,
+   "npcs": [
+    "Weylam Roth"
+   ],
+   "book": "Book-a7q6",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a7q7": {
+   "name": "Lighting the Way",
+   "act": 7,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a7q8": {
+   "name": "In Memory of Greust",
+   "act": 7,
+   "npcs": [
+    "Helena"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a7q9": {
+   "name": "Queen of Despair",
+   "act": 7,
+   "npcs": [
+    "Eramir"
+   ],
+   "book": "Book-a7q9",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a8q1": {
+   "name": "Essence of the Hag",
+   "act": 8,
+   "npcs": [
+    "Hargan"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a8q2": {
+   "name": "Lunar Eclipse",
+   "act": 8,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a8q3": {
+   "name": "Solar Eclipse",
+   "act": 8,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a8q4": {
+   "name": "Reflection of Terror",
+   "act": 8,
+   "npcs": [
+    "Hargan"
+   ],
+   "book": "Book-a8q4",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a8q5": {
+   "name": "The Wings of Vastiri",
+   "act": 8,
+   "npcs": [
+    "Hargan"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a8q6": {
+   "name": "Love is Dead",
+   "act": 8,
+   "npcs": [
+    "Clarissa"
+   ],
+   "book": "Book-a8q6",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a8q7": {
+   "name": "The Gemling Legion",
+   "act": 8,
+   "npcs": [
+    "Maramoa"
+   ],
+   "book": "Book-a8q7",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a9q1": {
+   "name": "Recurring Nightmare",
+   "act": 9,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a9q2": {
+   "name": "The Ruler of Highgate",
+   "act": 9,
+   "npcs": [
+    "Irasha"
+   ],
+   "book": "Book-a9q2",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a9q3": {
+   "name": "The Storm Blade",
+   "act": 9,
+   "npcs": [
+    "Petarus and Vanja"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a9q4": {
+   "name": "Fastis Fortuna",
+   "act": 9,
+   "npcs": [
+    "Petarus and Vanja"
+   ],
+   "book": "Book-a9q4",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a9q5": {
+   "name": "Queen of the Sands",
+   "act": 9,
+   "npcs": [
+    "Irasha",
+    "Petarus and Vanja"
+   ],
+   "book": "Book-a9q5",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a10q1": {
+   "name": "Safe Passage",
+   "act": 10,
+   "npcs": [
+    "Lani"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a10q2": {
+   "name": "Death and Rebirth",
+   "act": 10,
+   "npcs": [
+    "Lani"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a10q3": {
+   "name": "An End to Hunger",
+   "act": 10,
+   "npcs": [
+    "Lani"
+   ],
+   "book": "Book-a10q3",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "a10q4": {
+   "name": "No Love for Old Ghosts",
+   "act": 10,
+   "npcs": [
+    "Weylam Roth"
+   ],
+   "book": "Book-a10q4",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a10q5": {
+   "name": "Map to Tsoatha",
+   "act": 10,
+   "npcs": [
+    "Lilly Roth"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "a10q6": {
+   "name": "Vilenta's Vengeance",
+   "act": 10,
+   "npcs": [
+    "Lani"
+   ],
+   "book": "Book-a10q6",
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": true
+  },
+  "A11q0": {
+   "name": "Toward the Future",
+   "act": 10,
+   "npcs": [],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  },
+  "DeepwaterFairgravesAllflameQuest": {
+   "name": "The Spirit Flame",
+   "act": 1,
+   "npcs": [
+    "Valerie, the Corsair",
+    "Vesper"
+   ],
+   "book": null,
+   "gemRewards": 0,
+   "vendorGems": 0,
+   "onRoute": false
+  }
+ },
+ "extraAreas": {
+  "Labyrinth_Airlock": {
+   "name": "Aspirants' Plaza",
+   "act": 3,
+   "town": false
+  },
+  "2_11_endgame_town": {
+   "name": "Karui Shores",
+   "act": 11,
+   "town": true
+  }
+ }
+}

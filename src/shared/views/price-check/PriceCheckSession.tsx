@@ -283,6 +283,11 @@ function FilterRow({ filter: f, onChange }: { filter: StatFilter; onChange: (p: 
           </span>
         }
       />
+      {f.option != null ? (
+        // Option stats (cluster passive type) match the exact text; Trade takes no number for them.
+        <span className="w-[7.5rem] shrink-0 text-right text-2xs text-fg-subtle">exact match</span>
+      ) : (
+        <>
       <Input
         size="sm"
         aria-label={`Minimum for ${f.label}`}
@@ -305,6 +310,8 @@ function FilterRow({ filter: f, onChange }: { filter: StatFilter; onChange: (p: 
         containerClassName="w-14 shrink-0"
         className="tabular text-right"
       />
+        </>
+      )}
     </li>
   );
 }

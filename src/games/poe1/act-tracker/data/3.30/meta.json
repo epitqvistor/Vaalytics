@@ -1,0 +1,26 @@
+{
+  "game": "poe1",
+  "patch": "3.30",
+  "counts": {
+    "steps": 540,
+    "acts": 10
+  },
+  "flags": [
+    "LEAGUE_START",
+    "LIBRARY",
+    "BANDIT_KILL",
+    "BANDIT_ALIRA",
+    "BANDIT_KRAITYN",
+    "BANDIT_OAK"
+  ],
+  "source": {
+    "id": "exile-leveling",
+    "name": "exile-leveling (HeartofPhos) — levelling route",
+    "url": "https://github.com/HeartofPhos/exile-leveling",
+    "author": "HeartofPhos and contributors",
+    "license": "MIT",
+    "version": "d6951db0ca94",
+    "date": "2026-11-12",
+    "verification": "COMMUNITY_VERIFIED"
+  }
+}

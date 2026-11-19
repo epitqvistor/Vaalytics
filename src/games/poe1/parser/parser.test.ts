@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { extractRanges, isItemText, stripMarkup } from "@/shared/item-parser/core";
 import { parsePoe1Item } from ".";
+import { CLUSTER_TEXT } from "@/shared/trade/test-fixtures";
 
 // Real item text returned by the PoE 1 trade API (item.extended.text), Nov 2026.
 const TRADE_SIMPLE = `Item Class: Rings
@@ -151,6 +152,27 @@ describe("PoE 1 parser", () => {
     expect(r.item.name).toBeUndefined();
     expect(r.item.mods).toEqual([]);
     expect(r.item.description).toHaveLength(2);
+  });
+
+  it("parses a cluster jewel: enchants, explicit, help text", () => {
+    const r = parsePoe1Item(CLUSTER_TEXT("Rare"));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.item).toMatchObject({ rarity: "Rare", name: "Sample Spark", baseType: "Small Cluster Jewel", itemLevel: 84 });
+    expect(r.item.mods.map((m) => [m.kind, m.text])).toEqual([
+      ["enchant", "Adds 2 Passive Skills"],
+      ["enchant", "Added Small Passive Skills grant: 15% increased Armour"],
+      ["explicit", "Added Small Passive Skills also grant: +10 to Maximum Life"],
+    ]);
+    expect(r.item.unparsed).toEqual([]);
+  });
+
+  it("cluster explicits with a colon are modifiers, not properties (copy without headers)", () => {
+    const text = CLUSTER_TEXT("Rare").replace(/\{ Prefix Modifier[^\n]*\n/, "");
+    const r = parsePoe1Item(text);
+    if (!r.ok) throw new Error(r.error);
+    expect(r.item.mods.map((m) => m.text)).toContain("Added Small Passive Skills also grant: +10 to Maximum Life");
+    expect(r.item.properties.map((p) => p.name)).not.toContain("Added Small Passive Skills also grant");
+    expect(r.item.unparsed).toEqual([]);
   });
 
   it("reports unknown lines instead of dropping them", () => {

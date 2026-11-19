@@ -1,0 +1,423 @@
+{
+  "act": 5,
+  "areas": [
+    {
+      "id": "1_5_1",
+      "name": "The Slave Pens",
+      "act": 5,
+      "level": 41,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_7",
+        "1_5_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Act5_Area1_1",
+        "Act5_Area1_2",
+        "Act5_Area1_3",
+        "Act5_Area1_4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Overseer Krow"
+      ]
+    },
+    {
+      "id": "1_5_2",
+      "name": "The Control Blocks",
+      "act": 5,
+      "level": 41,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_5_town",
+      "connections": [
+        "1_5_3",
+        "1_5_town",
+        "1_5_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Act5_Area2_1",
+        "Act5_Area2_2",
+        "Act5_Area2_3",
+        "Act5_Area2_4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Justicar Casticus"
+      ]
+    },
+    {
+      "id": "1_5_3",
+      "name": "Oriath Square",
+      "act": 5,
+      "level": 42,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_5_town",
+      "connections": [
+        "1_5_2",
+        "1_5_4"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Act5_Area3_1",
+        "Augury_Act5_Area3_1"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_5_3b",
+      "name": "The Ruined Square",
+      "act": 5,
+      "level": 44,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_5_town",
+      "connections": [
+        "1_5_4b",
+        "1_5_6",
+        "1_5_7",
+        "1_5_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": false,
+      "topologies": [
+        "Act5_Area3b_1"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_5_4",
+      "name": "The Templar Courts",
+      "act": 5,
+      "level": 42,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_5_town",
+      "connections": [
+        "1_5_3",
+        "1_5_5"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Act5_Area4_1",
+        "Act5_Area4_2",
+        "Act5_Area4_3",
+        "Act5_Area4_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_5_4b",
+      "name": "The Torched Courts",
+      "act": 5,
+      "level": 44,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_5_town",
+      "connections": [
+        "1_5_3b",
+        "1_5_5"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Act5_Area4b_1",
+        "Act5_Area4b_2",
+        "Act5_Area4b_3",
+        "Act5_Area4b_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_5_5",
+      "name": "The Chamber of Innocence",
+      "act": 5,
+      "level": 43,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_5_town",
+      "connections": [
+        "1_5_4",
+        "1_5_4b"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "Act5_Area5_1",
+        "Act5_Area5_2",
+        "Act5_Area5_3",
+        "Act5_Area5_4"
+      ],
+      "craftingRecipes": [
+        "Movement Speed and Exerted Attacks - Rank 2"
+      ],
+      "bossNames": [
+        "High Templar Avarius"
+      ]
+    },
+    {
+      "id": "1_5_6",
+      "name": "The Ossuary",
+      "act": 5,
+      "level": 44,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_5_town",
+      "connections": [
+        "1_5_3b"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Act5_Area6_1",
+        "Act5_Area6_2",
+        "Act5_Area6_3",
+        "Act5_Area6_4",
+        "Augury_Act5_Area6_1",
+        "Augury_Act5_Area6_2",
+        "Augury_Act5_Area6_3",
+        "Augury_Act5_Area6_4"
+      ],
+      "craftingRecipes": [
+        "Physical Damage - Rank 2"
+      ]
+    },
+    {
+      "id": "1_5_7",
+      "name": "The Reliquary",
+      "act": 5,
+      "level": 44,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_5_town",
+      "connections": [
+        "1_5_3b"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Act5_Area7_1",
+        "Act5_Area7_2",
+        "Act5_Area7_3",
+        "Act5_Area7_4"
+      ],
+      "craftingRecipes": [
+        "Accuracy - Rank 1"
+      ]
+    },
+    {
+      "id": "1_5_8",
+      "name": "The Cathedral Rooftop",
+      "act": 5,
+      "level": 45,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_5_town",
+      "connections": [
+        "1_5_3b",
+        "2_6_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "Act5_Area8_1"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Kitava, the Insatiable"
+      ]
+    },
+    {
+      "id": "1_5_town",
+      "name": "Overseer's Tower",
+      "act": 5,
+      "level": 45,
+      "kind": "town",
+      "waypoint": true,
+      "town": null,
+      "connections": [
+        "1_5_1",
+        "1_5_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "Act5_town"
+      ],
+      "craftingRecipes": []
+    }
+  ],
+  "hints": [
+    {
+      "area": "1_5_1",
+      "step": "Find and kill Overseer Krow",
+      "text": "Go down until you find the hanged Karui",
+      "direction": 180,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_1",
+      "step": "Find and kill Overseer Krow",
+      "text": "Loop around clockwise to go left",
+      "direction": 270,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_2",
+      "step": "Find and take Miasmeter",
+      "text": "Go left as much as possible",
+      "direction": 270,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_2",
+      "step": "Find and kill Justicar Casticus, take Eyes of Zeal",
+      "text": "Go up-right from Miasmeter",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_3",
+      "toward": "1_5_4",
+      "step": "→ The Templar Courts",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_4",
+      "toward": "1_5_5",
+      "step": "→ The Chamber of Innocence",
+      "text": "Loop around clockwise",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_4",
+      "toward": "1_5_5",
+      "step": "→ The Chamber of Innocence",
+      "text": "Farm Level: 40-42",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_5",
+      "step": "→ Sanctum of Innocence, kill High Templar Avarius",
+      "text": "Go up-left counter-clockwise spiral",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_4b",
+      "toward": "1_5_3b",
+      "step": "→ The Ruined Square",
+      "text": "Loop around counter-clockwise",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_3b",
+      "step": "Get the waypoint",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_3b",
+      "toward": "1_5_7",
+      "step": "→ The Reliquary",
+      "text": "Go down-left find the plaza",
+      "direction": 225,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_3b",
+      "toward": "1_5_7",
+      "step": "→ The Reliquary",
+      "text": "Go down",
+      "direction": 180,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_5_3b",
+      "toward": "1_5_8",
+      "step": "→ The Cathedral Rooftop",
+      "text": "Go down-left",
+      "direction": 225,
+      "leagueStartOnly": false
+    }
+  ],
+  "quests": [
+    {
+      "id": "a5q1b",
+      "name": "Return to Oriath",
+      "act": 5,
+      "npcs": [
+        "Lani"
+      ]
+    },
+    {
+      "id": "a5q2",
+      "name": "The Key to Freedom",
+      "act": 5,
+      "npcs": [
+        "Lani"
+      ]
+    },
+    {
+      "id": "a5q3",
+      "name": "In Service to Science",
+      "act": 5,
+      "npcs": [
+        "Vilenta"
+      ]
+    },
+    {
+      "id": "a5q4",
+      "name": "Death to Purity",
+      "act": 5,
+      "npcs": [
+        "Lani"
+      ]
+    },
+    {
+      "id": "a5q5",
+      "name": "The King's Feast",
+      "act": 5,
+      "npcs": [
+        "Bannon"
+      ]
+    },
+    {
+      "id": "a5q6",
+      "name": "The Ravenous God",
+      "act": 5,
+      "npcs": []
+    },
+    {
+      "id": "a5q7",
+      "name": "Kitava's Torments",
+      "act": 5,
+      "npcs": [
+        "Lani"
+      ]
+    }
+  ]
+}

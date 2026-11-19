@@ -1,6 +1,6 @@
 [package]
 name = "vaalytics"
-version = "0.14.3"
+version = "0.15.2"
 description = "Vaalytics — desktop companion for Path of Exile 1 and Path of Exile 2"
 edition = "2021"
 rust-version = "1.85"

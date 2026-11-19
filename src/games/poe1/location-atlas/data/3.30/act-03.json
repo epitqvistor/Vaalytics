@@ -1,0 +1,743 @@
+{
+  "act": 3,
+  "areas": [
+    {
+      "id": "1_3_1",
+      "name": "The City of Sarn",
+      "act": 3,
+      "level": 23,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_14_3",
+        "1_3_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "CityIntro1_1"
+      ],
+      "craftingRecipes": [
+        "Movement Speed - Rank 1"
+      ]
+    },
+    {
+      "id": "1_3_2",
+      "name": "The Slums",
+      "act": 3,
+      "level": 24,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_10_1",
+        "1_3_3_1",
+        "1_3_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "CitySlums1_1",
+        "CitySlums1_2",
+        "CitySlums1_3",
+        "CitySlums2_1",
+        "CitySlums2_2",
+        "CitySlums2_3"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_3_3_1",
+      "name": "The Crematorium",
+      "act": 3,
+      "level": 25,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": false,
+      "topologies": [
+        "CityJail1f1",
+        "CityJail1f2",
+        "CityJail1f3",
+        "CityJail1f4",
+        "CityJail1f5",
+        "CityJail1f6",
+        "CityJail1f7",
+        "CityJail1f8",
+        "CityJail1f9"
+      ],
+      "craftingRecipes": [
+        "Defences - Rank 1"
+      ],
+      "bossNames": [
+        "Piety"
+      ]
+    },
+    {
+      "id": "1_3_5",
+      "name": "The Marketplace",
+      "act": 3,
+      "level": 26,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_10_1",
+        "1_3_6",
+        "1_3_7"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "CityMarketPlace1_1",
+        "CityMarketPlace1_2",
+        "CityMarketPlace1_3",
+        "CityMarketPlace1_4",
+        "CityMarketPlace2_1",
+        "CityMarketPlace2_2",
+        "CityMarketPlace2_3",
+        "CityMarketPlace3_1",
+        "CityMarketPlace3_2",
+        "CityMarketPlace3_3",
+        "CityMarketPlace3_4",
+        "CityMarketPlace4_1",
+        "CityMarketPlace4_2",
+        "CityMarketPlace4_3",
+        "CityMarketPlace4_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_3_6",
+      "name": "The Catacombs",
+      "act": 3,
+      "level": 27,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_5"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "CityChurch1",
+        "CityChurch2",
+        "CityChurch3",
+        "CityChurch4",
+        "CityChurch5",
+        "CityChurch6",
+        "CityChurch7",
+        "CityChurch8"
+      ],
+      "craftingRecipes": [
+        "Elemental Damage with Attacks - Rank 1"
+      ]
+    },
+    {
+      "id": "1_3_7",
+      "name": "The Battlefront",
+      "act": 3,
+      "level": 27,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_5",
+        "1_3_8_1",
+        "1_3_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "CityBattleFront1a",
+        "CityBattleFront1b",
+        "CityBattleFront1c",
+        "CityBattleFront2a",
+        "CityBattleFront2b",
+        "CityBattleFront2c"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_3_8_1",
+      "name": "The Solaris Temple Level 1",
+      "act": 3,
+      "level": 27,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_7",
+        "1_3_8_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": false,
+      "topologies": [
+        "CityIvoryTemple1f1_1",
+        "CityIvoryTemple1f1_2",
+        "CityIvoryTemple1f1_3",
+        "CityIvoryTemple1f2_1",
+        "CityIvoryTemple1f2_2",
+        "CityIvoryTemple1f2_3"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_3_8_2",
+      "name": "The Solaris Temple Level 2",
+      "act": 3,
+      "level": 28,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_8_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_CityIvoryTemple2f1_1",
+        "Augury_CityIvoryTemple2f1_2",
+        "Augury_CityIvoryTemple2f1_3",
+        "Augury_CityIvoryTemple2f2_1",
+        "Augury_CityIvoryTemple2f2_2",
+        "Augury_CityIvoryTemple2f2_3",
+        "CityIvoryTemple2f1_1",
+        "CityIvoryTemple2f1_2",
+        "CityIvoryTemple2f1_3",
+        "CityIvoryTemple2f2_1",
+        "CityIvoryTemple2f2_2",
+        "CityIvoryTemple2f2_3"
+      ],
+      "craftingRecipes": [
+        "Fire Damage - Rank 1"
+      ]
+    },
+    {
+      "id": "1_3_9",
+      "name": "The Docks",
+      "act": 3,
+      "level": 29,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_7"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_CityIndustrial1",
+        "Augury_CityIndustrial2",
+        "Augury_CityIndustrial3",
+        "CityIndustrial1",
+        "CityIndustrial2",
+        "CityIndustrial3"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_3_10_1",
+      "name": "The Sewers",
+      "act": 3,
+      "level": 26,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_13",
+        "1_3_2",
+        "1_3_5"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_CitySewers1f1",
+        "Augury_CitySewers1f2",
+        "Augury_CitySewers1f3",
+        "CitySewers1f1",
+        "CitySewers1f2",
+        "CitySewers1f3"
+      ],
+      "craftingRecipes": [
+        "Physical Damage - Rank 1"
+      ]
+    },
+    {
+      "id": "1_3_13",
+      "name": "The Ebony Barracks",
+      "act": 3,
+      "level": 29,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_10_1",
+        "1_3_14_1",
+        "1_3_15"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "CityBarracks1"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "General Gravicius"
+      ]
+    },
+    {
+      "id": "1_3_14_1",
+      "name": "The Lunaris Temple Level 1",
+      "act": 3,
+      "level": 29,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_13",
+        "1_3_14_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": true,
+      "topologies": [
+        "CityEbonyTemple1f1_1",
+        "CityEbonyTemple1f1_2",
+        "CityEbonyTemple1f2_1",
+        "CityEbonyTemple1f2_2"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_3_14_2",
+      "name": "The Lunaris Temple Level 2",
+      "act": 3,
+      "level": 30,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_14_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": true,
+      "topologies": [
+        "CityEbonyTemple3f1_1",
+        "CityEbonyTemple3f1_2",
+        "CityEbonyTemple3f1_3",
+        "CityEbonyTemple3f1_4",
+        "CityEbonyTemple3f2_1",
+        "CityEbonyTemple3f2_2",
+        "CityEbonyTemple3f2_4",
+        "CityEbonyTemple3f3_1",
+        "CityEbonyTemple3f3_4",
+        "CityEbonyTemple3f4_1",
+        "CityEbonyTemple3f4_3",
+        "CityEbonyTemple3f4_4"
+      ],
+      "craftingRecipes": [
+        "Lightning Damage - Rank 1"
+      ],
+      "bossNames": [
+        "Piety"
+      ]
+    },
+    {
+      "id": "1_3_15",
+      "name": "The Imperial Gardens",
+      "act": 3,
+      "level": 30,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_13",
+        "1_3_17_1",
+        "1_3_18_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": false,
+      "topologies": [
+        "CityGardens1",
+        "CityGardens2",
+        "CityGardens3",
+        "CityGardens4",
+        "CityGardens5",
+        "CityGardens6",
+        "CityGardens7"
+      ],
+      "craftingRecipes": [
+        "All Attributes - Rank 1"
+      ]
+    },
+    {
+      "id": "1_3_17_1",
+      "name": "The Library",
+      "act": 3,
+      "level": 30,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_15",
+        "1_3_17_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_CityLibrary_1",
+        "Augury_CityLibrary_2",
+        "Augury_CityLibrary_3",
+        "CityLibrary_1",
+        "CityLibrary_2",
+        "CityLibrary_3"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_3_17_2",
+      "name": "The Archives",
+      "act": 3,
+      "level": 31,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_17_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_CityArchives_1",
+        "CityArchives_1"
+      ],
+      "craftingRecipes": [
+        "Life and Mana Regeneration - Rank 1"
+      ]
+    },
+    {
+      "id": "1_3_18_1",
+      "name": "The Sceptre of God",
+      "act": 3,
+      "level": 32,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_15",
+        "1_3_18_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "CityTower1_1"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_3_18_2",
+      "name": "The Upper Sceptre of God",
+      "act": 3,
+      "level": 33,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_18_1",
+        "1_4_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 5,
+      "actBossArea": true,
+      "topologies": [
+        "CityTower2_1"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Dominus, High Templar"
+      ]
+    },
+    {
+      "id": "1_3_town",
+      "name": "The Sarn Encampment",
+      "act": 3,
+      "level": 33,
+      "kind": "town",
+      "waypoint": true,
+      "town": null,
+      "connections": [
+        "1_3_1",
+        "1_3_2"
+      ],
+      "otherConnections": [
+        "Labyrinth_Airlock",
+        "ffa1_1"
+      ],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "CityTown"
+      ],
+      "craftingRecipes": []
+    }
+  ],
+  "hints": [
+    {
+      "area": "1_3_town",
+      "toward": "1_3_2",
+      "step": "→ The Slums",
+      "text": "Go up",
+      "direction": 0,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_2",
+      "toward": "1_3_3_1",
+      "step": "→ The Crematorium",
+      "text": "Follow Stairs",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_town",
+      "toward": "1_3_2",
+      "step": "→ The Slums",
+      "text": "Go up",
+      "direction": 0,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_5",
+      "toward": "1_3_6",
+      "step": "→ The Catacombs",
+      "text": "Look around nearby",
+      "leagueStartOnly": true
+    },
+    {
+      "area": "1_3_5",
+      "toward": "1_3_7",
+      "step": "→ The Battlefront",
+      "text": "Search up",
+      "direction": 0,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_7",
+      "step": "Get the waypoint",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_7",
+      "step": "Find and take Ribbon Spool",
+      "text": "Go down-left",
+      "direction": 225,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_7",
+      "toward": "1_3_8_1",
+      "step": "→ The Solaris Temple Level 1",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_7",
+      "toward": "1_3_9",
+      "step": "→ The Docks",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_13",
+      "step": "Kill General Gravicius",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_14_2",
+      "step": "Find and kill Piety, take Tower Key",
+      "text": "Follow stairs that are going up",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_14_2",
+      "step": "Find and kill Piety, take Tower Key",
+      "text": "At the fork in the road with wagons, go the route with 1 wagon, not 2",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_13",
+      "toward": "1_3_15",
+      "step": "→ The Imperial Gardens",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_15",
+      "step": "Get the waypoint",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_15",
+      "step": "Complete the Labyrinth trial",
+      "text": "Go up",
+      "direction": 0,
+      "leagueStartOnly": true
+    },
+    {
+      "area": "1_3_15",
+      "toward": "1_3_17_1",
+      "step": "→ The Library",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_17_1",
+      "toward": "1_3_17_2",
+      "step": "Find Loose Candle → The Archives",
+      "text": "Look for a candle in a narrow corridor",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_town",
+      "step": "the waypoint to The Library",
+      "text": "Put currency needed to buy skill gems in inventory",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_18_1",
+      "toward": "1_3_18_2",
+      "step": "→ The Upper Sceptre of God",
+      "text": "Stairs spawn in one of the corners",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_3_18_2",
+      "step": "→ Tower Rooftop, Kill Dominus, High Templar",
+      "text": "Look for barricades",
+      "leagueStartOnly": false
+    }
+  ],
+  "quests": [
+    {
+      "id": "a2q8a3",
+      "name": "Shadow of the Vaal",
+      "act": 3,
+      "npcs": []
+    },
+    {
+      "id": "a3q1",
+      "name": "Lost in Love",
+      "act": 3,
+      "npcs": [
+        "Maramoa"
+      ]
+    },
+    {
+      "id": "a3q2",
+      "name": "Lost in Love",
+      "act": 3,
+      "npcs": [
+        "Clarissa"
+      ]
+    },
+    {
+      "id": "a3q3",
+      "name": "The Gemling Queen",
+      "act": 3,
+      "npcs": []
+    },
+    {
+      "id": "a3q4",
+      "name": "The Ribbon Spool",
+      "act": 3,
+      "npcs": [
+        "Lady Dialla"
+      ]
+    },
+    {
+      "id": "a3q5",
+      "name": "Fiery Dust",
+      "act": 3,
+      "npcs": [
+        "Lady Dialla"
+      ]
+    },
+    {
+      "id": "a3q8",
+      "name": "Sever the Right Hand",
+      "act": 3,
+      "npcs": [
+        "Maramoa"
+      ]
+    },
+    {
+      "id": "a3q9",
+      "name": "Piety's Pets",
+      "act": 3,
+      "npcs": [
+        "Grigor"
+      ]
+    },
+    {
+      "id": "a3q10",
+      "name": "The Sceptre of God",
+      "act": 3,
+      "npcs": []
+    },
+    {
+      "id": "a3q11",
+      "name": "Victario's Secrets",
+      "act": 3,
+      "npcs": [
+        "Hargan"
+      ]
+    },
+    {
+      "id": "a3q12",
+      "name": "A Fixture of Fate",
+      "act": 3,
+      "npcs": [
+        "Siosa"
+      ]
+    },
+    {
+      "id": "a3q13",
+      "name": "A Swig of Hope",
+      "act": 3,
+      "npcs": [
+        "Captain Fairgraves"
+      ]
+    }
+  ]
+}

@@ -691,25 +691,25 @@ fn now_unix() -> i64 {
 
 #[tauri::command]
 pub async fn campaign_status(state: State<'_, AppState>, game: GameId) -> AppResult<crate::campaign::store::CampaignStatus> {
-    crate::campaign::require_poe2(game)?;
+    crate::campaign::require_campaign_game(game)?;
     crate::campaign::store::status(&*state.db.conn()?, game)
 }
 
 #[tauri::command]
 pub async fn campaign_characters(state: State<'_, AppState>, game: GameId) -> AppResult<Vec<crate::campaign::store::CharacterRow>> {
-    crate::campaign::require_poe2(game)?;
+    crate::campaign::require_campaign_game(game)?;
     crate::campaign::store::characters(&*state.db.conn()?, game)
 }
 
 #[tauri::command]
 pub async fn campaign_events(state: State<'_, AppState>, game: GameId, character_id: i64) -> AppResult<Vec<crate::campaign::store::EventRow>> {
-    crate::campaign::require_poe2(game)?;
+    crate::campaign::require_campaign_game(game)?;
     crate::campaign::store::events(&*state.db.conn()?, game, character_id)
 }
 
 #[tauri::command]
 pub async fn campaign_marks(state: State<'_, AppState>, game: GameId, character_id: i64) -> AppResult<Vec<crate::campaign::store::MarkRow>> {
-    crate::campaign::require_poe2(game)?;
+    crate::campaign::require_campaign_game(game)?;
     crate::campaign::store::marks(&*state.db.conn()?, game, character_id)
 }
 
@@ -722,19 +722,19 @@ pub async fn campaign_set_mark(
     mark: Option<String>,
     choice: Option<String>,
 ) -> AppResult<()> {
-    crate::campaign::require_poe2(game)?;
+    crate::campaign::require_campaign_game(game)?;
     crate::campaign::store::set_mark(&*state.db.conn()?, game, character_id, &objective_id, mark.as_deref(), choice.as_deref(), now_unix())
 }
 
 #[tauri::command]
 pub async fn campaign_set_hidden(state: State<'_, AppState>, game: GameId, character_id: i64, hidden: bool) -> AppResult<()> {
-    crate::campaign::require_poe2(game)?;
+    crate::campaign::require_campaign_game(game)?;
     crate::campaign::store::set_hidden(&*state.db.conn()?, game, character_id, hidden)
 }
 
 #[tauri::command]
 pub async fn campaign_delete_character(state: State<'_, AppState>, game: GameId, character_id: i64) -> AppResult<()> {
-    crate::campaign::require_poe2(game)?;
+    crate::campaign::require_campaign_game(game)?;
     crate::campaign::store::delete_character(&*state.db.conn()?, game, character_id)
 }
 
@@ -751,9 +751,41 @@ pub async fn campaign_import_log(state: State<'_, AppState>, game: GameId) -> Ap
     .map_err(|_| crate::error::AppError::StatePoisoned)?
 }
 
+/// Opens (or focuses) the Location Atlas window, optionally on a campaign area.
+/// Window creation must be async (sync deadlocks on Windows).
+#[tauri::command]
+pub async fn atlas_open(app: tauri::AppHandle, game: GameId, area: Option<String>) -> AppResult<()> {
+    crate::campaign::require_poe1(game)?;
+    crate::atlas::open(&app, area).map_err(|e| {
+        log::error!("atlas window: {e}");
+        crate::error::AppError::InvalidInput("The Location Atlas window couldn't be opened.".into())
+    })
+}
+
+/// Location Atlas (PoE 1): reads what was appended to the PoE 1 Client.txt since the last call
+/// (same reader, parser and campaign hook as PoE 2). Called by the Atlas only while it is visible.
+#[tauri::command]
+pub async fn atlas_sync(state: State<'_, AppState>, game: GameId) -> AppResult<crate::campaign::sync::SyncSummary> {
+    crate::campaign::require_poe1(game)?;
+    let db = state.db.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let path = crate::campaign::resolve_poe1_log(&db)?;
+        crate::campaign::sync::sync_log(&db, game, &path, crate::session::localtime::local_to_unix, 64 * 1024 * 1024)
+    })
+    .await
+    .map_err(|_| crate::error::AppError::StatePoisoned)?
+}
+
+/// Location Atlas (PoE 1): the player's choice of Client.txt (validated as a PoE 1 log).
+#[tauri::command]
+pub async fn atlas_set_log_path(state: State<'_, AppState>, game: GameId, path: String) -> AppResult<()> {
+    crate::campaign::require_poe1(game)?;
+    crate::campaign::set_poe1_log(&state.db, std::path::Path::new(&path))
+}
+
 #[tauri::command]
 pub async fn campaign_reward_marks(state: State<'_, AppState>, game: GameId, character_id: i64) -> AppResult<Vec<crate::campaign::store::RewardMarkRow>> {
-    crate::campaign::require_poe2(game)?;
+    crate::campaign::require_campaign_game(game)?;
     crate::campaign::store::reward_marks(&*state.db.conn()?, game, character_id)
 }
 
@@ -766,7 +798,7 @@ pub async fn campaign_set_reward_mark(
     stage: Option<String>,
     choice: Option<String>,
 ) -> AppResult<()> {
-    crate::campaign::require_poe2(game)?;
+    crate::campaign::require_campaign_game(game)?;
     crate::campaign::store::set_reward_mark(&*state.db.conn()?, game, character_id, &reward_id, stage.as_deref(), choice.as_deref(), now_unix())
 }
 
@@ -777,4 +809,66 @@ pub async fn campaign_build_stats(app: tauri::AppHandle, game: GameId, rel: Stri
     crate::campaign::require_poe2(game)?;
     let dir = pob::builds_dir(game, documents(&app).as_deref()).ok_or_else(|| crate::error::AppError::InvalidInput("Path of Building builds folder not found.".into()))?;
     crate::campaign::build_stats::read(&dir, &rel)
+}
+
+// ---------- Act Tracker (PoE 1) overlay window ----------
+
+fn require_act_tracker(game: GameId) -> AppResult<()> {
+    if game == GameId::Poe1 {
+        Ok(())
+    } else {
+        Err(crate::error::AppError::InvalidInput("The Act Tracker is available for Path of Exile 1 only.".into()))
+    }
+}
+
+fn tracker_window_error(e: tauri::Error) -> crate::error::AppError {
+    log::error!("act tracker window: {e}");
+    crate::error::AppError::InvalidInput("The Act Tracker window couldn't be shown.".into())
+}
+
+/// Shows the overlay (creating it on first use) without taking focus. Async: window creation must not block.
+#[tauri::command]
+pub async fn act_tracker_open(app: tauri::AppHandle, game: GameId) -> AppResult<crate::act_tracker::TrackerWindowState> {
+    require_act_tracker(game)?;
+    crate::act_tracker::open(&app).map_err(tracker_window_error)?;
+    Ok(crate::act_tracker::state(&app))
+}
+
+#[tauri::command]
+pub async fn act_tracker_hide(app: tauri::AppHandle, game: GameId) -> AppResult<crate::act_tracker::TrackerWindowState> {
+    require_act_tracker(game)?;
+    crate::act_tracker::hide(&app).map_err(tracker_window_error)?;
+    Ok(crate::act_tracker::state(&app))
+}
+
+#[tauri::command]
+pub async fn act_tracker_close(app: tauri::AppHandle, game: GameId) -> AppResult<crate::act_tracker::TrackerWindowState> {
+    require_act_tracker(game)?;
+    crate::act_tracker::close(&app).map_err(tracker_window_error)?;
+    Ok(crate::act_tracker::state(&app))
+}
+
+#[tauri::command]
+pub async fn act_tracker_state(app: tauri::AppHandle, game: GameId) -> AppResult<crate::act_tracker::TrackerWindowState> {
+    require_act_tracker(game)?;
+    Ok(crate::act_tracker::state(&app))
+}
+
+#[tauri::command]
+pub async fn act_tracker_set_click_through(app: tauri::AppHandle, game: GameId, on: bool) -> AppResult<crate::act_tracker::TrackerWindowState> {
+    require_act_tracker(game)?;
+    crate::act_tracker::set_click_through(&app, on)?;
+    Ok(crate::act_tracker::state(&app))
+}
+
+/// Validates and stores the show/hide hotkey ("" turns it off). It is registered the next time Path of Exile 1
+/// becomes the foreground window.
+#[tauri::command]
+pub async fn act_tracker_set_hotkey(state: State<'_, AppState>, game: GameId, hotkey: String) -> AppResult<()> {
+    require_act_tracker(game)?;
+    let hotkey = hotkey.trim().to_owned();
+    if !hotkey.is_empty() && !crate::act_tracker::valid_hotkey(&hotkey) {
+        return Err(crate::error::AppError::InvalidInput("That shortcut isn't valid (e.g. Ctrl+Shift+T).".into()));
+    }
+    crate::settings::set_game(&state.db, game, crate::act_tracker::KEY_HOTKEY, &serde_json::Value::String(hotkey))
 }

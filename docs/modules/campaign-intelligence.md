@@ -75,6 +75,9 @@ Metabot campaign + permanent bonuses (verified 0.5.5f), and the real client log.
 
 ## Automatic tracking (stage 2)
 
+> Since 2026-11-19 the same hook also stores **PoE 1** campaign events for the Location Atlas (driven by
+> `campaign::sync`, see location-atlas.md). Rows are isolated by `game`; nothing here changed for PoE 2.
+
 ### Character attribution (`campaign/hook.rs`)
 
 Checked against the real log: of 5 changes of the levelling name, 3 followed a login-server connect and 2 did not

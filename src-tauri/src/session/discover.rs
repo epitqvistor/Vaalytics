@@ -85,6 +85,29 @@ fn steam_root() -> Option<PathBuf> {
 
 /// Known install locations, in order. Only existing files are returned.
 pub fn candidates() -> Vec<PathBuf> {
+    candidates_in("Path of Exile 2")
+}
+
+/// Path of Exile 1 logs in the usual install folders (Location Atlas).
+pub fn poe1_candidates() -> Vec<PathBuf> {
+    candidates_in("Path of Exile")
+}
+
+/// Whether a log's recent part carries a PoE 1 signature (`User agent: PoE release…`,
+/// `login.pathofexile.com`) and no PoE 2 one.
+pub fn is_poe1_log(path: &Path) -> bool {
+    let Ok(mut f) = std::fs::File::open(path) else { return false };
+    let Ok(meta) = f.metadata() else { return false };
+    let from = meta.len().saturating_sub(SIGNATURE_WINDOW);
+    let mut tail = Vec::new();
+    if f.seek(SeekFrom::Start(from)).is_err() || f.take(SIGNATURE_WINDOW).read_to_end(&mut tail).is_err() {
+        return false;
+    }
+    let has = |marks: &[&[u8]]| marks.iter().any(|m| tail.windows(m.len()).any(|w| w == *m));
+    has(&POE1_MARKS) && !has(&POE2_MARKS)
+}
+
+fn candidates_in(folder: &str) -> Vec<PathBuf> {
     let mut libs: Vec<PathBuf> = Vec::new();
     if let Some(root) = steam_root() {
         if let Ok(vdf) = std::fs::read_to_string(root.join("steamapps").join("libraryfolders.vdf")) {
@@ -94,10 +117,10 @@ pub fn candidates() -> Vec<PathBuf> {
     }
     let mut out: Vec<PathBuf> = libs
         .iter()
-        .map(|l| l.join("steamapps").join("common").join("Path of Exile 2").join("logs").join("Client.txt"))
+        .map(|l| l.join("steamapps").join("common").join(folder).join("logs").join("Client.txt"))
         .collect();
     for base in [r"C:\Program Files (x86)\Grinding Gear Games", r"C:\Program Files\Grinding Gear Games"] {
-        out.push(Path::new(base).join("Path of Exile 2").join("logs").join("Client.txt"));
+        out.push(Path::new(base).join(folder).join("logs").join("Client.txt"));
     }
     let mut seen = Vec::new();
     out.retain(|p| {

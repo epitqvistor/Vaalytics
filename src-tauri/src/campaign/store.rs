@@ -72,7 +72,7 @@ pub fn characters(c: &Connection, game: GameId) -> AppResult<Vec<CharacterRow>> 
     let mut st = c.prepare(
         "SELECT ch.id, ch.name, ch.class, ch.base_class, ch.level, ch.first_seen_at, ch.last_seen_at, ch.hidden,
                 (SELECT COUNT(*) FROM campaign_events e WHERE e.character_id = ch.id AND e.kind = 'zone'
-                    AND (e.area_id GLOB 'G[0-9]*_*' OR e.area_id GLOB 'P[0-9]*_*'))
+                    AND (e.area_id GLOB 'G[0-9]*_*' OR e.area_id GLOB 'P[0-9]*_*' OR e.area_id GLOB '[12]_[0-9]*_*'))
          FROM campaign_characters ch WHERE ch.game = ?1 ORDER BY ch.last_seen_at DESC",
     )?;
     let rows = st.query_map(params![game.as_str()], |r| {

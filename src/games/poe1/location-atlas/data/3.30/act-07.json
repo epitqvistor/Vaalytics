@@ -1,0 +1,601 @@
+{
+  "act": 7,
+  "areas": [
+    {
+      "id": "2_7_1",
+      "name": "The Broken Bridge",
+      "act": 7,
+      "level": 50,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_2",
+        "2_7_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_BrokenBridge_1",
+        "Augury_P2_BrokenBridge_2",
+        "Augury_P2_BrokenBridge_3",
+        "Augury_P2_BrokenBridge_4",
+        "Augury_P2_BrokenBridge_5",
+        "Augury_P2_BrokenBridge_6",
+        "P2_BrokenBridge_1",
+        "P2_BrokenBridge_2",
+        "P2_BrokenBridge_3",
+        "P2_BrokenBridge_4",
+        "P2_BrokenBridge_5",
+        "P2_BrokenBridge_6"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_7_2",
+      "name": "The Crossroads",
+      "act": 7,
+      "level": 51,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_1",
+        "2_7_3",
+        "2_7_5_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Crossroads_1",
+        "P2_Crossroads_1"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_7_3",
+      "name": "The Fellshrine Ruins",
+      "act": 7,
+      "level": 51,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_2",
+        "2_7_4"
+      ],
+      "otherConnections": [
+        "SanctumFoyer_Fellshrine"
+      ],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Fellshrine_1",
+        "Augury_P2_Fellshrine_2",
+        "Augury_P2_Fellshrine_3",
+        "P2_Fellshrine_1",
+        "P2_Fellshrine_2",
+        "P2_Fellshrine_3"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_7_4",
+      "name": "The Crypt",
+      "act": 7,
+      "level": 51,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_3"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Crypt_1",
+        "Augury_P2_Crypt_2",
+        "Augury_P2_Crypt_3",
+        "Augury_P2_Crypt_4",
+        "P2_Crypt_1",
+        "P2_Crypt_2",
+        "P2_Crypt_3",
+        "P2_Crypt_4"
+      ],
+      "craftingRecipes": [
+        "Damage over Time - Rank 1"
+      ]
+    },
+    {
+      "id": "2_7_5_1",
+      "name": "The Chamber of Sins Level 1",
+      "act": 7,
+      "level": 52,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_2",
+        "2_7_5_2",
+        "2_7_5_map"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Sins_1_1",
+        "Augury_P2_Sins_1_2",
+        "Augury_P2_Sins_1_3",
+        "P2_Sins_1_1",
+        "P2_Sins_1_2",
+        "P2_Sins_1_3"
+      ],
+      "craftingRecipes": [
+        "Lightning Damage - Rank 2"
+      ]
+    },
+    {
+      "id": "2_7_5_2",
+      "name": "The Chamber of Sins Level 2",
+      "act": 7,
+      "level": 52,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_5_1",
+        "2_7_6"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Sins_2_1",
+        "Augury_P2_Sins_2_2",
+        "Augury_P2_Sins_2_3",
+        "Augury_P2_Sins_2_4",
+        "P2_Sins_2_1",
+        "P2_Sins_2_2",
+        "P2_Sins_2_3",
+        "P2_Sins_2_4"
+      ],
+      "craftingRecipes": [
+        "Mana Regen - Rank 1"
+      ]
+    },
+    {
+      "id": "2_7_5_map",
+      "name": "Maligaro's Sanctum",
+      "act": 7,
+      "level": 52,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_5_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 3,
+      "actBossArea": true,
+      "topologies": [
+        "P2_Maligaro_Sanctum_1",
+        "P2_Maligaro_Sanctum_2",
+        "P2_Maligaro_Sanctum_3",
+        "P2_Maligaro_Sanctum_4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Maligaro, the Artist"
+      ]
+    },
+    {
+      "id": "2_7_6",
+      "name": "The Den",
+      "act": 7,
+      "level": 53,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_5_2",
+        "2_7_7"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Den_1",
+        "Augury_P2_Den_2",
+        "Augury_P2_Den_3",
+        "Augury_P2_Den_4",
+        "Augury_P2_Den_5",
+        "Augury_P2_Den_6",
+        "Augury_P2_Den_7",
+        "Augury_P2_Den_8",
+        "P2_Den_1",
+        "P2_Den_2",
+        "P2_Den_3",
+        "P2_Den_4",
+        "P2_Den_5",
+        "P2_Den_6",
+        "P2_Den_7",
+        "P2_Den_8"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_7_7",
+      "name": "The Ashen Fields",
+      "act": 7,
+      "level": 53,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_6",
+        "2_7_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 4,
+      "actBossArea": true,
+      "topologies": [
+        "P2_AshenFields_1",
+        "P2_AshenFields_2",
+        "P2_AshenFields_3",
+        "P2_AshenFields_4",
+        "P2_AshenFields_5"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Greust, Lord of the Forest"
+      ]
+    },
+    {
+      "id": "2_7_8",
+      "name": "The Northern Forest",
+      "act": 7,
+      "level": 53,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_10",
+        "2_7_7",
+        "2_7_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_NorthernForest_1",
+        "Augury_P2_NorthernForest_10",
+        "Augury_P2_NorthernForest_11",
+        "Augury_P2_NorthernForest_12",
+        "Augury_P2_NorthernForest_2",
+        "Augury_P2_NorthernForest_3",
+        "Augury_P2_NorthernForest_4",
+        "Augury_P2_NorthernForest_5",
+        "Augury_P2_NorthernForest_6",
+        "Augury_P2_NorthernForest_7",
+        "Augury_P2_NorthernForest_8",
+        "Augury_P2_NorthernForest_9",
+        "P2_NorthernForest_1",
+        "P2_NorthernForest_10",
+        "P2_NorthernForest_11",
+        "P2_NorthernForest_12",
+        "P2_NorthernForest_2",
+        "P2_NorthernForest_3",
+        "P2_NorthernForest_4",
+        "P2_NorthernForest_5",
+        "P2_NorthernForest_6",
+        "P2_NorthernForest_7",
+        "P2_NorthernForest_8",
+        "P2_NorthernForest_9"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_7_9",
+      "name": "The Dread Thicket",
+      "act": 7,
+      "level": 53,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": true,
+      "topologies": [
+        "P2_DreadThicket_1",
+        "P2_DreadThicket_2"
+      ],
+      "craftingRecipes": [
+        "Fire Damage - Rank 2"
+      ],
+      "bossNames": [
+        "Gruthkul, Mother of Despair"
+      ]
+    },
+    {
+      "id": "2_7_10",
+      "name": "The Causeway",
+      "act": 7,
+      "level": 54,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_11",
+        "2_7_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Causeway_1",
+        "Augury_P2_Causeway_2",
+        "Augury_P2_Causeway_3",
+        "Augury_P2_Causeway_4",
+        "P2_Causeway_1",
+        "P2_Causeway_2",
+        "P2_Causeway_3",
+        "P2_Causeway_4"
+      ],
+      "craftingRecipes": [
+        "Cold Damage - Rank 2"
+      ]
+    },
+    {
+      "id": "2_7_11",
+      "name": "The Vaal City",
+      "act": 7,
+      "level": 54,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_10",
+        "2_7_12_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_VaalCity_1",
+        "Augury_P2_VaalCity_2",
+        "Augury_P2_VaalCity_3",
+        "Augury_P2_VaalCity_4",
+        "P2_VaalCity_1",
+        "P2_VaalCity_2",
+        "P2_VaalCity_3",
+        "P2_VaalCity_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_7_12_1",
+      "name": "The Temple of Decay Level 1",
+      "act": 7,
+      "level": 54,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_11",
+        "2_7_12_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "P2_SpiderTomb_1_1",
+        "P2_SpiderTomb_1_2",
+        "P2_SpiderTomb_1_3",
+        "P2_SpiderTomb_1_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_7_12_2",
+      "name": "The Temple of Decay Level 2",
+      "act": 7,
+      "level": 55,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_12_1",
+        "2_8_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "P2_SpiderTomb_2_1",
+        "P2_SpiderTomb_2_2",
+        "P2_SpiderTomb_2_3",
+        "P2_SpiderTomb_2_4"
+      ],
+      "craftingRecipes": [
+        "Chaos Damage - Rank 1"
+      ],
+      "bossNames": [
+        "Arakaali, Spinner of Shadows"
+      ]
+    },
+    {
+      "id": "2_7_town",
+      "name": "The Bridge Encampment",
+      "act": 7,
+      "level": 55,
+      "kind": "town",
+      "waypoint": true,
+      "town": null,
+      "connections": [
+        "2_6_15",
+        "2_7_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "P2_BridgeTown_1"
+      ],
+      "craftingRecipes": []
+    }
+  ],
+  "hints": [
+    {
+      "area": "2_7_1",
+      "step": "Find and take Silver Locket",
+      "text": "Follow the road, look for the broken the waypoint",
+      "leagueStartOnly": true
+    },
+    {
+      "area": "2_7_1",
+      "toward": "2_7_2",
+      "step": "→ The Crossroads",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_7_2",
+      "toward": "2_7_3",
+      "step": "→ The Fellshrine Ruins",
+      "text": "Go down-right",
+      "direction": 135,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_7_3",
+      "toward": "2_7_4",
+      "step": "→ The Crypt",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_7_2",
+      "toward": "2_7_5_1",
+      "step": "→ The Chamber of Sins Level 1",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_7_5_map",
+      "step": "→ Maligaro's Workshop, kill Maligaro, the Artist, take Black Venom",
+      "text": "Follow edges of the zone and cross bridges in the corners",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_7_5_map",
+      "step": "→ Maligaro's Workshop, kill Maligaro, the Artist, take Black Venom",
+      "text": "Typically bridges spawn in the opposite diagonal corners",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_7_5_1",
+      "toward": "2_7_5_2",
+      "step": "→ The Chamber of Sins Level 2",
+      "text": "Go in same direction as the waypoint",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_7_5_2",
+      "step": "Complete the Labyrinth trial",
+      "text": "Find the switch hidden behind Trial of Ascendancy Plaque to access Hidden Gem: Quality",
+      "leagueStartOnly": true
+    },
+    {
+      "area": "2_7_7",
+      "step": "→ The Forest Encampment, kill Greust, Lord of the Forest",
+      "text": "Go down-left",
+      "direction": 225,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_7_11",
+      "toward": "2_7_12_1",
+      "step": "→ The Temple of Decay Level 1",
+      "text": "In the room with a central pit, look down-left or up-right for a side area containing a Corrupted Unique",
+      "direction": 225,
+      "leagueStartOnly": false
+    }
+  ],
+  "quests": [
+    {
+      "id": "a7q1",
+      "name": "The Master of a Million Faces",
+      "act": 7,
+      "npcs": [
+        "Eramir"
+      ]
+    },
+    {
+      "id": "a7q2",
+      "name": "Essence of the Artist",
+      "act": 7,
+      "npcs": [
+        "Helena"
+      ]
+    },
+    {
+      "id": "a7q3",
+      "name": "Web of Secrets",
+      "act": 7,
+      "npcs": [
+        "Silk"
+      ]
+    },
+    {
+      "id": "a7q4",
+      "name": "The Mother of Spiders",
+      "act": 7,
+      "npcs": []
+    },
+    {
+      "id": "a7q5",
+      "name": "The Silver Locket",
+      "act": 7,
+      "npcs": [
+        "Weylam Roth"
+      ]
+    },
+    {
+      "id": "a7q6",
+      "name": "Kishara's Star",
+      "act": 7,
+      "npcs": [
+        "Weylam Roth"
+      ]
+    },
+    {
+      "id": "a7q7",
+      "name": "Lighting the Way",
+      "act": 7,
+      "npcs": []
+    },
+    {
+      "id": "a7q8",
+      "name": "In Memory of Greust",
+      "act": 7,
+      "npcs": [
+        "Helena"
+      ]
+    },
+    {
+      "id": "a7q9",
+      "name": "Queen of Despair",
+      "act": 7,
+      "npcs": [
+        "Eramir"
+      ]
+    }
+  ]
+}

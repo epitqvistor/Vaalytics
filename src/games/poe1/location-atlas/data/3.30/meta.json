@@ -1,0 +1,58 @@
+{
+  "game": "poe1",
+  "patch": "3.30",
+  "acts": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "counts": {
+    "areas": 155,
+    "hints": 166,
+    "quests": 82
+  },
+  "sources": [
+    {
+      "id": "repoe",
+      "name": "RePoE fork — world_areas.json",
+      "url": "https://repoe-fork.github.io/world_areas.json",
+      "author": "RePoE fork contributors (data extracted from the game files)",
+      "license": "Game data (Grinding Gear Games); export used as reference data, as for crafting",
+      "type": "game-data",
+      "version": "3.30.0.2.2",
+      "provides": [
+        "areas",
+        "levels",
+        "towns",
+        "waypoints",
+        "connections",
+        "boss count",
+        "layout topologies"
+      ],
+      "verification": "verified"
+    },
+    {
+      "id": "exile-leveling",
+      "name": "exile-leveling (HeartofPhos)",
+      "url": "https://github.com/HeartofPhos/exile-leveling",
+      "author": "HeartofPhos and contributors",
+      "license": "MIT",
+      "type": "community",
+      "version": "d6951db0ca94",
+      "provides": [
+        "quest names",
+        "boss names per area",
+        "navigation hints",
+        "crafting recipes"
+      ],
+      "verification": "community"
+    }
+  ]
+}

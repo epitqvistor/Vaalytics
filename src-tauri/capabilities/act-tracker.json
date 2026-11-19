@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "act-tracker-window",
+  "description": "Permissions for the Act Tracker overlay window (PoE 1; local app content only, no remote URLs).",
+  "windows": ["act-tracker"],
+  "local": true,
+  "permissions": [
+    "core:default",
+    "log:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-start-resize-dragging",
+    "core:window:allow-outer-position",
+    "core:window:allow-outer-size",
+    "core:window:allow-set-size"
+  ]
+}

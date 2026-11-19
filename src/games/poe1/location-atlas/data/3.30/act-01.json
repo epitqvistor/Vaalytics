@@ -1,0 +1,745 @@
+{
+  "act": 1,
+  "areas": [
+    {
+      "id": "1_1_1",
+      "name": "The Twilight Strand",
+      "act": 1,
+      "level": 1,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "TwilightStrand4",
+        "TwilightStrand5",
+        "TwilightStrand6"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Hillock"
+      ]
+    },
+    {
+      "id": "1_1_2",
+      "name": "The Coast",
+      "act": 1,
+      "level": 2,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_2a",
+        "1_1_3",
+        "1_1_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_Coast1_1_1",
+        "Augury_Coast1_1_4",
+        "Augury_Coast1_2_1",
+        "Augury_Coast1_2_2",
+        "Augury_Coast1_3_1",
+        "Augury_Coast1_4_1",
+        "Augury_Coast1_4_2",
+        "Augury_Coast1_5_1",
+        "Augury_Coast1_5_2",
+        "Coast1_1_1",
+        "Coast1_1_1_Deepwater",
+        "Coast1_1_4",
+        "Coast1_1_4_Deepwater",
+        "Coast1_2_1",
+        "Coast1_2_1_Deepwater",
+        "Coast1_2_2",
+        "Coast1_2_2_Deepwater",
+        "Coast1_3_1",
+        "Coast1_3_1_Deepwater",
+        "Coast1_4_1",
+        "Coast1_4_1_Deepwater",
+        "Coast1_4_2",
+        "Coast1_4_2_Deepwater",
+        "Coast1_5_1",
+        "Coast1_5_1_Deepwater",
+        "Coast1_5_2",
+        "Coast1_5_2_Deepwater"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_1_2a",
+      "name": "The Tidal Island",
+      "act": 1,
+      "level": 3,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Island1_1",
+        "Island1_2",
+        "Island1_3",
+        "Island1_4",
+        "Island1_5",
+        "Island2_1",
+        "Island2_2",
+        "Island2_3",
+        "Island3_1",
+        "Island3_2",
+        "Island3_3",
+        "Island3_4",
+        "Island4_1",
+        "Island4_2",
+        "Island4_3"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Hailrake"
+      ]
+    },
+    {
+      "id": "1_1_3",
+      "name": "The Mud Flats",
+      "act": 1,
+      "level": 4,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_2",
+        "1_1_3a",
+        "1_1_4_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_MudFlats1_1",
+        "Augury_MudFlats1_3",
+        "Augury_MudFlats2_1",
+        "Augury_MudFlats3_2",
+        "MudFlats1_1",
+        "MudFlats1_2",
+        "MudFlats1_3",
+        "MudFlats2_1",
+        "MudFlats2_2",
+        "MudFlats2_3",
+        "MudFlats3_2"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_1_3a",
+      "name": "The Fetid Pool",
+      "act": 1,
+      "level": 5,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_3"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "MudFlatsA1",
+        "MudFlatsA2",
+        "MudFlatsA3",
+        "MudFlatsA4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_1_4_0",
+      "name": "The Flooded Depths",
+      "act": 1,
+      "level": 6,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_4_1",
+        "1_1_4_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "FloodedDepths1",
+        "FloodedDepths2",
+        "FloodedDepths3",
+        "FloodedDepths4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "The Dweller of the Deep"
+      ]
+    },
+    {
+      "id": "1_1_4_1",
+      "name": "The Submerged Passage",
+      "act": 1,
+      "level": 5,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_3",
+        "1_1_4_0",
+        "1_1_4_0",
+        "1_1_5"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_TidalPassage1_1",
+        "Augury_TidalPassage1_2",
+        "Augury_TidalPassage1_3",
+        "Augury_TidalPassage1_4",
+        "Augury_TidalPassage2_1",
+        "Augury_TidalPassage2_2",
+        "TidalPassage1_1",
+        "TidalPassage1_2",
+        "TidalPassage1_3",
+        "TidalPassage1_4",
+        "TidalPassage2_1",
+        "TidalPassage2_2"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_1_5",
+      "name": "The Ledge",
+      "act": 1,
+      "level": 6,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_4_1",
+        "1_1_6"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": false,
+      "topologies": [
+        "Ledge1_1",
+        "Ledge1_2",
+        "Ledge1_3",
+        "Ledge1_4",
+        "Ledge2_1",
+        "Ledge2_2",
+        "Ledge2_3",
+        "Ledge2_4",
+        "Ledge3_1",
+        "Ledge3_2",
+        "Ledge3_3",
+        "Ledge3_4",
+        "Ledge4_1",
+        "Ledge4_2",
+        "Ledge4_3",
+        "Ledge4_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_1_6",
+      "name": "The Climb",
+      "act": 1,
+      "level": 7,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_5",
+        "1_1_7_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "RockyClimb1_1",
+        "RockyClimb1_2",
+        "RockyClimb1_3",
+        "RockyClimb2_1",
+        "RockyClimb2_2",
+        "RockyClimb2_3"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_1_7_1",
+      "name": "The Lower Prison",
+      "act": 1,
+      "level": 8,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_6",
+        "1_1_7_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "Augury_LowerPrison1",
+        "Augury_LowerPrison2",
+        "Augury_LowerPrison3",
+        "Augury_LowerPrison4",
+        "Augury_LowerPrison5",
+        "Augury_LowerPrison6",
+        "LowerPrison1",
+        "LowerPrison2",
+        "LowerPrison3",
+        "LowerPrison4",
+        "LowerPrison5",
+        "LowerPrison6"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_1_7_2",
+      "name": "The Upper Prison",
+      "act": 1,
+      "level": 9,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_7_1",
+        "1_1_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": true,
+      "topologies": [
+        "Prison1"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Brutus, Lord Incarcerator"
+      ]
+    },
+    {
+      "id": "1_1_8",
+      "name": "Prisoner's Gate",
+      "act": 1,
+      "level": 10,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_7_2",
+        "1_1_9",
+        "1_2_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_PrisonersGate1_1",
+        "Augury_PrisonersGate1_2",
+        "Augury_PrisonersGate1_3",
+        "Augury_PrisonersGate1_4",
+        "Augury_PrisonersGate2_1",
+        "Augury_PrisonersGate2_2",
+        "Augury_PrisonersGate2_3",
+        "Augury_PrisonersGate2_4",
+        "Augury_PrisonersGate3_1",
+        "Augury_PrisonersGate3_2",
+        "Augury_PrisonersGate3_3",
+        "Augury_PrisonersGate3_4",
+        "Augury_PrisonersGate4_1",
+        "Augury_PrisonersGate4_2",
+        "Augury_PrisonersGate4_3",
+        "Augury_PrisonersGate4_4",
+        "PrisonersGate1_1",
+        "PrisonersGate1_2",
+        "PrisonersGate1_3",
+        "PrisonersGate1_4",
+        "PrisonersGate2_1",
+        "PrisonersGate2_2",
+        "PrisonersGate2_3",
+        "PrisonersGate2_4",
+        "PrisonersGate3_1",
+        "PrisonersGate3_2",
+        "PrisonersGate3_3",
+        "PrisonersGate3_4",
+        "PrisonersGate4_1",
+        "PrisonersGate4_2",
+        "PrisonersGate4_3",
+        "PrisonersGate4_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_1_9",
+      "name": "The Ship Graveyard",
+      "act": 1,
+      "level": 11,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_11_1",
+        "1_1_8",
+        "1_1_9a",
+        "1_1_9a"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "ShipGraveyard1_1",
+        "ShipGraveyard1_1_Deepwater",
+        "ShipGraveyard1_2",
+        "ShipGraveyard1_2_Deepwater",
+        "ShipGraveyard1_3",
+        "ShipGraveyard2_1",
+        "ShipGraveyard2_2",
+        "ShipGraveyard2_3",
+        "ShipGraveyard2_4",
+        "ShipGraveyard3_1",
+        "ShipGraveyard3_2",
+        "ShipGraveyard3_3",
+        "ShipGraveyard3_4",
+        "ShipGraveyard3_4_Deepwater",
+        "ShipGraveyard4_1",
+        "ShipGraveyard4_1_Deepwater",
+        "ShipGraveyard4_2",
+        "ShipGraveyard4_2_Deepwater",
+        "ShipGraveyard4_3",
+        "ShipGraveyard4_3_Deepwater",
+        "ShipGraveyard4_4",
+        "ShipGraveyard4_4_Deepwater",
+        "ShipGraveyard4_5",
+        "ShipGraveyard4_5_Deepwater",
+        "ShipGraveyard5_1",
+        "ShipGraveyard5_1_Deepwater",
+        "ShipGraveyard5_3",
+        "ShipGraveyard5_3_Deepwater"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Captain Fairgraves"
+      ]
+    },
+    {
+      "id": "1_1_9a",
+      "name": "The Ship Graveyard Cave",
+      "act": 1,
+      "level": 12,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_9",
+        "1_1_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "ShipGraveyardDungeon1_1",
+        "ShipGraveyardDungeon1_1_Deepwater",
+        "ShipGraveyardDungeon1_2",
+        "ShipGraveyardDungeon1_2_Deepwater",
+        "ShipGraveyardDungeon1_3",
+        "ShipGraveyardDungeon1_3_Deepwater",
+        "ShipGraveyardDungeon1_4",
+        "ShipGraveyardDungeon1_4_Deepwater"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_1_11_1",
+      "name": "The Cavern of Wrath",
+      "act": 1,
+      "level": 12,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_11_2",
+        "1_1_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "Augury_CavernWoe1_1",
+        "Augury_CavernWoe2_1",
+        "Augury_CavernWoe3_1",
+        "Augury_CavernWoe4_1",
+        "CavernWoe1_1",
+        "CavernWoe2_1",
+        "CavernWoe3_1",
+        "CavernWoe4_1"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_1_11_2",
+      "name": "The Cavern of Anger",
+      "act": 1,
+      "level": 13,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_11_1",
+        "1_2_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": true,
+      "topologies": [
+        "CavernAnger1_1",
+        "CavernAnger2_1",
+        "CavernAnger3_1",
+        "CavernAnger4_1"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Merveil, the Siren"
+      ]
+    },
+    {
+      "id": "1_1_town",
+      "name": "Lioneye's Watch",
+      "act": 1,
+      "level": 13,
+      "kind": "town",
+      "waypoint": true,
+      "town": null,
+      "connections": [
+        "1_1_1",
+        "1_1_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "ShoreEncampTownNormal"
+      ],
+      "craftingRecipes": []
+    }
+  ],
+  "hints": [
+    {
+      "area": "1_1_3",
+      "step": "Find 3× Glyph",
+      "text": "Little streams connect the 3 Rhoa nests",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_1_3",
+      "step": "Find 3× Glyph",
+      "text": "Usually form a triangle, but will rarely form a line",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_1_2a",
+      "step": "Find and kill Hailrake, take Medicine Chest",
+      "text": "Go left",
+      "direction": 270,
+      "leagueStartOnly": true
+    },
+    {
+      "area": "1_1_2a",
+      "step": "Find and kill Hailrake, take Medicine Chest",
+      "text": "If you find a ledge, turn around and go right",
+      "direction": 90,
+      "leagueStartOnly": true
+    },
+    {
+      "area": "1_1_2a",
+      "step": "Find and kill Hailrake, take Medicine Chest",
+      "text": "Recommended Level: 4",
+      "recommendedLevel": 4,
+      "leagueStartOnly": true
+    },
+    {
+      "area": "1_1_4_1",
+      "toward": "1_1_4_0",
+      "step": "→ The Flooded Depths",
+      "text": "Go right of the bridge",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_1_4_0",
+      "step": "Find and kill The Dweller of the Deep",
+      "text": "Search opposite the entrance",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_1_4_0",
+      "step": "Find and kill The Dweller of the Deep",
+      "text": "Look for the large empty room",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_1_7_1",
+      "step": "Complete the Labyrinth trial",
+      "text": "Usually up-right",
+      "direction": 45,
+      "leagueStartOnly": true
+    },
+    {
+      "area": "1_1_7_2",
+      "step": "Find Chemist's Strongbox",
+      "text": "Look for map icon, access with nearby switch",
+      "leagueStartOnly": true
+    },
+    {
+      "area": "1_1_7_2",
+      "step": "Find Chemist's Strongbox",
+      "text": "High chance for Quicksilver Flask",
+      "leagueStartOnly": true
+    },
+    {
+      "area": "1_1_7_2",
+      "step": "Find Chemist's Strongbox",
+      "text": "Vendor Quicksilver Flask + Orb of Augmentation + Normal Boots",
+      "leagueStartOnly": true
+    },
+    {
+      "area": "1_1_7_2",
+      "step": "Find Chemist's Strongbox",
+      "text": "Vendor Quicksilver Flask + Orb of Augmentation + Movement Speed Boots",
+      "leagueStartOnly": true
+    },
+    {
+      "area": "1_1_7_2",
+      "step": "→ The Warden's Quarters, kill Brutus, Lord Incarcerator",
+      "text": "Recommended Level: 8",
+      "recommendedLevel": 8,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_1_8",
+      "toward": "1_1_9",
+      "step": "→ The Ship Graveyard",
+      "text": "Go down the ledge next to the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_1_11_1",
+      "toward": "1_1_11_2",
+      "step": "→ The Cavern of Anger",
+      "text": "Follow the water",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_1_11_2",
+      "step": "→ Merveil's Lair, kill Merveil, the Siren",
+      "text": "Follow the water",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_1_11_2",
+      "step": "→ Merveil's Lair, kill Merveil, the Siren",
+      "text": "Recommended Level: 12",
+      "recommendedLevel": 12,
+      "leagueStartOnly": false
+    }
+  ],
+  "quests": [
+    {
+      "id": "a1q1",
+      "name": "Enemy at the Gate",
+      "act": 1,
+      "npcs": [
+        "Tarkleigh"
+      ]
+    },
+    {
+      "id": "a1q2",
+      "name": "The Caged Brute",
+      "act": 1,
+      "npcs": [
+        "Nessa",
+        "Tarkleigh"
+      ]
+    },
+    {
+      "id": "a1q3",
+      "name": "The Siren's Cadence",
+      "act": 1,
+      "npcs": [
+        "Nessa"
+      ]
+    },
+    {
+      "id": "a1q4",
+      "name": "Breaking Some Eggs",
+      "act": 1,
+      "npcs": [
+        "Tarkleigh"
+      ]
+    },
+    {
+      "id": "a1q5",
+      "name": "Mercy Mission",
+      "act": 1,
+      "npcs": [
+        "Nessa"
+      ]
+    },
+    {
+      "id": "a1q6",
+      "name": "The Marooned Mariner",
+      "act": 1,
+      "npcs": [
+        "Bestel"
+      ]
+    },
+    {
+      "id": "a1q7",
+      "name": "The Dweller of the Deep",
+      "act": 1,
+      "npcs": [
+        "Tarkleigh"
+      ]
+    },
+    {
+      "id": "a1q8",
+      "name": "A Dirty Job",
+      "act": 1,
+      "npcs": [
+        "Tarkleigh"
+      ]
+    },
+    {
+      "id": "a1q9",
+      "name": "The Way Forward",
+      "act": 1,
+      "npcs": [
+        "Bestel"
+      ]
+    },
+    {
+      "id": "DeepwaterFairgravesAllflameQuest",
+      "name": "The Spirit Flame",
+      "act": 1,
+      "npcs": [
+        "Vesper",
+        "Valerie, the Corsair"
+      ]
+    }
+  ]
+}

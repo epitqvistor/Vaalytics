@@ -1,0 +1,663 @@
+{
+  "act": 8,
+  "areas": [
+    {
+      "id": "2_8_1",
+      "name": "The Sarn Ramparts",
+      "act": 8,
+      "level": 55,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_7_town",
+      "connections": [
+        "2_7_12_2",
+        "2_8_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Ramparts_1",
+        "Augury_P2_Ramparts_2",
+        "Augury_P2_Ramparts_3",
+        "Augury_P2_Ramparts_4",
+        "P2_Ramparts_1",
+        "P2_Ramparts_2",
+        "P2_Ramparts_3",
+        "P2_Ramparts_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_8_2_1",
+      "name": "The Toxic Conduits",
+      "act": 8,
+      "level": 56,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_2_2",
+        "2_8_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 5,
+      "actBossArea": true,
+      "topologies": [
+        "P2_Sewers_Level1_1",
+        "P2_Sewers_Level1_2",
+        "P2_Sewers_Level1_3",
+        "P2_Sewers_Level1_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_8_2_2",
+      "name": "Doedre's Cesspool",
+      "act": 8,
+      "level": 56,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_2_1",
+        "2_8_3",
+        "2_8_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "P2_Sewers_Level2_1",
+        "P2_Sewers_Level2_2",
+        "P2_Sewers_Level2_3",
+        "P2_Sewers_Level2_4"
+      ],
+      "craftingRecipes": [
+        "Elemental Resistances - Rank 3"
+      ],
+      "bossNames": [
+        "Doedre the Vile"
+      ]
+    },
+    {
+      "id": "2_8_3",
+      "name": "The Grand Promenade",
+      "act": 8,
+      "level": 56,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_2_2",
+        "2_8_5"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_GrandPromenade_3",
+        "Augury_P2_GrandPromenade_4",
+        "Augury_P2_GrandPromenade_5",
+        "P2_GrandPromenade_1",
+        "P2_GrandPromenade_2",
+        "P2_GrandPromenade_3",
+        "P2_GrandPromenade_4",
+        "P2_GrandPromenade_5"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_8_4",
+      "name": "The High Gardens",
+      "act": 8,
+      "level": 58,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_5"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "P2_HighGardens_1",
+        "P2_HighGardens_2",
+        "P2_HighGardens_3",
+        "P2_HighGardens_4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Yugul, Reflection of Terror"
+      ]
+    },
+    {
+      "id": "2_8_5",
+      "name": "The Bath House",
+      "act": 8,
+      "level": 57,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_14",
+        "2_8_3",
+        "2_8_4",
+        "2_8_6"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_BathHouse_1",
+        "P2_BathHouse_2",
+        "P2_BathHouse_3",
+        "P2_BathHouse_4"
+      ],
+      "craftingRecipes": [
+        "Flask Duration - Rank 1"
+      ]
+    },
+    {
+      "id": "2_8_6",
+      "name": "The Lunaris Concourse",
+      "act": 8,
+      "level": 58,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_13",
+        "2_8_5",
+        "2_8_7_1_"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Barracks_1"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_8_7_1_",
+      "name": "The Lunaris Temple Level 1",
+      "act": 8,
+      "level": 59,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_6",
+        "2_8_7_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Lunaris_1_1",
+        "Augury_P2_Lunaris_1_2",
+        "Augury_P2_Lunaris_1_3",
+        "Augury_P2_Lunaris_1_4",
+        "P2_Lunaris_1_1",
+        "P2_Lunaris_1_2",
+        "P2_Lunaris_1_3",
+        "P2_Lunaris_1_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_8_7_2",
+      "name": "The Lunaris Temple Level 2",
+      "act": 8,
+      "level": 59,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_7_1_"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Lunaris_2_1",
+        "P2_Lunaris_2_10",
+        "P2_Lunaris_2_11",
+        "P2_Lunaris_2_12",
+        "P2_Lunaris_2_2",
+        "P2_Lunaris_2_3",
+        "P2_Lunaris_2_4",
+        "P2_Lunaris_2_5",
+        "P2_Lunaris_2_6",
+        "P2_Lunaris_2_7",
+        "P2_Lunaris_2_8",
+        "P2_Lunaris_2_9"
+      ],
+      "craftingRecipes": [
+        "Minions - Rank 1"
+      ],
+      "bossNames": [
+        "Dusk, Harbinger of Lunaris"
+      ]
+    },
+    {
+      "id": "2_8_8",
+      "name": "The Quay",
+      "act": 8,
+      "level": 57,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_2_2",
+        "2_8_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Quay_1",
+        "P2_Quay_2"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Tolman"
+      ]
+    },
+    {
+      "id": "2_8_9",
+      "name": "The Grain Gate",
+      "act": 8,
+      "level": 57,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_10",
+        "2_8_14",
+        "2_8_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 7,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_GrainGate_1",
+        "Augury_P2_GrainGate_3",
+        "P2_GrainGate_1",
+        "P2_GrainGate_2",
+        "P2_GrainGate_3"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Gemling Legionnaires"
+      ]
+    },
+    {
+      "id": "2_8_10",
+      "name": "The Imperial Fields",
+      "act": 8,
+      "level": 58,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_12_1",
+        "2_8_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_ImperialFields_1",
+        "Augury_P2_ImperialFields_2",
+        "Augury_P2_ImperialFields_3",
+        "Augury_P2_ImperialFields_4",
+        "P2_ImperialFields_1",
+        "P2_ImperialFields_2",
+        "P2_ImperialFields_3",
+        "P2_ImperialFields_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_8_11",
+      "name": "The Solaris Concourse",
+      "act": 8,
+      "level": 58,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_12_1",
+        "2_8_13",
+        "2_8_14"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Battlefront_1",
+        "Augury_P2_Battlefront_2",
+        "Augury_P2_Battlefront_3",
+        "Augury_P2_Battlefront_4",
+        "Augury_P2_Battlefront_5",
+        "Augury_P2_Battlefront_6",
+        "P2_Battlefront_1",
+        "P2_Battlefront_2",
+        "P2_Battlefront_3",
+        "P2_Battlefront_4",
+        "P2_Battlefront_5",
+        "P2_Battlefront_6"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_8_12_1",
+      "name": "The Solaris Temple Level 1",
+      "act": 8,
+      "level": 59,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_10",
+        "2_8_11",
+        "2_8_12_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Solaris_1_1",
+        "P2_Solaris_1_2",
+        "P2_Solaris_1_3",
+        "P2_Solaris_1_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_8_12_2",
+      "name": "The Solaris Temple Level 2",
+      "act": 8,
+      "level": 59,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_12_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Solaris_2_1",
+        "P2_Solaris_2_2",
+        "P2_Solaris_2_3",
+        "P2_Solaris_2_4"
+      ],
+      "craftingRecipes": [
+        "Traps and Mines - Rank 1"
+      ],
+      "bossNames": [
+        "Dawn, Harbinger of Solaris"
+      ]
+    },
+    {
+      "id": "2_8_13",
+      "name": "The Harbour Bridge",
+      "act": 8,
+      "level": 60,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_11",
+        "2_8_6",
+        "2_9_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": true,
+      "topologies": [
+        "P2_Bridge1",
+        "P2_Bridge2"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Lunaris, Eternal Moon",
+        "Solaris, Eternal Sun"
+      ]
+    },
+    {
+      "id": "2_8_14",
+      "name": "The Hidden Underbelly",
+      "act": 8,
+      "level": 58,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_11",
+        "2_8_5",
+        "2_8_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_HiddenSewers1",
+        "Augury_P2_HiddenSewers2",
+        "Augury_P2_HiddenSewers3",
+        "P2_HiddenSewers1",
+        "P2_HiddenSewers2",
+        "P2_HiddenSewers3"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_8_town",
+      "name": "The Sarn Encampment",
+      "act": 8,
+      "level": 60,
+      "kind": "town",
+      "waypoint": true,
+      "town": null,
+      "connections": [
+        "2_8_1",
+        "2_8_2_1"
+      ],
+      "otherConnections": [
+        "Labyrinth_Airlock",
+        "ffa3_1"
+      ],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "P2_SarnTown"
+      ],
+      "craftingRecipes": []
+    }
+  ],
+  "hints": [
+    {
+      "area": "2_8_town",
+      "toward": "2_8_2_1",
+      "step": "→ The Toxic Conduits",
+      "text": "Go left",
+      "direction": 270,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_2_1",
+      "toward": "2_8_2_2",
+      "step": "→ Doedre's Cesspool",
+      "text": "Black splashes of paint on ground points to the right direction to go",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_2_2",
+      "toward": "2_8_8",
+      "step": "→ The Quay",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_8",
+      "step": "Find and take Ankh of Eternity",
+      "text": "Follow left wall",
+      "direction": 270,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_8",
+      "step": "→ Resurrection Site",
+      "text": "Go down-right",
+      "direction": 135,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_9",
+      "step": "Find and kill Gemling Legionnaires",
+      "text": "Follow the dead guards by doorways",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_9",
+      "step": "Find and kill Gemling Legionnaires",
+      "text": "Look for a book icon",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_9",
+      "toward": "2_8_10",
+      "step": "→ The Imperial Fields",
+      "text": "Follow the dead guards by doorways",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_10",
+      "toward": "2_8_12_1",
+      "step": "→ The Solaris Temple Level 1",
+      "text": "Follow the road until the waypoint",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_10",
+      "toward": "2_8_12_1",
+      "step": "→ The Solaris Temple Level 1",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_11",
+      "toward": "2_8_13",
+      "step": "→ The Harbour Bridge",
+      "text": "Go down-left",
+      "direction": 225,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_6",
+      "step": "Get the waypoint",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_6",
+      "toward": "2_8_13",
+      "step": "→ The Harbour Bridge",
+      "text": "Go down-right",
+      "direction": 135,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_13",
+      "toward": "2_9_1",
+      "step": "→ The Blood Aqueduct",
+      "text": "Farm Level: 58-62",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_6",
+      "toward": "2_8_5",
+      "step": "→ The Bath House",
+      "text": "Go down",
+      "direction": 180,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_8_5",
+      "step": "Complete the Labyrinth trial",
+      "text": "Search left side",
+      "direction": 270,
+      "leagueStartOnly": true
+    },
+    {
+      "area": "2_8_5",
+      "toward": "2_8_4",
+      "step": "→ The High Gardens",
+      "text": "Search left side",
+      "direction": 270,
+      "leagueStartOnly": false
+    }
+  ],
+  "quests": [
+    {
+      "id": "a8q1",
+      "name": "Essence of the Hag",
+      "act": 8,
+      "npcs": [
+        "Hargan"
+      ]
+    },
+    {
+      "id": "a8q2",
+      "name": "Lunar Eclipse",
+      "act": 8,
+      "npcs": []
+    },
+    {
+      "id": "a8q3",
+      "name": "Solar Eclipse",
+      "act": 8,
+      "npcs": []
+    },
+    {
+      "id": "a8q4",
+      "name": "Reflection of Terror",
+      "act": 8,
+      "npcs": [
+        "Hargan"
+      ]
+    },
+    {
+      "id": "a8q5",
+      "name": "The Wings of Vastiri",
+      "act": 8,
+      "npcs": [
+        "Hargan"
+      ]
+    },
+    {
+      "id": "a8q6",
+      "name": "Love is Dead",
+      "act": 8,
+      "npcs": [
+        "Clarissa"
+      ]
+    },
+    {
+      "id": "a8q7",
+      "name": "The Gemling Legion",
+      "act": 8,
+      "npcs": [
+        "Maramoa"
+      ]
+    }
+  ]
+}

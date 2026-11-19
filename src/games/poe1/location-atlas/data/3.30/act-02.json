@@ -1,0 +1,972 @@
+{
+  "act": 2,
+  "areas": [
+    {
+      "id": "1_2_1",
+      "name": "The Southern Forest",
+      "act": 2,
+      "level": 13,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_1_town",
+      "connections": [
+        "1_1_11_2",
+        "1_2_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "ForestIntroWaypoint1",
+        "ForestIntroWaypoint2",
+        "ForestIntroWaypoint3"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_2_2",
+      "name": "The Old Fields",
+      "act": 2,
+      "level": 14,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_2a",
+        "1_2_2a",
+        "1_2_3",
+        "1_2_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_OldFields1",
+        "Augury_OldFields2",
+        "Augury_OldFields3",
+        "Augury_OldFields5",
+        "Augury_OldFields6",
+        "OldFields1",
+        "OldFields2",
+        "OldFields3",
+        "OldFields4",
+        "OldFields5",
+        "OldFields6"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_2_2a",
+      "name": "The Den",
+      "act": 2,
+      "level": 15,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_2",
+        "1_2_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "OldFields_Cave1",
+        "OldFields_Cave2",
+        "OldFields_Cave3",
+        "OldFields_Cave4",
+        "OldFields_Cave5",
+        "OldFields_Cave6",
+        "OldFields_Cave7",
+        "OldFields_Cave8"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "The Great White Beast"
+      ]
+    },
+    {
+      "id": "1_2_3",
+      "name": "The Crossroads",
+      "act": 2,
+      "level": 15,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_15",
+        "1_2_2",
+        "1_2_4",
+        "1_2_6_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Crossroads1"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_2_4",
+      "name": "The Broken Bridge",
+      "act": 2,
+      "level": 16,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_3"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "BrokenBridge1_1",
+        "BrokenBridge1_2",
+        "BrokenBridge1_3",
+        "BrokenBridge1_4",
+        "BrokenBridge2_1",
+        "BrokenBridge2_2"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Kraityn, Scarbearer"
+      ]
+    },
+    {
+      "id": "1_2_5_1",
+      "name": "The Crypt Level 1",
+      "act": 2,
+      "level": 17,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_15",
+        "1_2_5_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_ChurchDungeon1f1",
+        "Augury_ChurchDungeon1f2",
+        "Augury_ChurchDungeon1f3",
+        "Augury_ChurchDungeon1f4",
+        "ChurchDungeon1f1",
+        "ChurchDungeon1f2",
+        "ChurchDungeon1f3",
+        "ChurchDungeon1f4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_2_5_2",
+      "name": "The Crypt Level 2",
+      "act": 2,
+      "level": 18,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_5_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "ChurchDungeon2f1",
+        "ChurchDungeon2f2",
+        "ChurchDungeon2f3",
+        "ChurchDungeon2f4",
+        "ChurchDungeon2f5",
+        "ChurchDungeon2f6",
+        "ChurchDungeon2f7",
+        "ChurchDungeon2f8"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_2_6_1",
+      "name": "The Chamber of Sins Level 1",
+      "act": 2,
+      "level": 15,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_3",
+        "1_2_6_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Experimental1f1",
+        "Experimental1f2",
+        "Experimental1f3"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_2_6_2",
+      "name": "The Chamber of Sins Level 2",
+      "act": 2,
+      "level": 16,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_6_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Experimental3f1",
+        "Experimental3f2",
+        "Experimental3f3",
+        "Experimental3f4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Fidelitas, the Mourning"
+      ]
+    },
+    {
+      "id": "1_2_7",
+      "name": "The Riverways",
+      "act": 2,
+      "level": 15,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_12",
+        "1_2_9",
+        "1_2_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_RiverCrossing0",
+        "Augury_RiverCrossing1",
+        "Augury_RiverCrossing10",
+        "Augury_RiverCrossing2",
+        "Augury_RiverCrossing3",
+        "Augury_RiverCrossing4",
+        "Augury_RiverCrossing5",
+        "Augury_RiverCrossing6",
+        "Augury_RiverCrossing7",
+        "Augury_RiverCrossing8",
+        "Augury_RiverCrossing9",
+        "RiverCrossing0",
+        "RiverCrossing1",
+        "RiverCrossing10",
+        "RiverCrossing2",
+        "RiverCrossing3",
+        "RiverCrossing4",
+        "RiverCrossing5",
+        "RiverCrossing6",
+        "RiverCrossing7",
+        "RiverCrossing8",
+        "RiverCrossing9"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_2_8",
+      "name": "The Northern Forest",
+      "act": 2,
+      "level": 21,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_11",
+        "1_2_13",
+        "1_2_14_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_DarkForest0_1",
+        "Augury_DarkForest0_10",
+        "Augury_DarkForest0_3",
+        "Augury_DarkForest0_4",
+        "Augury_DarkForest0_5",
+        "Augury_DarkForest0_6",
+        "Augury_DarkForest0_7",
+        "Augury_DarkForest0_8",
+        "Augury_DarkForest0_9",
+        "DarkForest0",
+        "DarkForest0_10",
+        "DarkForest0_11",
+        "DarkForest0_12",
+        "DarkForest0_2",
+        "DarkForest0_3",
+        "DarkForest0_4",
+        "DarkForest0_5",
+        "DarkForest0_6",
+        "DarkForest0_7",
+        "DarkForest0_8",
+        "DarkForest0_9"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_2_9",
+      "name": "The Western Forest",
+      "act": 2,
+      "level": 17,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_2_town",
+      "connections": [
+        "1_1_8",
+        "1_2_10",
+        "1_2_7"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": false,
+      "topologies": [
+        "BanditCamp1_1_1",
+        "BanditCamp1_1_2",
+        "BanditCamp1_1_3",
+        "BanditCamp1_1_4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Alira Darktongue",
+        "Captain Arteri"
+      ]
+    },
+    {
+      "id": "1_2_10",
+      "name": "The Weaver's Chambers",
+      "act": 2,
+      "level": 18,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "SpiderGrove1_1",
+        "SpiderGrove1_2",
+        "SpiderGrove1_3",
+        "SpiderGrove1_4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "The Weaver"
+      ]
+    },
+    {
+      "id": "1_2_11",
+      "name": "The Vaal Ruins",
+      "act": 2,
+      "level": 20,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_12",
+        "1_2_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_VaalRuins01",
+        "Augury_VaalRuins02",
+        "Augury_VaalRuins03",
+        "Augury_VaalRuins04",
+        "Augury_VaalRuins05",
+        "Augury_VaalRuins06",
+        "Augury_VaalRuins07",
+        "Augury_VaalRuins08",
+        "Augury_VaalRuins09",
+        "Augury_VaalRuins10",
+        "IncaDungeonLakeArea1f0",
+        "IncaDungeonLakeArea1f1",
+        "IncaDungeonLakeArea1f2",
+        "IncaDungeonLakeArea1f3",
+        "IncaDungeonLakeArea1f4",
+        "IncaDungeonLakeArea1f5",
+        "IncaDungeonLakeArea1f6",
+        "IncaDungeonLakeArea1f7",
+        "IncaDungeonLakeArea1f8",
+        "IncaDungeonLakeArea1f9"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_2_12",
+      "name": "The Wetlands",
+      "act": 2,
+      "level": 19,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_11",
+        "1_2_7"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "PoolsStreams0",
+        "PoolsStreams1",
+        "PoolsStreams2",
+        "PoolsStreams3",
+        "PoolsStreams4",
+        "PoolsStreams5",
+        "PoolsStreams6",
+        "PoolsStreams7",
+        "PoolsStreams8"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Oak, Skullbreaker"
+      ]
+    },
+    {
+      "id": "1_2_13",
+      "name": "The Dread Thicket",
+      "act": 2,
+      "level": 21,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "GroveDungeon1",
+        "GroveDungeon2",
+        "GroveDungeon3",
+        "GroveDungeon4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_2_14_2",
+      "name": "The Caverns",
+      "act": 2,
+      "level": 22,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_14_3",
+        "1_2_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "Augury_WaterfallCave_1",
+        "Augury_WaterfallCave_2",
+        "Augury_WaterfallCave_3",
+        "Augury_WaterfallCave_4",
+        "WaterfallCave_1",
+        "WaterfallCave_2",
+        "WaterfallCave_3",
+        "WaterfallCave_4"
+      ],
+      "craftingRecipes": [
+        "Vaal Skill Damage - Rank 1"
+      ]
+    },
+    {
+      "id": "1_2_14_3",
+      "name": "The Ancient Pyramid",
+      "act": 2,
+      "level": 23,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_14_2",
+        "1_3_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "VaalPyramid_1"
+      ],
+      "craftingRecipes": [
+        "Spell Damage - Rank 1"
+      ],
+      "bossNames": [
+        "Vaal Oversoul"
+      ]
+    },
+    {
+      "id": "1_2_15",
+      "name": "The Fellshrine Ruins",
+      "act": 2,
+      "level": 16,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_2_town",
+      "connections": [
+        "1_2_3",
+        "1_2_5_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "ChurchRuins1",
+        "ChurchRuins2",
+        "ChurchRuins3"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_2_town",
+      "name": "The Forest Encampment",
+      "act": 2,
+      "level": 23,
+      "kind": "town",
+      "waypoint": true,
+      "town": null,
+      "connections": [
+        "1_2_1",
+        "1_2_2",
+        "1_2_7"
+      ],
+      "otherConnections": [],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "ForestEncampTown"
+      ],
+      "craftingRecipes": []
+    }
+  ],
+  "hints": [
+    {
+      "area": "1_2_town",
+      "toward": "1_2_2",
+      "step": "→ The Old Fields",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_2",
+      "toward": "1_2_3",
+      "step": "→ The Crossroads",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_3",
+      "step": "the waypoint to The Forest Encampment",
+      "text": "Follow the road",
+      "leagueStartOnly": true
+    },
+    {
+      "area": "1_2_3",
+      "toward": "1_2_6_1",
+      "step": "→ The Chamber of Sins Level 1",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_6_1",
+      "toward": "1_2_6_2",
+      "step": "→ The Chamber of Sins Level 2",
+      "text": "Go in same direction as the waypoint",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_6_2",
+      "step": "Kill Fidelitas, the Mourning, take Baleful Gem",
+      "text": "Look for the long hallway",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_6_2",
+      "step": "Kill Fidelitas, the Mourning, take Baleful Gem",
+      "text": "Recommended Level: 14-15",
+      "recommendedLevel": 14,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_3",
+      "toward": "1_2_15",
+      "step": "→ The Fellshrine Ruins",
+      "text": "Go down-right",
+      "direction": 135,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_15",
+      "toward": "1_2_5_1",
+      "step": "→ The Crypt Level 1",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_town",
+      "toward": "1_2_7",
+      "step": "→ The Riverways",
+      "text": "Go down-left",
+      "direction": 225,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_7",
+      "step": "Get the waypoint",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_7",
+      "toward": "1_2_9",
+      "step": "→ The Western Forest",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Get the waypoint",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "toward": "1_2_10",
+      "step": "→ The Weaver's Chambers",
+      "text": "Search the side of road opposite the waypoint",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_10",
+      "step": "→ The Weaver's Nest, kill The Weaver, take Maligaro's Spike",
+      "text": "Try go left, if it's blocked go up-right",
+      "direction": 270,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_10",
+      "step": "→ The Weaver's Nest, kill The Weaver, take Maligaro's Spike",
+      "text": "Recommended Level: 16",
+      "recommendedLevel": 16,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_3",
+      "toward": "1_2_4",
+      "step": "→ The Broken Bridge",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_4",
+      "step": "Kill Kraityn, Scarbearer, take Kraityn's Amulet",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_7",
+      "toward": "1_2_12",
+      "step": "→ The Wetlands",
+      "text": "Look for 2 pillars near the waypoint, follow the trail",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_12",
+      "step": "the waypoint to The Western Forest",
+      "text": "Search opposite direction of the encampment entrance",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Kill Alira Darktongue, take Alira's Amulet",
+      "text": "Go down look for the torch touching the road",
+      "direction": 180,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Kill Alira Darktongue, take Alira's Amulet",
+      "text": "Follow the trail in the direction of the torch",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Kill Captain Arteri",
+      "text": "Follow the road down-left",
+      "direction": 225,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_3",
+      "toward": "1_2_4",
+      "step": "→ The Broken Bridge",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_4",
+      "step": "Kill Kraityn, Scarbearer, take Kraityn's Amulet",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_7",
+      "toward": "1_2_12",
+      "step": "→ The Wetlands",
+      "text": "Look for 2 pillars near the waypoint, follow the trail",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_12",
+      "step": "the waypoint to The Western Forest",
+      "text": "Search opposite direction of the encampment entrance",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Help Alira Darktongue, take The Apex",
+      "text": "Go down look for the torch touching the road",
+      "direction": 180,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Help Alira Darktongue, take The Apex",
+      "text": "Follow the trail in the direction of the torch",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Kill Captain Arteri",
+      "text": "Follow the road down-left",
+      "direction": 225,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_7",
+      "toward": "1_2_12",
+      "step": "→ The Wetlands",
+      "text": "Look for 2 pillars near the waypoint, follow the trail",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_12",
+      "step": "the waypoint to The Western Forest",
+      "text": "Search opposite direction of the encampment entrance",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Kill Alira Darktongue, take Alira's Amulet",
+      "text": "Go down look for the torch touching the road",
+      "direction": 180,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Kill Alira Darktongue, take Alira's Amulet",
+      "text": "Follow the trail in the direction of the torch",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Kill Captain Arteri",
+      "text": "Follow the road down-left",
+      "direction": 225,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_3",
+      "toward": "1_2_4",
+      "step": "→ The Broken Bridge",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_4",
+      "step": "Help Kraityn, Scarbearer, take The Apex",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_3",
+      "toward": "1_2_4",
+      "step": "→ The Broken Bridge",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_4",
+      "step": "Kill Kraityn, Scarbearer, take Kraityn's Amulet",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Kill Alira Darktongue, take Alira's Amulet",
+      "text": "Go down look for the torch touching the road",
+      "direction": 180,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Kill Alira Darktongue, take Alira's Amulet",
+      "text": "Follow the trail in the direction of the torch",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_9",
+      "step": "Kill Captain Arteri",
+      "text": "Follow the road down-left",
+      "direction": 225,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_7",
+      "toward": "1_2_12",
+      "step": "→ The Wetlands",
+      "text": "Look for 2 pillars near the waypoint, follow the trail",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_12",
+      "toward": "1_2_11",
+      "step": "Poison the Tree Roots → The Vaal Ruins",
+      "text": "Search opposite direction of the encampment entrance",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_11",
+      "toward": "1_2_8",
+      "step": "→ The Northern Forest",
+      "text": "S shape or L shape leads to exit",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_14_3",
+      "step": "→ Pyramid Apex, kill Vaal Oversoul",
+      "text": "First floor exit will be in one of the 3 corners",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_14_3",
+      "step": "→ Pyramid Apex, kill Vaal Oversoul",
+      "text": "Remaining floors will have the exit diagonally across from the entrance",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_2_14_3",
+      "step": "→ Pyramid Apex, kill Vaal Oversoul",
+      "text": "Recommended Level: 20-22",
+      "recommendedLevel": 20,
+      "leagueStartOnly": false
+    }
+  ],
+  "quests": [
+    {
+      "id": "a2q1",
+      "name": "The Bandit Lord Kraityn",
+      "act": 2,
+      "npcs": []
+    },
+    {
+      "id": "a2q2",
+      "name": "The Bandit Lord Alira",
+      "act": 2,
+      "npcs": []
+    },
+    {
+      "id": "a2q3",
+      "name": "The Bandit Lord Oak",
+      "act": 2,
+      "npcs": []
+    },
+    {
+      "id": "a2q4",
+      "name": "Sharp and Cruel",
+      "act": 2,
+      "npcs": [
+        "Silk"
+      ]
+    },
+    {
+      "id": "a2q5",
+      "name": "Through Sacred Ground",
+      "act": 2,
+      "npcs": [
+        "Yeena"
+      ]
+    },
+    {
+      "id": "a2q6",
+      "name": "Intruders in Black",
+      "act": 2,
+      "npcs": [
+        "Greust"
+      ]
+    },
+    {
+      "id": "a2q7",
+      "name": "Deal with the Bandits",
+      "act": 2,
+      "npcs": [
+        "Eramir"
+      ]
+    },
+    {
+      "id": "a2q8",
+      "name": "Shadow of the Vaal",
+      "act": 2,
+      "npcs": []
+    },
+    {
+      "id": "a2q9",
+      "name": "The Root of the Problem",
+      "act": 2,
+      "npcs": [
+        "Tutorial NPC"
+      ]
+    },
+    {
+      "id": "a2q10",
+      "name": "The Great White Beast",
+      "act": 2,
+      "npcs": [
+        "Yeena"
+      ]
+    },
+    {
+      "id": "a2q11",
+      "name": "The Way Forward",
+      "act": 2,
+      "npcs": []
+    }
+  ]
+}

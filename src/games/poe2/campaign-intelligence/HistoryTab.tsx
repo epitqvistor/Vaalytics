@@ -15,6 +15,8 @@ import { SectionLabel } from "./ui";
 const GAME = "poe2" as const;
 const KIND_ICON: Record<TimelineKind, IconName> = { part: "map", objective: "success", ascended: "star", death: "warning", level: "chevronRight" };
 const when = (at: number) => new Date(at * 1000).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
+/** Timeline rows shown while collapsed (newest first). */
+const COLLAPSED_ROWS = 8;
 const ESTIMATE = {
   kind: "estimate" as const,
   source: "Your Client.txt timestamps",
@@ -38,7 +40,7 @@ export function HistoryTab({
   const g = campaignGraph();
   const stats = useMemo(() => runStats(g, events, progress), [g, events, progress]);
   const timeline = useMemo(() => campaignTimeline(g, events, progress).reverse(), [g, events, progress]);
-  const [showAll, setShowAll] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const { runs, error: runsError } = useRuns(characters, character.id, stats);
   const pb = useMemo(() => (runs ? personalBests(runs) : null), [runs]);
   const summary = useMemo(() => {
@@ -144,13 +146,23 @@ export function HistoryTab({
             <p className="mt-3 text-2xs text-fg-subtle">XP per hour isn't shown: Client.txt has no experience lines. League isn't recorded with campaign events, so runs are compared by character.</p>
           </Panel>
 
-          <Panel title="Timeline">
+          <Panel
+            title="Timeline"
+            actions={
+              timeline.length > COLLAPSED_ROWS && (
+                <Button size="sm" variant="ghost" iconRight={expanded ? "chevronUp" : "chevronDown"} onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>
+                  {expanded ? "Collapse" : `Show all ${timeline.length}`}
+                </Button>
+              )
+            }
+          >
             {timeline.length === 0 ? (
               <p className="text-xs text-fg-muted">Nothing logged yet.</p>
             ) : (
               <>
-                <ol className="flex flex-col gap-1.5">
-                  {(showAll ? timeline : timeline.slice(0, 40)).map((t, i) => (
+                {/* Expanded: the full list scrolls inside the panel instead of stretching the page. */}
+                <ol className={expanded ? "-mr-2 flex max-h-[420px] flex-col gap-1.5 overflow-y-auto pr-2" : "flex flex-col gap-1.5"}>
+                  {(expanded ? timeline : timeline.slice(0, COLLAPSED_ROWS)).map((t, i) => (
                     <li key={`${t.at}-${i}`} className="flex items-start gap-2 text-xs">
                       <Icon name={KIND_ICON[t.kind]} size={12} className={t.kind === "death" ? "mt-0.5 shrink-0 text-warning" : "mt-0.5 shrink-0 text-fg-subtle"} />
                       <span className="min-w-0 flex-1 text-fg">
@@ -161,10 +173,10 @@ export function HistoryTab({
                     </li>
                   ))}
                 </ol>
-                {timeline.length > 40 && (
-                  <Button size="sm" variant="ghost" className="mt-2" onClick={() => setShowAll(!showAll)}>
-                    {showAll ? "Show fewer" : `Show all ${timeline.length}`}
-                  </Button>
+                {!expanded && timeline.length > COLLAPSED_ROWS && (
+                  <p className="mt-2 text-2xs text-fg-subtle">
+                    Latest {COLLAPSED_ROWS} of {timeline.length}.
+                  </p>
                 )}
                 <p className="mt-2 text-2xs text-fg-subtle">Objective times are when the log first proved them — e.g. entering the zone they open.</p>
               </>

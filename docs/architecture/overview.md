@@ -16,7 +16,8 @@ React UI rendered in WebView2 presents it.
 │ overlay/     ── foreground hook, hotkey, clipboard capture, overlay   │
 │ session/     ── PoE 2 session tracker (process + Client.txt)          │
 │ loot/        ── PoE 2 Loot Journal (clipboard listener, valuation)    │
-│ campaign/    ── PoE 2 campaign events (hook on the session reader)    │
+│ campaign/    ── campaign events: PoE 2 hook + PoE 1 sync (one hook)   │
+│ atlas.rs     ── PoE 1 Location Atlas window (#atlas, single instance) │
 └───────────────────────────────▲───────────────────────────────────────┘
                                 │ invoke() via src/core/ipc/commands.ts
 ┌───────────────────────────────┴──────── React UI (src) ───────────────┐

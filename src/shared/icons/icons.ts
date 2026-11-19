@@ -49,6 +49,20 @@ export const ICONS = {
   trash: "M4.5 6h11M8 6V4h4v2M6 6l.75 10.5h6.5L14 6",
   pause: "M7.5 5v10M12.5 5v10",
   play: "M7 4.75l8 5.25-8 5.25z",
+  /** Always on top. */
+  pin: "M7.5 3.5h5M8.5 3.5v4.5l-3 3h9l-3-3V3.5M10 11v5.5",
+  /** Compact mode. */
+  compact: "M3.5 7.5h4v-4M16.5 7.5h-4v-4M3.5 12.5h4v4M16.5 12.5h-4v4",
+  fullscreen: "M3.5 7.5v-4h4M12.5 3.5h4v4M16.5 12.5v4h-4M7.5 16.5h-4v-4",
+  /** Waypoint (a gate). */
+  waypoint: "M5 16.5V8a5 5 0 0 1 10 0v8.5M3.5 16.5h13M8 16.5v-6h4v6",
+  /** Boss / danger. */
+  boss: "M10 3.5a5.5 5.5 0 0 0-5.5 5.5c0 2 1 3.2 2 4v2.5h7V13c1-.8 2-2 2-4A5.5 5.5 0 0 0 10 3.5zM8 9.5v.01M12 9.5v.01M8.5 15.5v-2M11.5 15.5v-2",
+  /** Direction arrow (pointing up; rotate for a heading). */
+  arrowUp: "M10 16.5v-13M5.5 8L10 3.5 14.5 8",
+  arrowRight: "M3.5 10h13M12 5.5l4.5 4.5-4.5 4.5",
+  route: "M5 16.5a1.75 1.75 0 1 0 0-3.5 1.75 1.75 0 0 0 0 3.5zM15 7a1.75 1.75 0 1 0 0-3.5 1.75 1.75 0 0 0 0 3.5zM6.75 14.75h5.5a2.5 2.5 0 0 0 0-5h-4.5a2.5 2.5 0 0 1 0-5h5.5",
+  town: "M3.5 16.5h13M5 16.5V9l5-4.5L15 9v7.5M8.5 16.5v-4h3v4",
 
   // Chevrons
   chevronRight: "M8 5l5 5-5 5",

@@ -19,3 +19,5 @@ owns (tables, settings keys), and known limitations.
 | Session Intelligence (PoE 2) | `src/games/poe2/session-intelligence`, `src-tauri/src/session/` | [session-intelligence.md](session-intelligence.md) |
 | Loot Journal (PoE 2) | `src/games/poe2/loot-journal`, `src-tauri/src/loot/` | [loot-journal.md](loot-journal.md) |
 | Campaign Intelligence (PoE 2, complete, stages 1–7) | `src/games/poe2/campaign-intelligence`, `src-tauri/src/campaign/` | [campaign-intelligence.md](campaign-intelligence.md) |
+| Location Atlas (PoE 1, stages 1–5 of 8) | `src/games/poe1/location-atlas`, `scripts/poe1-campaign-data.mjs` | [location-atlas.md](location-atlas.md) |
+| Act Tracker (PoE 1, complete, phases 1–7) | `src/games/poe1/act-tracker`, `scripts/poe1-act-tracker-data.mjs` | [act-tracker.md](act-tracker.md) |

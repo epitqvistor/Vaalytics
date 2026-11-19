@@ -1,0 +1,453 @@
+{
+  "act": 4,
+  "areas": [
+    {
+      "id": "1_4_1",
+      "name": "The Aqueduct",
+      "act": 4,
+      "level": 33,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_3_town",
+      "connections": [
+        "1_3_18_2",
+        "1_4_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "MountAqueduct1"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_4_2",
+      "name": "The Dried Lake",
+      "act": 4,
+      "level": 34,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": true,
+      "topologies": [
+        "MountDriedLake1",
+        "MountDriedLake2",
+        "MountDriedLake3",
+        "MountDriedLake4",
+        "MountDriedLake5",
+        "MountDriedLake6",
+        "MountDriedLake7",
+        "MountDriedLake8"
+      ],
+      "craftingRecipes": [
+        "Attack, Cast and Warcry Speed - Rank 1"
+      ],
+      "bossNames": [
+        "Voll, Emperor of Purity"
+      ]
+    },
+    {
+      "id": "1_4_3_1",
+      "name": "The Mines Level 1",
+      "act": 4,
+      "level": 34,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_3_2",
+        "1_4_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_MountMine1_1",
+        "Augury_MountMine1_2",
+        "Augury_MountMine1_3",
+        "Augury_MountMine1_4",
+        "Augury_MountMine1_5",
+        "Augury_MountMine1_6",
+        "MountMine1_1",
+        "MountMine1_2",
+        "MountMine1_3",
+        "MountMine1_4",
+        "MountMine1_5",
+        "MountMine1_6"
+      ],
+      "craftingRecipes": [
+        "Socket Colours"
+      ]
+    },
+    {
+      "id": "1_4_3_2",
+      "name": "The Mines Level 2",
+      "act": 4,
+      "level": 35,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_3_1",
+        "1_4_3_3"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_MountMine2_2",
+        "Augury_MountMine2_4",
+        "Augury_MountMine2_5",
+        "MountMine2_1",
+        "MountMine2_2",
+        "MountMine2_3",
+        "MountMine2_4",
+        "MountMine2_5",
+        "MountMine2_6"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_4_3_3",
+      "name": "The Crystal Veins",
+      "act": 4,
+      "level": 36,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_3_2",
+        "1_4_4_1",
+        "1_4_5_1",
+        "1_4_6_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_MountMine3_3",
+        "Augury_MountMine3_4",
+        "Augury_MountMine3_5",
+        "MountMine3_1",
+        "MountMine3_2",
+        "MountMine3_3",
+        "MountMine3_4",
+        "MountMine3_5",
+        "MountMine3_6"
+      ],
+      "craftingRecipes": [
+        "Cold Damage - Rank 1"
+      ]
+    },
+    {
+      "id": "1_4_4_1",
+      "name": "Kaom's Dream",
+      "act": 4,
+      "level": 37,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_3_3",
+        "1_4_4_3"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": false,
+      "topologies": [
+        "MountKaom1_1",
+        "MountKaom1_2",
+        "MountKaom1_3",
+        "MountKaom1_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_4_4_3",
+      "name": "Kaom's Stronghold",
+      "act": 4,
+      "level": 38,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_4_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "MountKaom3_1",
+        "MountKaom3_2",
+        "MountKaom3_3",
+        "MountKaom3_4"
+      ],
+      "craftingRecipes": [
+        "Socket Links - 2 to 4 Linked Sockets"
+      ],
+      "bossNames": [
+        "King Kaom"
+      ]
+    },
+    {
+      "id": "1_4_5_1",
+      "name": "Daresso's Dream",
+      "act": 4,
+      "level": 37,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_3_3",
+        "1_4_5_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 3,
+      "actBossArea": false,
+      "topologies": [
+        "MountArena1_1",
+        "MountArena1_2",
+        "MountArena1_3",
+        "MountArena1_4",
+        "MountArena1_5"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_4_5_2",
+      "name": "The Grand Arena",
+      "act": 4,
+      "level": 38,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_5_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 4,
+      "actBossArea": true,
+      "topologies": [
+        "MountArena2_1",
+        "MountArena2_2",
+        "MountArena2_3"
+      ],
+      "craftingRecipes": [
+        "Socket Numbers - 2 to 4 Sockets"
+      ],
+      "bossNames": [
+        "Daresso, King of Swords"
+      ]
+    },
+    {
+      "id": "1_4_6_1",
+      "name": "The Belly of the Beast Level 1",
+      "act": 4,
+      "level": 38,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_3_3",
+        "1_4_6_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_MountBelly1_2",
+        "Augury_MountBelly1_4",
+        "Augury_MountBelly1_6",
+        "MountBelly1_1",
+        "MountBelly1_2",
+        "MountBelly1_3",
+        "MountBelly1_4",
+        "MountBelly1_5",
+        "MountBelly1_6"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "1_4_6_2",
+      "name": "The Belly of the Beast Level 2",
+      "act": 4,
+      "level": 39,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_6_1",
+        "1_4_6_3"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "MountBelly2_1",
+        "MountBelly2_2",
+        "MountBelly2_3",
+        "MountBelly2_4",
+        "MountBelly2_5"
+      ],
+      "craftingRecipes": [
+        "Elemental Resistances - Rank 2"
+      ],
+      "bossNames": [
+        "Piety, the Abomination"
+      ]
+    },
+    {
+      "id": "1_4_6_3",
+      "name": "The Harvest",
+      "act": 4,
+      "level": 40,
+      "kind": "area",
+      "waypoint": true,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_6_2",
+        "1_4_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 5,
+      "actBossArea": true,
+      "topologies": [
+        "MountBelly3_1",
+        "MountBelly3_2",
+        "MountBelly3_3"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Doedre Darktongue",
+        "Maligaro, The Inquisitor",
+        "Shavronne of Umbra",
+        "Malachai, The Nightmare"
+      ]
+    },
+    {
+      "id": "1_4_7",
+      "name": "The Ascent",
+      "act": 4,
+      "level": 40,
+      "kind": "area",
+      "waypoint": false,
+      "town": "1_4_town",
+      "connections": [
+        "1_4_town",
+        "1_5_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "MountAscent1_1",
+        "MountAscent1_2"
+      ],
+      "craftingRecipes": [
+        "Ailment, Stun and Curse Mitigation - Rank 1"
+      ]
+    },
+    {
+      "id": "1_4_town",
+      "name": "Highgate",
+      "act": 4,
+      "level": 40,
+      "kind": "town",
+      "waypoint": true,
+      "town": null,
+      "connections": [
+        "1_4_1",
+        "1_4_2",
+        "1_4_3_1",
+        "1_4_7"
+      ],
+      "otherConnections": [],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "MountTown1"
+      ],
+      "craftingRecipes": []
+    }
+  ],
+  "hints": [
+    {
+      "area": "1_4_4_1",
+      "toward": "1_4_4_3",
+      "step": "→ Kaom's Stronghold",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_4_4_1",
+      "toward": "1_4_4_3",
+      "step": "→ Kaom's Stronghold",
+      "text": "Follow Bridges",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "1_4_5_2",
+      "step": "→ The Ring of Blades, kill Daresso, King of Swords, take The Eye of Desire",
+      "text": "Go down-left follow the exits keeping left",
+      "direction": 225,
+      "leagueStartOnly": false
+    }
+  ],
+  "quests": [
+    {
+      "id": "a4q1",
+      "name": "The Eternal Nightmare",
+      "act": 4,
+      "npcs": [
+        "Dialla"
+      ]
+    },
+    {
+      "id": "a4q2",
+      "name": "Breaking the Seal",
+      "act": 4,
+      "npcs": [
+        "Oyun"
+      ]
+    },
+    {
+      "id": "a4q3",
+      "name": "The King of Fury",
+      "act": 4,
+      "npcs": []
+    },
+    {
+      "id": "a4q4",
+      "name": "The King of Desire",
+      "act": 4,
+      "npcs": []
+    },
+    {
+      "id": "a4q5",
+      "name": "Corpus Malachus",
+      "act": 4,
+      "npcs": []
+    },
+    {
+      "id": "a4q6",
+      "name": "An Indomitable Spirit",
+      "act": 4,
+      "npcs": [
+        "Tasuni"
+      ]
+    },
+    {
+      "id": "a5q1a",
+      "name": "Return to Oriath",
+      "act": 4,
+      "npcs": []
+    }
+  ]
+}

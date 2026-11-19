@@ -32,6 +32,8 @@ const READY: Record<GameId, Partial<Record<SectionId, SectionComponent>>> = {
     "loot-intelligence": lazy(() => import("@/games/poe1/loot-intelligence")),
     "farming-lab": lazy(() => import("@/games/poe1/farming-lab")),
     "map-lab": lazy(() => import("@/games/poe1/map-lab")),
+    "location-atlas": lazy(() => import("@/games/poe1/location-atlas")),
+    "act-tracker": lazy(() => import("@/games/poe1/act-tracker")),
     regex: lazy(() => import("@/games/poe1/regex")),
   },
   poe2: {

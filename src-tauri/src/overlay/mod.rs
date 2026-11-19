@@ -47,6 +47,8 @@ pub struct OverlayStatus {
     pub supported: bool,
     pub foreground_game: Option<GameId>,
     pub registered_hotkey: Option<String>,
+    /// Act Tracker show/hide key, registered while PoE 1 is in the foreground.
+    pub tracker_hotkey: Option<String>,
     pub last_error: Option<String>,
 }
 
@@ -55,6 +57,8 @@ pub struct OverlayState {
     status: Mutex<OverlayStatus>,
     pending: Mutex<Option<CaptureEvent>>,
     busy: Mutex<bool>,
+    /// Item text the overlay currently shows (for "press again to close").
+    shown: Mutex<Option<String>>,
 }
 
 impl OverlayState {
@@ -80,11 +84,23 @@ fn hotkey_for(app: &AppHandle, game: GameId) -> String {
 pub fn init(app: &tauri::App) -> tauri::Result<()> {
     app.handle().plugin(
         tauri_plugin_global_shortcut::Builder::new()
-            .with_handler(|app, _shortcut, event| {
-                if event.state == ShortcutState::Pressed {
-                    let app = app.clone();
-                    std::thread::spawn(move || capture_and_show(&app));
+            .with_handler(|app, shortcut, event| {
+                if event.state != ShortcutState::Pressed {
+                    return;
                 }
+                // The Act Tracker's show/hide key (PoE 1 only, registered next to the price-check key).
+                let tracker = app.state::<OverlayState>().status().tracker_hotkey;
+                if tracker.and_then(|t| t.parse::<Shortcut>().ok()).is_some_and(|t| t.id() == shortcut.id()) {
+                    let h = app.clone();
+                    let _ = app.run_on_main_thread(move || {
+                        if let Err(e) = crate::act_tracker::toggle(&h) {
+                            log::error!("act tracker toggle: {e}");
+                        }
+                    });
+                    return;
+                }
+                let app = app.clone();
+                std::thread::spawn(move || capture_and_show(&app));
             })
             .build(),
     )?;
@@ -116,15 +132,21 @@ fn set_status(app: &AppHandle, f: impl FnOnce(&mut OverlayStatus)) {
 
 fn on_foreground(app: &AppHandle, game: Option<GameId>) {
     let gs = app.global_shortcut();
-    let current = app.state::<OverlayState>().status().registered_hotkey;
+    let status = app.state::<OverlayState>().status();
+    let current = status.registered_hotkey;
     match game {
         Some(g) => {
             let wanted = hotkey_for(app, g);
-            if current.as_deref() == Some(wanted.as_str()) {
+            let tracker = (g == GameId::Poe1)
+                .then(|| crate::act_tracker::hotkey(app))
+                .flatten()
+                .filter(|t| t.parse::<Shortcut>().ok().map(|t| t.id()) != wanted.parse::<Shortcut>().ok().map(|w| w.id()));
+            if current.as_deref() == Some(wanted.as_str()) && status.tracker_hotkey == tracker {
                 set_status(app, |s| s.foreground_game = Some(g));
                 return;
             }
             let _ = gs.unregister_all();
+            register_tracker_hotkey(app, tracker);
             match gs.register(wanted.as_str()) {
                 Ok(()) => set_status(app, |s| {
                     s.foreground_game = Some(g);
@@ -142,15 +164,28 @@ fn on_foreground(app: &AppHandle, game: Option<GameId>) {
             }
         }
         None => {
-            if current.is_some() {
+            if current.is_some() || status.tracker_hotkey.is_some() {
                 let _ = gs.unregister_all();
             }
             set_status(app, |s| {
                 s.foreground_game = None;
                 s.registered_hotkey = None;
+                s.tracker_hotkey = None;
             });
         }
     }
+}
+
+/// Registers the Act Tracker key (after `unregister_all`); a failure is logged, never blocks price check.
+fn register_tracker_hotkey(app: &AppHandle, key: Option<String>) {
+    let registered = key.filter(|k| match app.global_shortcut().register(k.as_str()) {
+        Ok(()) => true,
+        Err(e) => {
+            log::warn!("act tracker: could not register {k}: {e}");
+            false
+        }
+    });
+    set_status(app, |s| s.tracker_hotkey = registered);
 }
 
 fn is_item_text(s: &str) -> bool {
@@ -206,6 +241,12 @@ fn capture(_app: &AppHandle) -> Result<(GameId, String), (Option<GameId>, String
     Err((None, "The in-game price check is only supported on Windows.".into()))
 }
 
+/// A hotkey press while the overlay is open closes it when it targets the item already shown,
+/// or no item at all; a different item is price-checked instead.
+fn closes_overlay(visible: bool, shown: Option<&str>, captured: Result<&str, ()>) -> bool {
+    visible && captured.map_or(true, |text| shown == Some(text))
+}
+
 fn capture_and_show(app: &AppHandle) {
     let state = app.state::<OverlayState>();
     {
@@ -215,7 +256,23 @@ fn capture_and_show(app: &AppHandle) {
         }
         *busy = true;
     }
-    let event = match capture(app) {
+    let captured = capture(app);
+    let visible = app.get_webview_window(OVERLAY_LABEL).and_then(|w| w.is_visible().ok()).unwrap_or(false);
+    let not_in_game = matches!(&captured, Err((None, _)));
+    let shown = state.shown.lock().ok().and_then(|s| s.clone());
+    if !not_in_game && closes_overlay(visible, shown.as_deref(), captured.as_ref().map(|(_, t)| t.as_str()).map_err(|_| ())) {
+        if let Ok(mut busy) = state.busy.lock() {
+            *busy = false;
+        }
+        let app2 = app.clone();
+        let _ = app.run_on_main_thread(move || {
+            if let Some(w) = app2.get_webview_window(OVERLAY_LABEL) {
+                let _ = w.hide();
+            }
+        });
+        return;
+    }
+    let event = match captured {
         Ok((game, text)) => CaptureEvent { game, text: Some(text), error: None, preview: false },
         Err((game, error)) => {
             log::info!("price check capture failed: {error}");
@@ -281,6 +338,9 @@ fn show_overlay(app: &AppHandle, event: &CaptureEvent) -> tauri::Result<()> {
     }
     // Always interactive when (re)opened via the hotkey; click-through is opt-in per session.
     let _ = w.set_ignore_cursor_events(false);
+    if let Ok(mut shown) = app.state::<OverlayState>().shown.lock() {
+        *shown = event.text.clone();
+    }
     if !created {
         let _ = w.emit(EVENT_ITEM, event);
     }
@@ -305,4 +365,23 @@ pub fn preview(app: &AppHandle, game: GameId, text: Option<String>) -> tauri::Re
         *p = Some(event.clone());
     }
     show_overlay(app, &event)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::closes_overlay;
+
+    #[test]
+    fn second_press_on_the_same_item_or_nothing_closes() {
+        assert!(closes_overlay(true, Some("Item Class: A"), Ok("Item Class: A")));
+        assert!(closes_overlay(true, Some("Item Class: A"), Err(())));
+        assert!(closes_overlay(true, None, Err(())));
+    }
+
+    #[test]
+    fn a_different_item_or_a_hidden_overlay_shows_the_check() {
+        assert!(!closes_overlay(true, Some("Item Class: A"), Ok("Item Class: B")));
+        assert!(!closes_overlay(false, Some("Item Class: A"), Ok("Item Class: A")));
+        assert!(!closes_overlay(false, None, Err(())));
+    }
 }

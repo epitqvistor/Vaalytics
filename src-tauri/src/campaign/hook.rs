@@ -87,9 +87,8 @@ impl CampaignHook {
     /// Handles one parsed line inside the caller's transaction. Returns whether
     /// campaign data changed.
     pub fn on_event(&mut self, c: &Connection, ev: &LogEvent, at: i64, key: &str, off: u64) -> AppResult<bool> {
-        if self.game != GameId::Poe2 {
-            return Ok(false);
-        }
+        // Both games use this hook (PoE 2 via the session tracker, PoE 1 via `sync`);
+        // every row it writes carries `self.game`, so the games never mix.
         self.load(c)?;
         if self.segment.is_none() {
             self.segment = Some(format!("{key}:{off}"));
@@ -149,6 +148,22 @@ impl CampaignHook {
             LogEvent::PassivePoints { amount, weapon_set } => {
                 let kind = if *weapon_set { "weapon_set_points" } else { "passive_points" };
                 self.insert(c, at, kind, None, None, Some(*amount as i64), None, key, off)?.is_some()
+            }
+            // PoE 1 only (format verified there): the player's `/passives` output and respec point grants,
+            // for the Act Tracker's Passive Skill Point Guardian. One row per line; `detail` says which line.
+            LogEvent::PassiveBreakdown(line) if self.game == GameId::Poe1 => {
+                use crate::session::log_format::PassiveLine;
+                let (amount, detail) = match line {
+                    PassiveLine::Total { total, allocated } => (*total, format!("total:{allocated}")),
+                    PassiveLine::AscendancyTotal { total, allocated } => (*total, format!("ascendancy:{allocated}")),
+                    PassiveLine::FromLevel(n) => (*n, "level".to_string()),
+                    PassiveLine::FromQuests(n) => (*n, "quests".to_string()),
+                    PassiveLine::Quest { points, quest } => (*points, format!("quest:{quest}")),
+                };
+                self.insert(c, at, "passives", None, None, Some(amount as i64), Some(&detail), key, off)?.is_some()
+            }
+            LogEvent::RespecPoints { amount } if self.game == GameId::Poe1 => {
+                self.insert(c, at, "respec_points", None, None, Some(*amount as i64), None, key, off)?.is_some()
             }
             LogEvent::Slain { name } => match &self.character {
                 Some((_, cur)) if cur == name && self.in_campaign => self.insert(c, at, "death", None, None, None, None, key, off)?.is_some(),

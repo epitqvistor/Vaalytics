@@ -191,14 +191,17 @@ fn events_before_identification_stay_unassigned_until_known() {
 }
 
 #[test]
-fn poe1_is_ignored_and_rejected() {
+fn games_are_isolated_and_poe2_only_features_refuse_poe1() {
     let db = Database::open_in_memory().unwrap();
     let mut hook = CampaignHook::live(GameId::Poe1);
     let mut l = start_run();
     l.push(line("10:01:00", ": Exile_One (Monk) is now level 10"));
-    assert_eq!(feed(&db, &mut hook, 0, &l), 0);
+    feed(&db, &mut hook, 0, &l);
+    let c = db.conn().unwrap();
+    assert!(chars(&c).is_empty(), "a PoE 1 hook never writes PoE 2 rows");
+    assert_eq!(store::characters(&c, GameId::Poe1).unwrap().len(), 1);
     assert!(super::require_poe2(GameId::Poe1).is_err());
-    assert!(chars(&db.conn().unwrap()).is_empty());
+    assert!(super::require_poe1(GameId::Poe2).is_err());
 }
 
 #[test]
@@ -296,4 +299,191 @@ fn live_campaign_import() {
         }
     }
     println!("status {:?}", store::status(&c, GameId::Poe2).unwrap());
+}
+
+// ---------- PoE 1 (Location Atlas): on-demand sync on the same reader, parser and hook ----------
+// Line shapes verified on a real PoE 1 Client.txt (3.26–3.30.0c, names replaced).
+
+fn poe1_start() -> Vec<String> {
+    vec![
+        "2026/11/17 10:00:00 ***** LOG FILE OPENING *****".into(),
+        line("10:00:01", "[HTTP2] User agent: PoE release/tags/3.30.0c Windows x64"),
+        line("10:00:05", "Async connecting to ams.login.pathofexile.com:20484"),
+    ]
+}
+
+fn write_log(path: &std::path::Path, lines: &[String], append: bool) {
+    use std::io::Write;
+    let mut f = std::fs::OpenOptions::new().create(true).append(append).write(true).truncate(!append).open(path).unwrap();
+    for l in lines {
+        write!(f, "{l}\r\n").unwrap();
+    }
+}
+
+fn poe1_sync(db: &Database, path: &std::path::Path) -> super::sync::SyncSummary {
+    super::sync::sync_log(db, GameId::Poe1, path, as_utc_fn, u64::MAX).unwrap()
+}
+fn as_utc_fn(s: crate::session::log_format::LocalStamp) -> Option<i64> {
+    Some(as_utc(s))
+}
+
+#[test]
+fn poe1_sync_attributes_and_resumes_from_its_position() {
+    let dir = tempfile::tempdir().unwrap();
+    let log = dir.path().join("Client.txt");
+    let mut l = poe1_start();
+    l.extend([
+        area("10:01:00", "1_1_1", 1),
+        line("10:01:30", ": Exile_One (Shadow) is now level 2"),
+        area("10:03:00", "1_1_town", 13),
+        line("10:03:10", ": Party_Pal has joined the area."),
+        line("10:03:20", ": Party_Pal (Witch) is now level 9"),
+        area("10:04:00", "1_1_2", 2),
+        line("10:05:00", ": You have received a Passive Skill Point."),
+        line("10:05:10", ": You have received a Passive Respec Point."),
+        line("10:05:20", ": Exile_One has been slain."),
+    ]);
+    write_log(&log, &l, false);
+    let db = Database::open_in_memory().unwrap();
+    let s = poe1_sync(&db, &log);
+    assert_eq!(s.remaining, 0);
+    let c = db.conn().unwrap();
+    let ch = store::characters(&c, GameId::Poe1).unwrap();
+    assert_eq!(ch.len(), 1, "the party member isn't the player");
+    assert_eq!((ch[0].name.as_str(), ch[0].campaign_zones), ("Exile_One", 3));
+    let kinds: Vec<_> = store::events(&c, GameId::Poe1, ch[0].id).unwrap().into_iter().map(|e| e.kind).collect();
+    assert_eq!(kinds.iter().filter(|k| *k == "passive_points").count(), 1, "respec points are ignored");
+    assert!(kinds.contains(&"death".to_string()));
+    // Game isolation: nothing for PoE 2.
+    assert!(store::characters(&c, GameId::Poe2).unwrap().is_empty());
+    assert_eq!(store::status(&c, GameId::Poe1).unwrap().client_tag.as_deref(), Some("3.30.0c"));
+    drop(c);
+
+    // Nothing new → nothing stored; appended lines → only those, same character.
+    assert_eq!(poe1_sync(&db, &log).events_stored, 0);
+    write_log(&log, &[area("10:06:00", "1_1_3", 4)], true);
+    let s2 = poe1_sync(&db, &log);
+    assert_eq!((s2.lines, s2.events_stored), (1, 1));
+    let c = db.conn().unwrap();
+    let ev = store::events(&c, GameId::Poe1, store::characters(&c, GameId::Poe1).unwrap()[0].id).unwrap();
+    assert_eq!(ev.last().unwrap().area_id.as_deref(), Some("1_1_3"));
+}
+
+#[test]
+fn poe1_sync_survives_a_replaced_log_without_duplicates() {
+    let dir = tempfile::tempdir().unwrap();
+    let log = dir.path().join("Client.txt");
+    let mut l = poe1_start();
+    l.extend([line("10:01:30", ": Exile_One (Shadow) is now level 2"), area("10:02:00", "1_1_2", 2)]);
+    write_log(&log, &l, false);
+    let db = Database::open_in_memory().unwrap();
+    poe1_sync(&db, &log);
+    let count = || db.conn().unwrap().query_row("SELECT COUNT(*) FROM campaign_events WHERE game = 'poe1'", [], |r| r.get::<_, i64>(0)).unwrap();
+    let before = count();
+    // The player deleted the log; the game starts a new, shorter one.
+    write_log(&log, &[poe1_start()[0].clone(), area("11:00:00", "1_1_3", 4)], false);
+    let s = poe1_sync(&db, &log);
+    assert!(s.reset);
+    assert_eq!(count(), before + 1);
+}
+
+#[test]
+fn poe1_reader_refuses_poe2_and_poe2_import_refuses_poe1() {
+    let dir = tempfile::tempdir().unwrap();
+    let log = dir.path().join("Client.txt");
+    write_log(&log, &poe1_start(), false);
+    let db = Database::open_in_memory().unwrap();
+    assert!(super::sync::sync_log(&db, GameId::Poe2, &log, as_utc_fn, u64::MAX).is_err());
+    assert!(import::import_log(&db, GameId::Poe1, &log, as_utc_fn).is_err());
+    assert!(crate::session::discover::is_poe1_log(&log));
+    assert!(super::set_poe1_log(&db, &log).is_ok());
+    let p2 = dir.path().join("poe2.txt");
+    write_log(&p2, &start_run(), false);
+    assert!(!crate::session::discover::is_poe1_log(&p2));
+    assert!(super::set_poe1_log(&db, &p2).is_err());
+}
+
+#[test]
+#[ignore]
+fn live_poe1_sync() {
+    let Ok(path) = std::env::var("VAALYTICS_POE1_LOG") else { return };
+    let db = Database::open_in_memory().unwrap();
+    let t = std::time::Instant::now();
+    let s = super::sync::sync_log(&db, GameId::Poe1, std::path::Path::new(&path), crate::session::localtime::local_to_unix, u64::MAX).unwrap();
+    println!("{s:?} in {:?}", t.elapsed());
+    let c = db.conn().unwrap();
+    for ch in store::characters(&c, GameId::Poe1).unwrap() {
+        let ev = store::events(&c, GameId::Poe1, ch.id).unwrap();
+        let pts: i64 = ev.iter().filter(|e| e.kind == "passive_points").map(|e| e.amount.unwrap_or(0)).sum();
+        println!("char #{} {} → {} lvl {} zones {} passive points {}", ch.id, ch.base_class, ch.class, ch.level, ch.campaign_zones, pts);
+        if let Ok(dir) = std::env::var("VAALYTICS_CAMPAIGN_DUMP") {
+            std::fs::write(format!("{dir}/poe1-char-{}.json", ch.id), serde_json::to_string(&ev).unwrap()).unwrap();
+        }
+    }
+    drop(c); // the in-memory database has one connection
+    let t2 = std::time::Instant::now();
+    let again = super::sync::sync_log(&db, GameId::Poe1, std::path::Path::new(&path), crate::session::localtime::local_to_unix, u64::MAX).unwrap();
+    println!("second sync {again:?} in {:?}", t2.elapsed());
+}
+
+/// Act Tracker (PoE 1): the `/passives` output and respec grants are stored for PoE 1 only, attributed like every
+/// other event, and never duplicated by a re-read.
+#[test]
+fn poe1_passives_output_and_respec_points_are_stored() {
+    let db = Database::open_in_memory().unwrap();
+    let mut l = poe1_start();
+    l.extend([
+        line("10:02:00", ": Exile_One (Shadow) is now level 2"),
+        area("10:03:00", "1_1_town", 1),
+        line("10:04:00", ": You have received a Passive Skill Point."),
+        line("10:04:00", ": You have received 2 Passive Respec Points."),
+        line("10:05:00", ": 3 total Passive Skill Points (2 allocated)"),
+        line("10:05:00", ": 0 total Ascendancy Skill Points (0 allocated)"),
+        line("10:05:00", ": 2 Passive Skill Points from character level"),
+        line("10:05:00", ": 1 Passive Skill Points from quests:"),
+        line("10:05:00", ": (1 from The Dweller of the Deep)"),
+        line("10:05:00", ": You have received an Atlas Passive Respec Point."),
+    ]);
+    let mut hook = CampaignHook::live(GameId::Poe1);
+    feed(&db, &mut hook, 0, &l);
+    // A re-read of the same lines (same offsets) adds nothing.
+    let mut again = CampaignHook::live(GameId::Poe1);
+    assert_eq!(feed(&db, &mut again, 0, &l), 0);
+    let c = db.conn().unwrap();
+    let ch = store::characters(&c, GameId::Poe1).unwrap();
+    let ev = store::events(&c, GameId::Poe1, ch[0].id).unwrap();
+    let passives: Vec<_> = ev.iter().filter(|e| e.kind == "passives").map(|e| (e.amount, e.detail.clone().unwrap_or_default())).collect();
+    assert_eq!(
+        passives,
+        vec![
+            (Some(3), "total:2".to_string()),
+            (Some(0), "ascendancy:0".to_string()),
+            (Some(2), "level".to_string()),
+            (Some(1), "quests".to_string()),
+            (Some(1), "quest:The Dweller of the Deep".to_string()),
+        ]
+    );
+    let respec: Vec<_> = ev.iter().filter(|e| e.kind == "respec_points").map(|e| e.amount).collect();
+    assert_eq!(respec, vec![Some(2)]); // the Atlas line is not a character respec point
+
+    // PoE 2 never stores them (the format was verified for PoE 1 only).
+    let mut l2 = start_run();
+    l2.extend([line("10:02:00", ": Exile_Two (Monk) is now level 2"), line("10:05:00", ": (1 from Something)"), line("10:05:00", ": You have received a Passive Respec Point.")]);
+    drop(c);
+    let mut hook2 = CampaignHook::live(GameId::Poe2);
+    feed(&db, &mut hook2, 100, &l2);
+    let c = db.conn().unwrap();
+    let id2 = chars(&c)[0].id;
+    assert!(store::events(&c, GameId::Poe2, id2).unwrap().iter().all(|e| e.kind != "passives" && e.kind != "respec_points"));
+}
+
+/// Migration 0010 rebuilds `campaign_events` with the same ids, so the change token is unchanged.
+#[test]
+fn migration_keeps_events_and_their_ids() {
+    let db = Database::open_in_memory().unwrap();
+    let c = db.conn().unwrap();
+    let sql: String = c.query_row("SELECT sql FROM sqlite_master WHERE name = 'campaign_events'", [], |r| r.get(0)).unwrap();
+    assert!(sql.contains("'passives'") && sql.contains("'respec_points'") && sql.contains("UNIQUE (game, log_key, log_offset, kind)"));
+    let idx: i64 = c.query_row("SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name LIKE 'campaign_events_%'", [], |r| r.get(0)).unwrap();
+    assert_eq!(idx, 2);
 }

@@ -54,7 +54,7 @@ pub enum LogEvent {
     /// A character reached a level (player or party member — same caveat).
     /// `class` is the base class or, after ascending, the Ascendancy.
     LevelUp { level: u32, name: String, class: String },
-    /// `poe2_production/tags/<tag>` from the client's User-Agent line.
+    /// `poe2_production/tags/<tag>` (PoE 2) or `release/tags/<tag>` (PoE 1) from the client's User-Agent line.
     ClientVersion { tag: String },
     /// The client connects to the login server: the player logged in or went
     /// back to character selection, so the active character may change.
@@ -65,9 +65,26 @@ pub enum LogEvent {
     /// Another player entered / left the area (never the local player).
     PlayerJoined { name: String },
     PlayerLeft { name: String },
+    /// PoE 1: one line of the player's `/passives` output (verified in a real 3.27–3.30 log).
+    PassiveBreakdown(PassiveLine),
+    /// PoE 1: "You have received a Passive Respec Point." / "… 2 Passive Respec Points." (not the Atlas ones).
+    RespecPoints { amount: u32 },
     AfkOn,
     AfkOff,
     AbnormalDisconnect,
+}
+
+/// Lines of the PoE 1 `/passives` chat command, in the order the game prints them:
+/// `90 total Passive Skill Points (90 allocated)`, `4 total Ascendancy Skill Points (4 allocated)`,
+/// `67 Passive Skill Points from character level`, `23 Passive Skill Points from quests:`, then one
+/// `(1 from The Dweller of the Deep)` per quest reached (0 = reached without a point yet, or a helped bandit).
+#[derive(Debug, Clone, PartialEq)]
+pub enum PassiveLine {
+    Total { total: u32, allocated: u32 },
+    AscendancyTotal { total: u32, allocated: u32 },
+    FromLevel(u32),
+    FromQuests(u32),
+    Quest { points: u32, quest: String },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -170,14 +187,17 @@ fn parse_message(msg: &str) -> Option<LogEvent> {
     if msg.starts_with("Abnormal disconnect:") {
         return Some(LogEvent::AbnormalDisconnect);
     }
-    if let Some(r) = msg.strip_prefix("[HTTP2] User agent: PoE poe2_production/tags/") {
+    // PoE 2: `PoE poe2_production/tags/0.5.5g`; PoE 1: `PoE release/tags/3.30.0c` (both seen in real logs).
+    if let Some(r) = msg.strip_prefix("[HTTP2] User agent: PoE poe2_production/tags/").or_else(|| msg.strip_prefix("[HTTP2] User agent: PoE release/tags/")) {
         let tag = r.split(' ').next()?;
         let ok = !tag.is_empty() && tag.len() <= 32 && tag.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'.');
         return ok.then(|| LogEvent::ClientVersion { tag: tag.to_string() });
     }
     if let Some(r) = msg.strip_prefix("Async connecting to ") {
         let host = r.split(':').next()?;
-        return host.ends_with(".login.pathofexile2.com").then_some(LogEvent::LoginConnect);
+        // PoE 2: `mil.login.pathofexile2.com`; PoE 1: `ams.login.pathofexile.com` (both seen in real logs).
+        let login = host.ends_with(".login.pathofexile2.com") || host.ends_with(".login.pathofexile.com");
+        return login.then_some(LogEvent::LoginConnect);
     }
     let sys = msg.strip_prefix(": ")?;
     if sys == "AFK mode is now OFF." {
@@ -196,9 +216,13 @@ fn parse_message(msg: &str) -> Option<LogEvent> {
         let weapon_set = match kind {
             "Passive Skill Points." | "Passive Skill Point." => false,
             "Weapon Set Passive Skill Points." | "Weapon Set Passive Skill Point." => true,
+            "Passive Respec Point." | "Passive Respec Points." => return Some(LogEvent::RespecPoints { amount }),
             _ => return None,
         };
         return Some(LogEvent::PassivePoints { amount, weapon_set });
+    }
+    if let Some(line) = passive_line(sys) {
+        return Some(LogEvent::PassiveBreakdown(line));
     }
     if let Some(name) = sys.strip_suffix(" has joined the area.") {
         return single_token(name).then(|| LogEvent::PlayerJoined { name: name.to_string() });
@@ -214,6 +238,29 @@ fn parse_message(msg: &str) -> Option<LogEvent> {
         return Some(LogEvent::LevelUp { level: num(level.trim())?, name: name.to_string(), class: class.to_string() });
     }
     None
+}
+
+fn passive_line(sys: &str) -> Option<PassiveLine> {
+    // `(1 from The Dweller of the Deep)`
+    if let Some(r) = sys.strip_prefix('(').and_then(|r| r.strip_suffix(')')) {
+        let (points, quest) = r.split_once(" from ")?;
+        let ok = !quest.is_empty() && quest.len() <= 64 && quest.chars().all(|c| c.is_alphanumeric() || " '-,".contains(c));
+        let points = num(points)?;
+        return ok.then(|| PassiveLine::Quest { points, quest: quest.to_string() });
+    }
+    let (n, rest) = sys.split_once(' ')?;
+    let n: u32 = num(n)?;
+    if let Some(r) = rest.strip_prefix("total Passive Skill Points (").and_then(|r| r.strip_suffix(" allocated)")) {
+        return Some(PassiveLine::Total { total: n, allocated: num(r)? });
+    }
+    if let Some(r) = rest.strip_prefix("total Ascendancy Skill Points (").and_then(|r| r.strip_suffix(" allocated)")) {
+        return Some(PassiveLine::AscendancyTotal { total: n, allocated: num(r)? });
+    }
+    match rest {
+        "Passive Skill Points from character level" => Some(PassiveLine::FromLevel(n)),
+        "Passive Skill Points from quests:" => Some(PassiveLine::FromQuests(n)),
+        _ => None,
+    }
 }
 
 /// Character names are one token of bounded length.
@@ -306,6 +353,15 @@ mod tests {
     }
 
     #[test]
+    fn poe1_login_server_starts_a_session_segment() {
+        let line = "2026/11/17 14:07:45 1 a [INFO Client 1] Async connecting to ams.login.pathofexile.com:20481";
+        assert!(matches!(parse_line(line), LineResult::Event(e) if e.event == LogEvent::LoginConnect));
+        // Not a login host: a look-alike suffix is ignored.
+        let other = "2026/11/17 14:07:45 1 a [INFO Client 1] Async connecting to ams.login.pathofexile.com.example.org:20481";
+        assert_eq!(parse_line(other), LineResult::Ignored);
+    }
+
+    #[test]
     fn invalid_lines_are_malformed_or_ignored() {
         assert_eq!(parse_line("garbage"), LineResult::Malformed);
         assert_eq!(parse_line("2026/13/17 14:07:45 x"), LineResult::Malformed);
@@ -320,6 +376,38 @@ mod tests {
             client_id: Some(1),
             event: LogEvent::SceneName("\u{FFFD}\u{FFFD}".into()),
         }));
+    }
+
+    #[test]
+    fn poe1_passives_output_and_respec_points() {
+        // Shape of a real PoE 1 `/passives` output (3.27–3.30), names unchanged (quest names, not players).
+        let at = "2026/11/15 15:16:15 4176500 cffb06be [INFO Client 36744] : ";
+        let ev = |msg: &str| match parse_line(&format!("{at}{msg}")) {
+            LineResult::Event(p) => Some(p.event),
+            _ => None,
+        };
+        use PassiveLine::*;
+        assert_eq!(ev("90 total Passive Skill Points (90 allocated)"), Some(LogEvent::PassiveBreakdown(Total { total: 90, allocated: 90 })));
+        assert_eq!(ev("86 total Passive Skill Points (83 allocated)"), Some(LogEvent::PassiveBreakdown(Total { total: 86, allocated: 83 })));
+        assert_eq!(ev("4 total Ascendancy Skill Points (4 allocated)"), Some(LogEvent::PassiveBreakdown(AscendancyTotal { total: 4, allocated: 4 })));
+        assert_eq!(ev("67 Passive Skill Points from character level"), Some(LogEvent::PassiveBreakdown(FromLevel(67))));
+        assert_eq!(ev("23 Passive Skill Points from quests:"), Some(LogEvent::PassiveBreakdown(FromQuests(23))));
+        assert_eq!(
+            ev("(1 from The Dweller of the Deep)"),
+            Some(LogEvent::PassiveBreakdown(Quest { points: 1, quest: "The Dweller of the Deep".into() }))
+        );
+        assert_eq!(ev("(2 from An End to Hunger)"), Some(LogEvent::PassiveBreakdown(Quest { points: 2, quest: "An End to Hunger".into() })));
+        assert_eq!(ev("(0 from Deal with the Bandits)"), Some(LogEvent::PassiveBreakdown(Quest { points: 0, quest: "Deal with the Bandits".into() })));
+        assert_eq!(ev("(1 from Victario's Secrets)"), Some(LogEvent::PassiveBreakdown(Quest { points: 1, quest: "Victario's Secrets".into() })));
+        assert_eq!(ev("You have received a Passive Respec Point."), Some(LogEvent::RespecPoints { amount: 1 }));
+        assert_eq!(ev("You have received 2 Passive Respec Points."), Some(LogEvent::RespecPoints { amount: 2 }));
+        // Atlas and other trees are not character passives.
+        assert_eq!(ev("You have received an Atlas Passive Respec Point."), None);
+        assert_eq!(ev("You have received 2 Atlas Passive Respec Points."), None);
+        assert_eq!(ev("You have received a Genesis Tree Equipment Items Skill Point."), None);
+        assert_eq!(ev("/passives displays a breakdown of your Passive Skill points"), None);
+        // A chat line quoting the output is never a system line.
+        assert!(!matches!(parse_line("2026/11/15 15:16:15 1 a [INFO Client 1] #Someone: (1 from The Dweller of the Deep)"), LineResult::Event(_)));
     }
 
     #[test]

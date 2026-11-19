@@ -52,7 +52,7 @@ Current groups:
 | Overview | Dashboard | Dashboard |
 | Economy | Price Checker, Currency Tracker, Trade, Market Intelligence | Price Checker, Currency Tracker, Trade, Market Intelligence |
 | Endgame | Map Lab, Farming Lab, Loot Intelligence, *Atlas Planner, Thread Planner, Fate Planner* | — |
-| Character | Builds, Path of Building & Tools | Campaign Intelligence, Builds, Path of Building & Tools |
+| Character | Location Atlas, Builds, Path of Building & Tools | Campaign Intelligence, Builds, Path of Building & Tools |
 | Tools | Crafting, REGEX, Browser | *Crafting*, Session Intelligence, Loot Journal, Browser |
 
 *Italic* = planned.

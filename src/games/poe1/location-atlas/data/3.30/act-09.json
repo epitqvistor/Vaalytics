@@ -1,0 +1,463 @@
+{
+  "act": 9,
+  "areas": [
+    {
+      "id": "2_9_1",
+      "name": "The Blood Aqueduct",
+      "act": 9,
+      "level": 61,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_8_town",
+      "connections": [
+        "2_8_13",
+        "2_9_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_BloodAqueduct"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_9_2",
+      "name": "The Descent",
+      "act": 9,
+      "level": 61,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_9_town",
+      "connections": [
+        "2_9_3",
+        "2_9_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Descent_1",
+        "Augury_P2_Descent_2",
+        "Augury_P2_Descent_3",
+        "Augury_P2_Descent_4",
+        "P2_Descent_1",
+        "P2_Descent_2",
+        "P2_Descent_3",
+        "P2_Descent_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_9_3",
+      "name": "The Vastiri Desert",
+      "act": 9,
+      "level": 61,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_9_town",
+      "connections": [
+        "2_9_2",
+        "2_9_4",
+        "2_9_5"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Desert_1",
+        "Augury_P2_Desert_2",
+        "Augury_P2_Desert_3",
+        "Augury_P2_Desert_4",
+        "P2_Desert_1",
+        "P2_Desert_2",
+        "P2_Desert_3",
+        "P2_Desert_4"
+      ],
+      "craftingRecipes": [
+        "Attack and Cast Speed - Rank 2"
+      ]
+    },
+    {
+      "id": "2_9_4",
+      "name": "The Oasis",
+      "act": 9,
+      "level": 61,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_9_town",
+      "connections": [
+        "2_9_3"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": true,
+      "topologies": [
+        "P2_Oasis_1",
+        "P2_Oasis_2",
+        "P2_Oasis_3",
+        "P2_Oasis_4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Shakari, Queen of the Sands"
+      ]
+    },
+    {
+      "id": "2_9_5",
+      "name": "The Foothills",
+      "act": 9,
+      "level": 62,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_9_town",
+      "connections": [
+        "2_9_3",
+        "2_9_6",
+        "2_9_7"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Foothills_1",
+        "P2_Foothills_2",
+        "P2_Foothills_3",
+        "P2_Foothills_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_9_6",
+      "name": "The Boiling Lake",
+      "act": 9,
+      "level": 62,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_9_town",
+      "connections": [
+        "2_9_5"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_BoilingLake_1",
+        "P2_BoilingLake_2",
+        "P2_BoilingLake_3",
+        "P2_BoilingLake_4"
+      ],
+      "craftingRecipes": [
+        "Spell Damage - Rank 3"
+      ],
+      "bossNames": [
+        "The Basilisk"
+      ]
+    },
+    {
+      "id": "2_9_7",
+      "name": "The Tunnel",
+      "act": 9,
+      "level": 62,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_9_town",
+      "connections": [
+        "2_9_5",
+        "2_9_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Tunnel1",
+        "Augury_P2_Tunnel2",
+        "Augury_P2_Tunnel3",
+        "Augury_P2_Tunnel4",
+        "P2_Tunnel1",
+        "P2_Tunnel2",
+        "P2_Tunnel3",
+        "P2_Tunnel4"
+      ],
+      "craftingRecipes": [
+        "All Attributes - Rank 2"
+      ]
+    },
+    {
+      "id": "2_9_8",
+      "name": "The Quarry",
+      "act": 9,
+      "level": 63,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_9_town",
+      "connections": [
+        "2_9_10_1",
+        "2_9_7",
+        "2_9_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "P2_Quarry_1",
+        "P2_Quarry_2",
+        "P2_Quarry_3"
+      ],
+      "craftingRecipes": [
+        "Physical Damage - Rank 3"
+      ],
+      "bossNames": [
+        "Garukhan, Queen of the Winds"
+      ]
+    },
+    {
+      "id": "2_9_9",
+      "name": "The Refinery",
+      "act": 9,
+      "level": 63,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_9_town",
+      "connections": [
+        "2_9_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Factory_1",
+        "P2_Factory_2",
+        "P2_Factory_3"
+      ],
+      "craftingRecipes": [
+        "Trigger a Socketed Spell when you Use a Skill or Focus"
+      ],
+      "bossNames": [
+        "General Adus"
+      ]
+    },
+    {
+      "id": "2_9_10_1",
+      "name": "The Belly of the Beast",
+      "act": 9,
+      "level": 63,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_9_town",
+      "connections": [
+        "2_9_10_2",
+        "2_9_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_BloodPools_1",
+        "P2_BloodPools_2",
+        "P2_BloodPools_3",
+        "P2_BloodPools_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_9_10_2",
+      "name": "The Rotting Core",
+      "act": 9,
+      "level": 64,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_9_town",
+      "connections": [
+        "2_10_town",
+        "2_9_10_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 4,
+      "actBossArea": true,
+      "topologies": [
+        "P2_AcidLakes"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Doedre, Darksoul",
+        "Maligaro, The Broken",
+        "Shavronne, Unbound",
+        "The Depraved Trinity"
+      ]
+    },
+    {
+      "id": "2_9_SubareaRefinery",
+      "name": "Refinery Tunnels",
+      "act": 9,
+      "level": 63,
+      "kind": "area",
+      "waypoint": false,
+      "town": null,
+      "connections": [],
+      "otherConnections": [],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "P2_SubareaRefinery"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_9_town",
+      "name": "Highgate",
+      "act": 9,
+      "level": 67,
+      "kind": "town",
+      "waypoint": true,
+      "town": null,
+      "connections": [
+        "2_9_1",
+        "2_9_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Highgate"
+      ],
+      "craftingRecipes": []
+    }
+  ],
+  "hints": [
+    {
+      "area": "2_9_3",
+      "step": "Get the waypoint",
+      "text": "Go right",
+      "direction": 90,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_9_3",
+      "toward": "2_9_5",
+      "step": "→ The Foothills",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_9_5",
+      "step": "Get the waypoint",
+      "text": "Go up-right until you find the cliff",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_9_5",
+      "step": "Get the waypoint",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_9_6",
+      "step": "Find and Kill The Basilisk, take Basilisk Acid",
+      "text": "Go up-right look for petrified soldiers",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_9_3",
+      "toward": "2_9_4",
+      "step": "→ The Oasis",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_9_5",
+      "toward": "2_9_7",
+      "step": "→ The Tunnel",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_9_7",
+      "step": "Before the waypoint, complete the Labyrinth trial",
+      "text": "Look for the hidden switch halfway to Trial of Ascendancy Plaque in the corner opposite the entrance to access Hidden Gem: Transfigured",
+      "leagueStartOnly": true
+    },
+    {
+      "area": "2_9_8",
+      "step": "Get the waypoint",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_9_8",
+      "step": "→ Shrine of the Winds, kill Garukhan, Queen of the Winds, take Sekhema Feather",
+      "text": "up-right or down-left",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_9_8",
+      "toward": "2_9_9",
+      "step": "→ The Refinery",
+      "text": "up-left or up-right",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_9_9",
+      "step": "Get the crafting recipe",
+      "text": "Look for a sewer grate leading to Refinery Tunnels, it is attached to the cart tracks",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_9_9",
+      "step": "Find and kill General Adus, take Trarthan Powder",
+      "text": "Go up-right follow cart tracks",
+      "direction": 45,
+      "leagueStartOnly": false
+    }
+  ],
+  "quests": [
+    {
+      "id": "a9q1",
+      "name": "Recurring Nightmare",
+      "act": 9,
+      "npcs": []
+    },
+    {
+      "id": "a9q2",
+      "name": "The Ruler of Highgate",
+      "act": 9,
+      "npcs": [
+        "Irasha"
+      ]
+    },
+    {
+      "id": "a9q3",
+      "name": "The Storm Blade",
+      "act": 9,
+      "npcs": [
+        "Petarus and Vanja"
+      ]
+    },
+    {
+      "id": "a9q4",
+      "name": "Fastis Fortuna",
+      "act": 9,
+      "npcs": [
+        "Petarus and Vanja"
+      ]
+    },
+    {
+      "id": "a9q5",
+      "name": "Queen of the Sands",
+      "act": 9,
+      "npcs": [
+        "Irasha",
+        "Petarus and Vanja"
+      ]
+    }
+  ]
+}

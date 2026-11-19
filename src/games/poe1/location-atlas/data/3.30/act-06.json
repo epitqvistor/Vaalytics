@@ -1,0 +1,644 @@
+{
+  "act": 6,
+  "areas": [
+    {
+      "id": "2_6_1",
+      "name": "The Twilight Strand",
+      "act": 6,
+      "level": 45,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_TwilightStrand_1",
+        "P2_TwilightStrand_2",
+        "P2_TwilightStrand_3",
+        "P2_TwilightStrand_4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Everything"
+      ]
+    },
+    {
+      "id": "2_6_2",
+      "name": "The Coast",
+      "act": 6,
+      "level": 45,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_3",
+        "2_6_4",
+        "2_6_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Coast_1",
+        "P2_Coast_2",
+        "P2_Coast_3",
+        "P2_Coast_4",
+        "P2_Coast_5",
+        "P2_Coast_6",
+        "P2_Coast_7",
+        "P2_Coast_8",
+        "P2_Coast_9"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_6_3",
+      "name": "The Tidal Island",
+      "act": 6,
+      "level": 45,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_TidalIsland_1",
+        "P2_TidalIsland_10",
+        "P2_TidalIsland_11",
+        "P2_TidalIsland_12",
+        "P2_TidalIsland_13",
+        "P2_TidalIsland_14",
+        "P2_TidalIsland_15",
+        "P2_TidalIsland_2",
+        "P2_TidalIsland_3",
+        "P2_TidalIsland_4",
+        "P2_TidalIsland_5",
+        "P2_TidalIsland_6",
+        "P2_TidalIsland_7",
+        "P2_TidalIsland_8",
+        "P2_TidalIsland_9"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_6_4",
+      "name": "The Mud Flats",
+      "act": 6,
+      "level": 46,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_2",
+        "2_6_5"
+      ],
+      "otherConnections": [],
+      "bossCount": 4,
+      "actBossArea": false,
+      "topologies": [
+        "P2_MudFlats_1",
+        "P2_MudFlats_2",
+        "P2_MudFlats_3",
+        "P2_MudFlats_4",
+        "P2_MudFlats_5",
+        "P2_MudFlats_6",
+        "P2_MudFlats_7"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "The Dishonoured Queen"
+      ]
+    },
+    {
+      "id": "2_6_5",
+      "name": "The Karui Fortress",
+      "act": 6,
+      "level": 46,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_4",
+        "2_6_6"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "P2_KaruiFortress_1",
+        "P2_KaruiFortress_2"
+      ],
+      "craftingRecipes": [
+        "Defences - Rank 2"
+      ],
+      "bossNames": [
+        "Tukohama, Karui God of War"
+      ]
+    },
+    {
+      "id": "2_6_6",
+      "name": "The Ridge",
+      "act": 6,
+      "level": 46,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_5",
+        "2_6_7_1"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Ridge_1",
+        "Augury_P2_Ridge_2",
+        "Augury_P2_Ridge_3",
+        "Augury_P2_Ridge_4",
+        "P2_Ridge_1",
+        "P2_Ridge_2",
+        "P2_Ridge_3",
+        "P2_Ridge_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_6_7_1",
+      "name": "The Lower Prison",
+      "act": 6,
+      "level": 47,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_6",
+        "2_6_7_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "Augury_P2_PrisonLower_1",
+        "Augury_P2_PrisonLower_2",
+        "Augury_P2_PrisonLower_3",
+        "Augury_P2_PrisonLower_4",
+        "Augury_P2_PrisonLower_5",
+        "P2_PrisonLower_1",
+        "P2_PrisonLower_2",
+        "P2_PrisonLower_3",
+        "P2_PrisonLower_4",
+        "P2_PrisonLower_5"
+      ],
+      "craftingRecipes": [
+        "Double Resistances - Rank 1"
+      ]
+    },
+    {
+      "id": "2_6_7_2",
+      "name": "Shavronne's Tower",
+      "act": 6,
+      "level": 47,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_7_1",
+        "2_6_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": true,
+      "topologies": [
+        "P2_PrisonUpper_1",
+        "P2_PrisonUpper_2",
+        "P2_PrisonUpper_3"
+      ],
+      "craftingRecipes": [
+        "Spell Damage - Rank 2"
+      ],
+      "bossNames": [
+        "Shavronne the Returned",
+        "Reassembled Brutus"
+      ]
+    },
+    {
+      "id": "2_6_8",
+      "name": "Prisoner's Gate",
+      "act": 6,
+      "level": 47,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_7_2",
+        "2_6_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 2,
+      "actBossArea": true,
+      "topologies": [
+        "P2_PrisonersGate_1",
+        "P2_PrisonersGate_10",
+        "P2_PrisonersGate_11",
+        "P2_PrisonersGate_12",
+        "P2_PrisonersGate_13",
+        "P2_PrisonersGate_14",
+        "P2_PrisonersGate_15",
+        "P2_PrisonersGate_16",
+        "P2_PrisonersGate_2",
+        "P2_PrisonersGate_3",
+        "P2_PrisonersGate_4",
+        "P2_PrisonersGate_5",
+        "P2_PrisonersGate_6",
+        "P2_PrisonersGate_7",
+        "P2_PrisonersGate_8",
+        "P2_PrisonersGate_9"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Abberath, the Cloven One"
+      ]
+    },
+    {
+      "id": "2_6_9",
+      "name": "The Western Forest",
+      "act": 6,
+      "level": 48,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_10",
+        "2_6_8"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_WesternForest_1",
+        "Augury_P2_WesternForest_2",
+        "Augury_P2_WesternForest_3",
+        "Augury_P2_WesternForest_4",
+        "P2_WesternForest_1",
+        "P2_WesternForest_2",
+        "P2_WesternForest_3",
+        "P2_WesternForest_4"
+      ],
+      "craftingRecipes": [
+        "Attributes - Rank 2"
+      ]
+    },
+    {
+      "id": "2_6_10",
+      "name": "The Riverways",
+      "act": 6,
+      "level": 48,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_11",
+        "2_6_12",
+        "2_6_9"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_Riverways_1",
+        "P2_Riverways_10",
+        "P2_Riverways_11",
+        "P2_Riverways_2",
+        "P2_Riverways_3",
+        "P2_Riverways_4",
+        "P2_Riverways_5",
+        "P2_Riverways_6",
+        "P2_Riverways_7",
+        "P2_Riverways_8",
+        "P2_Riverways_9"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_6_11",
+      "name": "The Wetlands",
+      "act": 6,
+      "level": 48,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_10"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "P2_Wetlands_1",
+        "P2_Wetlands_2",
+        "P2_Wetlands_3",
+        "P2_Wetlands_4",
+        "P2_Wetlands_5",
+        "P2_Wetlands_6",
+        "P2_Wetlands_7",
+        "P2_Wetlands_8"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Ryslatha, the Puppet Mistress"
+      ]
+    },
+    {
+      "id": "2_6_12",
+      "name": "The Southern Forest",
+      "act": 6,
+      "level": 49,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_10",
+        "2_6_13"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_SouthernForest_1",
+        "Augury_P2_SouthernForest_2",
+        "Augury_P2_SouthernForest_3",
+        "P2_SouthernForest_1",
+        "P2_SouthernForest_2",
+        "P2_SouthernForest_3"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_6_13",
+      "name": "The Cavern of Anger",
+      "act": 6,
+      "level": 49,
+      "kind": "area",
+      "waypoint": false,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_12",
+        "2_6_14"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "P2_CavernAnger_1",
+        "P2_CavernAnger_2",
+        "P2_CavernAnger_3",
+        "P2_CavernAnger_4"
+      ],
+      "craftingRecipes": []
+    },
+    {
+      "id": "2_6_14",
+      "name": "The Beacon",
+      "act": 6,
+      "level": 49,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_13",
+        "2_6_15"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": false,
+      "topologies": [
+        "Augury_P2_Beacon_1",
+        "Augury_P2_Beacon_2",
+        "Augury_P2_Beacon_3",
+        "Augury_P2_Beacon_4",
+        "P2_Beacon_1",
+        "P2_Beacon_2",
+        "P2_Beacon_3",
+        "P2_Beacon_4"
+      ],
+      "craftingRecipes": [
+        "Life and Mana - Rank 2"
+      ]
+    },
+    {
+      "id": "2_6_15",
+      "name": "The Brine King's Reef",
+      "act": 6,
+      "level": 50,
+      "kind": "area",
+      "waypoint": true,
+      "town": "2_6_town",
+      "connections": [
+        "2_6_14",
+        "2_7_town"
+      ],
+      "otherConnections": [],
+      "bossCount": 1,
+      "actBossArea": true,
+      "topologies": [
+        "P2_BrineReef_1",
+        "P2_BrineReef_2",
+        "P2_BrineReef_3",
+        "P2_BrineReef_4"
+      ],
+      "craftingRecipes": [],
+      "bossNames": [
+        "Tsoagoth, The Brine King"
+      ]
+    },
+    {
+      "id": "2_6_town",
+      "name": "Lioneye's Watch",
+      "act": 6,
+      "level": 50,
+      "kind": "town",
+      "waypoint": true,
+      "town": null,
+      "connections": [
+        "1_5_8",
+        "2_6_1",
+        "2_6_2"
+      ],
+      "otherConnections": [],
+      "bossCount": 0,
+      "actBossArea": false,
+      "topologies": [
+        "p2_1_town"
+      ],
+      "craftingRecipes": []
+    }
+  ],
+  "hints": [
+    {
+      "area": "2_6_4",
+      "step": "Find and kill The Dishonoured Queen, take Eye of Conquest",
+      "text": "up-right corner of area, normally by a house",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_5",
+      "step": "→ Tukohama's Keep, kill Tukohama, Karui God of War",
+      "text": "Go up-right",
+      "direction": 45,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_5",
+      "step": "→ Tukohama's Keep, kill Tukohama, Karui God of War",
+      "text": "Find and kill the pack of monster on the island down-left for a Tattoo",
+      "direction": 225,
+      "leagueStartOnly": true
+    },
+    {
+      "area": "2_6_5",
+      "toward": "2_6_6",
+      "step": "→ The Ridge",
+      "text": "Go up",
+      "direction": 0,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_8",
+      "step": "→ Valley of the Fire Drinker, kill Abberath, the Cloven One",
+      "text": "Go down the ledge next to the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_8",
+      "toward": "2_6_9",
+      "step": "→ The Western Forest",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_9",
+      "step": "Get the crafting recipe",
+      "text": "Look for the torch touching the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_9",
+      "step": "Get the crafting recipe",
+      "text": "Follow the trail in the direction of the torch",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_9",
+      "toward": "2_6_10",
+      "step": "→ The Riverways",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_10",
+      "step": "Get the waypoint",
+      "text": "Follow the road",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_10",
+      "toward": "2_6_11",
+      "step": "→ The Wetlands",
+      "text": "Look for 2 pillars near the waypoint, follow the trail",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_11",
+      "step": "→ The Spawning Ground, kill Ryslatha, the Puppet Mistress",
+      "text": "Go up-left",
+      "direction": 315,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_10",
+      "toward": "2_6_12",
+      "step": "→ The Southern Forest",
+      "text": "Follow the road until it ends",
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_10",
+      "toward": "2_6_12",
+      "step": "→ The Southern Forest",
+      "text": "Go down-right",
+      "direction": 135,
+      "leagueStartOnly": false
+    },
+    {
+      "area": "2_6_14",
+      "step": "Get the crafting recipe",
+      "text": "Follow the shore",
+      "leagueStartOnly": false
+    }
+  ],
+  "quests": [
+    {
+      "id": "a6q1",
+      "name": "The Brine King",
+      "act": 6,
+      "npcs": []
+    },
+    {
+      "id": "a6q2",
+      "name": "Essence of Umbra",
+      "act": 6,
+      "npcs": [
+        "Tarkleigh"
+      ]
+    },
+    {
+      "id": "a6q3",
+      "name": "The Father of War",
+      "act": 6,
+      "npcs": [
+        "Tarkleigh"
+      ]
+    },
+    {
+      "id": "a6q4",
+      "name": "Fallen from Grace",
+      "act": 6,
+      "npcs": [
+        "Lilly Roth"
+      ]
+    },
+    {
+      "id": "a6q5",
+      "name": "Bestel's Epic",
+      "act": 6,
+      "npcs": [
+        "Bestel"
+      ]
+    },
+    {
+      "id": "a6q6",
+      "name": "The Puppet Mistress",
+      "act": 6,
+      "npcs": [
+        "Tarkleigh"
+      ]
+    },
+    {
+      "id": "a6q7",
+      "name": "The Cloven One",
+      "act": 6,
+      "npcs": [
+        "Bestel"
+      ]
+    }
+  ]
+}

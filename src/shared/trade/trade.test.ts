@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
+import { parseClusterForTest, parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
 import { estimatePrice } from "./estimate";
-import { buildFilters, buildQuery, defaultOptions, suggestedMin } from "./query";
+import { buildFilters, buildQuery, defaultOptions, splitOptionId, suggestedMin } from "./query";
 import { buildStatIndex, matchMod, templateKey, type TradeStat } from "./stats";
 
 // Real entries from /api/trade/data/stats (PoE 1) and /api/trade2/data/stats (PoE 2), Nov 2026.
@@ -91,10 +91,18 @@ describe("filters and query", () => {
     expect(f).toMatchObject({ value: 21, enabled: false });
   });
 
-  it("suggests rounded minimums", () => {
+  it("suggests whole-number minimums (user report: no 1.2)", () => {
     expect(suggestedMin(78)).toBe(70);
     expect(suggestedMin(4.5)).toBe(4);
+    expect(suggestedMin(1.4)).toBe(1);
+    expect(suggestedMin(2)).toBe(2);
+    expect(suggestedMin(15)).toBe(13);
+    expect(suggestedMin(36.5)).toBe(32);
+    expect(suggestedMin(-10)).toBe(-10);
+    // Rolls below 1 (0.4 % leech) can't be rounded to a useful whole number.
+    expect(suggestedMin(0.4)).toBe(0.4);
     expect(suggestedMin(null)).toBeNull();
+    for (const v of [1.2, 3.3, 9.9, 10.5, 47.25, 120.5]) expect(Number.isInteger(suggestedMin(v))).toBe(true);
   });
 });
 
@@ -199,5 +207,52 @@ describe("user report: transfigured gems", () => {
   it("plain gems keep their name", () => {
     const gem = { ...parseTransfiguredGemForTest(), baseType: "Static Strike" };
     expect((buildQuery(gem, [], defaultOptions(gem), variants).query as Record<string, unknown>).type).toBe("Static Strike");
+  });
+});
+
+describe("user report: cluster jewels (0 results)", () => {
+  // Real entries from /api/trade/data/stats (PoE 1, Nov 2026). Option values are listed as `id|option`.
+  const CLUSTER_STATS: TradeStat[] = [
+    { id: "enchant.stat_3086156145", text: "Adds # Passive Skills", type: "enchant" },
+    { id: "enchant.stat_3948993189|42", text: "Added Small Passive Skills grant: 15% increased Armour", type: "enchant" },
+    { id: "enchant.stat_3948993189|43", text: "Added Small Passive Skills grant: 15% increased Evasion Rating", type: "enchant" },
+    { id: "explicit.stat_3819827377", text: "Added Small Passive Skills also grant: +# to Maximum Life", type: "explicit" },
+  ];
+  const index = buildStatIndex(CLUSTER_STATS);
+
+  it("splits option ids", () => {
+    expect(splitOptionId("enchant.stat_3948993189|42")).toEqual({ id: "enchant.stat_3948993189", option: 42 });
+    expect(splitOptionId("explicit.stat_1")).toEqual({ id: "explicit.stat_1" });
+  });
+
+  it("parses the enchants as enchant mods", () => {
+    const item = parseClusterForTest();
+    expect(item.mods.filter((m) => m.kind === "enchant").map((m) => m.text)).toEqual([
+      "Adds 2 Passive Skills",
+      "Added Small Passive Skills grant: 15% increased Armour",
+    ]);
+  });
+
+  it("searches the passive type as { option } and the passive count exactly, both enabled", () => {
+    const item = parseClusterForTest();
+    const { stats } = buildFilters(item, index);
+    const count = stats.find((s) => s.statId === "enchant.stat_3086156145")!;
+    const type = stats.find((s) => s.statId === "enchant.stat_3948993189")!;
+    expect(count).toMatchObject({ enabled: true, min: 2, max: 2 });
+    expect(type).toMatchObject({ enabled: true, option: 42, value: null, min: null, max: null });
+
+    const q = buildQuery(item, stats, defaultOptions(item)).query as { type: string; stats: { filters: { id: string; value: unknown }[] }[] };
+    expect(q.type).toBe("Small Cluster Jewel");
+    const filters = q.stats[0]!.filters;
+    // A min on an option stat makes Trade return 0 results (verified live, Nov 2026).
+    expect(filters.find((f) => f.id === "enchant.stat_3948993189")!.value).toEqual({ option: 42 });
+    expect(filters.find((f) => f.id === "enchant.stat_3086156145")!.value).toEqual({ min: 2, max: 2 });
+  });
+
+  it("magic cluster jewels are searched by their base", () => {
+    const item = parseClusterForTest("Magic");
+    expect(item.baseType).toBe("Lustrous Small Cluster Jewel of the Sample");
+    const q = buildQuery(item, buildFilters(item, index).stats, defaultOptions(item)).query as Record<string, unknown>;
+    expect(q.type).toBe("Small Cluster Jewel");
   });
 });
