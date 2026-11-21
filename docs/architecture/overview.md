@@ -51,6 +51,15 @@ Modules, navigation and reusable services: [modules.md](modules.md). Patch rules
 - **No idle work.** Nothing polls while the user isn't looking. Background sync
   (M4) will be scheduled by source update intervals and cache headers.
 
+## App lifecycle
+
+- **One instance.** `tauri-plugin-single-instance` (first plugin in `lib.rs`): a second launch
+  focuses the running main window and exits, so two hosts never share the database or hotkeys.
+- **Closing the main window quits.** Helper windows (price-check overlay, Act Tracker) are hidden
+  after use, not closed; `on_window_event` exits the app when `main` gets `CloseRequested`, so a
+  hidden window can't keep the process alive. Background services (market, sessions, loot) end
+  with the process.
+
 ## Data storage
 
 - `%APPDATA%\app.vaalytics.desktop\vaalytics.db` — SQLite (WAL). Schema version

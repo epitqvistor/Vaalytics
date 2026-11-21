@@ -11,7 +11,7 @@ import { ItemCard } from "@/shared/item-renderer/ItemCard";
 import { toDisplayItem } from "@/shared/item-renderer/adapt";
 import type { ParsedItem } from "@/shared/item-parser/types";
 import { estimatePrice } from "@/shared/trade/estimate";
-import { buildFilters, buildQuery, defaultOptions, STATUS_OPTIONS, type Range, type SearchOptions, type StatFilter } from "@/shared/trade/query";
+import { buildFilters, buildQuery, defaultOptions, STATUS_OPTIONS, tradeSiteSearchUrl, type Range, type SearchOptions, type StatFilter } from "@/shared/trade/query";
 import { templateKey } from "@/shared/trade/stats";
 import { cn } from "@/shared/utilities/cn";
 import { formatAmount, formatRelative } from "@/shared/utilities/format";
@@ -40,6 +40,8 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   const [searchedAt, setSearchedAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Last query sent — lets the user open the same search on the Trade site when the API fails. */
+  const [lastQuery, setLastQuery] = useState<Record<string, unknown> | null>(null);
   const [dirty, setDirty] = useState(false);
   const [defaultSort] = useGameSetting<Sort>(item.game, "priceCheck.defaultSort", "price", isSort);
   const [sortOverride, setSort] = useState<Sort | null>(null);
@@ -68,7 +70,9 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
       try {
         // Transfigured gems need base + discriminator; without the list the plain name is tried.
         const gems = item.rarity === "Gem" ? await loadGemVariants(item.game).catch(() => []) : [];
-        const r = await tradePriceCheck(item.game, league, buildQuery(item, filters, options, gems), 10);
+        const query = buildQuery(item, filters, options, gems);
+        setLastQuery(query);
+        const r = await tradePriceCheck(item.game, league, query, 10);
         setResult(r);
         setListings(r.listings);
         setSearchedAt(Date.now());
@@ -216,7 +220,14 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
         {error && (
           <div role="alert" className="flex items-start gap-2 rounded-md border border-danger/30 bg-danger-soft px-3 py-2.5 text-sm text-danger">
             <Icon name="error" size={16} className="mt-0.5 shrink-0" />
-            <span>{error}</span>
+            <div className="flex min-w-0 flex-col items-start gap-2">
+              <span>{error}</span>
+              {lastQuery && (
+                <Button size="sm" variant="secondary" icon="external" onClick={() => openUrl(tradeSiteSearchUrl(item.game, league, lastQuery)).catch((e) => setError(String(e)))}>
+                  Open this search on the Trade site
+                </Button>
+              )}
+            </div>
           </div>
         )}
         <EstimatePanel result={result} estimate={estimate} listingsCount={listings.length} config={config} searchedAt={searchedAt} loading={loading && !result} />

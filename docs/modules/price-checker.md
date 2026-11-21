@@ -39,6 +39,8 @@ Advanced headers `{ Prefix Modifier "Name" (Tier: N) — tags }` give kind, pref
 - **Rate limits:** the client tracks every policy the server announces (`X-Rate-Limit-Policy/Rules/<rule>/<rule>-State`), keeps a one-request safety margin, honours active penalties and `Retry-After`, and reports waits longer than 10 s instead of queuing (`MAX_INLINE_WAIT`).
 - Listings are normalized: price/currency/type, account, last character, online/AFK/offline, indexed time, item note vs stash-tab price, whisper, item mods. Prices are converted to the base unit with cached poe.ninja rates (Currency category of the same league); unconvertible prices stay in their own currency and are excluded from the estimate.
 
+- **Refused by the site's protection.** On 2026-11-20 every search `POST` (PoE 1 and PoE 2) got `405 Not Allowed` as an HTML page from Cloudflare/openresty, while `GET` data endpoints still worked and the Trade page showed a "Just a moment…" challenge. An HTML 403/405/503 with those markers is reported as "The Trade site is refusing automated searches right now …" (`error_message` in `trade/mod.rs`) instead of a bare "HTTP 405"; Vaalytics never tries to get around it. The error box offers **Open this search on the Trade site** (`tradeSiteSearchUrl`: `/trade/search/<league>?q=<query JSON>`), so the user can run the same search in a browser.
+
 ## 5. Estimate (`estimate.ts`)
 Labelled **Estimate**, separate from listings. Uses converted prices of fetched listings; ignores listings below 35 % of the median (bait/mistakes) when ≥4 listings; estimate = median of the 5 cheapest kept. Confidence: high (≥8 kept, p75/p25 ≤ 2), medium (≥4, ≤ 4), otherwise low.
 

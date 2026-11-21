@@ -255,3 +255,12 @@ export function buildQuery(
   if (Object.keys(filters).length) query.filters = filters;
   return { query, sort: { price: "asc" } };
 }
+
+/**
+ * The official Trade site's URL for a search query (`?q=` carries the query JSON), used when the
+ * API refuses automated searches: the user can open the same search in their browser.
+ */
+export function tradeSiteSearchUrl(game: "poe1" | "poe2", league: string, query: Json): string {
+  const path = game === "poe1" ? `trade/search/${encodeURIComponent(league)}` : `trade2/search/poe2/${encodeURIComponent(league)}`;
+  return `https://www.pathofexile.com/${path}?q=${encodeURIComponent(JSON.stringify(query))}`;
+}

@@ -147,6 +147,27 @@ pub fn trade_site_url(game: GameId, league: &str, search_id: &str) -> String {
     format!("{BASE}/{site}/search/{}{}/{search_id}", realm_path(game), encode_path(league))
 }
 
+/// User-facing message for a failed Trade request. Trade API errors are JSON (`error.message`);
+/// an HTML page with 403/405/503 is the site's bot protection (Cloudflare) refusing automated
+/// requests — seen on 2026-11-20 for every search POST. Vaalytics never tries to get around it.
+pub fn error_message(status: u16, body: &str) -> String {
+    if let Some(msg) = serde_json::from_str::<serde_json::Value>(body)
+        .ok()
+        .and_then(|v| v.pointer("/error/message").and_then(|m| m.as_str()).map(str::to_owned))
+    {
+        return format!("Trade returned an error: {msg}");
+    }
+    let lower = body.to_ascii_lowercase();
+    let html = lower.contains("<html") || lower.contains("<!doctype html");
+    let protection = ["cloudflare", "just a moment", "openresty", "__cf"].iter().any(|m| lower.contains(m));
+    if matches!(status, 403 | 405 | 503) && html && protection {
+        return format!(
+            "The Trade site is refusing automated searches right now (pathofexile.com protection, HTTP {status}).              This is on the site's side and Vaalytics doesn't get around it — open the search on the Trade site, or try again later."
+        );
+    }
+    format!("Trade returned an error: HTTP {status}")
+}
+
 pub fn validate_contact(s: &str) -> Option<String> {
     let s = s.trim();
     let ok = (4..=120).contains(&s.len())
@@ -224,12 +245,9 @@ impl TradeService {
         drop(limiter);
         if !status.is_success() {
             let body = resp.text().await.unwrap_or_default();
-            let msg = serde_json::from_str::<serde_json::Value>(&body)
-                .ok()
-                .and_then(|v| v.pointer("/error/message").and_then(|m| m.as_str()).map(str::to_owned))
-                .unwrap_or_else(|| format!("HTTP {}", status.as_u16()));
-            log::warn!("trade request failed: {status} {msg}");
-            return Err(AppError::InvalidInput(format!("Trade returned an error: {msg}")));
+            let msg = error_message(status.as_u16(), &body);
+            log::warn!("trade request failed: {status} ({policy}): {msg}");
+            return Err(AppError::InvalidInput(msg));
         }
         Ok(resp)
     }
@@ -475,6 +493,23 @@ mod tests {
             trade_site_url(GameId::Poe2, "Runes of Aldur", "xyz"),
             "https://www.pathofexile.com/trade2/search/poe2/Runes%20of%20Aldur/xyz"
         );
+    }
+
+    #[test]
+    fn explains_blocked_and_api_errors() {
+        // Real 405 body (shortened) returned for every search POST on 2026-11-20.
+        let blocked = "<html>
+<head><title>405 Not Allowed</title></head>
+<body>
+<center><h1>405 Not Allowed</h1></center>
+<hr><center>openresty</center>
+<script>window.__CF$cv$params={r:'x'};</script></body></html>";
+        let m = error_message(405, blocked);
+        assert!(m.contains("refusing automated searches") && m.contains("HTTP 405"), "{m}");
+        assert!(error_message(403, "<!DOCTYPE html><html><head><title>Just a moment...</title>").contains("refusing automated searches"));
+        assert_eq!(error_message(400, r#"{"error":{"code":2,"message":"Unknown item base type"}}"#), "Trade returned an error: Unknown item base type");
+        assert_eq!(error_message(500, ""), "Trade returned an error: HTTP 500");
+        assert_eq!(error_message(405, "plain"), "Trade returned an error: HTTP 405");
     }
 
     #[test]

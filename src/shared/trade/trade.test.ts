@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseClusterForTest, parseCorpseForTest, parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
 import { estimatePrice } from "./estimate";
-import { buildFilters, buildQuery, defaultOptions, splitOptionId, suggestedMin } from "./query";
+import { buildFilters, buildQuery, defaultOptions, splitOptionId, suggestedMin, tradeSiteSearchUrl } from "./query";
 import { buildStatIndex, matchMod, templateKey, type TradeStat } from "./stats";
 
 // Real entries from /api/trade/data/stats (PoE 1) and /api/trade2/data/stats (PoE 2), Nov 2026.
@@ -269,5 +269,15 @@ describe("user report: corpses (no search, 4 'unmatched' mods)", () => {
     expect(f).toEqual({ stats: [], unmatched: [] });
     const q = buildQuery(item, f.stats, defaultOptions(item)).query as Record<string, unknown>;
     expect(q).toEqual({ status: { option: "available" }, type: "Perfect Serpent Warrior" });
+  });
+});
+
+describe("user report: HTTP 405 (Trade refusing automated searches)", () => {
+  it("builds a Trade site link carrying the same query", () => {
+    const q = { query: { status: { option: "available" }, type: "Foulborn Exalted Orb" }, sort: { price: "asc" } };
+    const url = tradeSiteSearchUrl("poe1", "Covens", q);
+    expect(url.startsWith("https://www.pathofexile.com/trade/search/Covens?q=")).toBe(true);
+    expect(JSON.parse(decodeURIComponent(url.split("?q=")[1]!))).toEqual(q);
+    expect(tradeSiteSearchUrl("poe2", "Runes of Aldur", q)).toMatch(/^https:\/\/www\.pathofexile\.com\/trade2\/search\/poe2\/Runes%20of%20Aldur\?q=/);
   });
 });

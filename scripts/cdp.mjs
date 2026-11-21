@@ -5,7 +5,7 @@ const targets = await (await fetch("http://127.0.0.1:9333/json")).json();
 // CDP_TARGET=overlay|atlas|act-tracker selects that window; default is the main window.
 const want = process.env.CDP_TARGET ?? "main";
 const windowOf = (url) => (url.includes("#overlay") ? "overlay" : url.includes("#atlas") ? "atlas" : url.includes("#act-tracker") ? "act-tracker" : "main");
-const page = targets.find((t) => t.type === "page" && t.url.includes("localhost:1420") && windowOf(t.url) === want);
+const page = targets.find((t) => t.type === "page" && (t.url.includes("localhost:1420") || t.url.startsWith("http://tauri.localhost")) && windowOf(t.url) === want);
 if (!page) throw new Error("page not found: " + JSON.stringify(targets.map((t) => t.url)));
 const ws = new WebSocket(page.webSocketDebuggerUrl);
 await new Promise((r) => (ws.onopen = r));

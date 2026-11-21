@@ -36,6 +36,15 @@ pub struct AppState {
 
 pub fn run() {
     tauri::Builder::default()
+        // One Vaalytics at a time: a second launch focuses the running window and exits.
+        // Must be the first plugin (tauri-plugin-single-instance docs).
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = w.unminimize();
+                let _ = w.show();
+                let _ = w.set_focus();
+            }
+        }))
         .plugin(
             tauri_plugin_log::Builder::new()
                 .level(if cfg!(debug_assertions) { log::LevelFilter::Debug } else { log::LevelFilter::Info })
@@ -66,6 +75,15 @@ pub fn run() {
             app.manage(overlay::OverlayState::default());
             overlay::init(app)?;
             Ok(())
+        })
+        // Closing the main window quits Vaalytics. Helper windows (price-check overlay,
+        // Act Tracker) are hidden rather than closed after use, and a hidden window would
+        // otherwise keep the process running with no visible UI.
+        .on_window_event(|window, event| {
+            if window.label() == "main" && matches!(event, tauri::WindowEvent::CloseRequested { .. }) {
+                log::info!("main window closed; exiting");
+                window.app_handle().exit(0);
+            }
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_last_game,
