@@ -50,6 +50,14 @@ Modules, navigation and reusable services: [modules.md](modules.md). Patch rules
   browser webviews get none.
 - **No idle work.** Nothing polls while the user isn't looking. Background sync
   (M4) will be scheduled by source update intervals and cache headers.
+- **Keep the UI thread free.** Sync Tauri commands run on the main thread, so commands that read
+  many rows, may wait on the shared DB connection, or refresh process lists are `async`
+  (`market_overview`, `market_history`, `session_list`, `session_detail`, `get_diagnostics`, all
+  campaign/loot/trade commands). Small single-row settings reads/writes stay sync, which also keeps
+  their order. Window creation from commands must be `async` too (sync deadlocks on Windows).
+- **Main `App` stays in the entry chunk.** Helper windows (`#overlay`, `#atlas`, `#act-tracker`) are lazy;
+  lazy-loading `App` too was measured (2026-11-23, scripts/perf-measure.mjs) to delay the first rendered shell by
+  ~300 ms (an extra chunk waterfall), so it was reverted.
 
 ## App lifecycle
 

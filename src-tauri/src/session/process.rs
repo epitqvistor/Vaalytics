@@ -80,14 +80,15 @@ impl ProcessSource for SystemProcesses {
         use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, UpdateKind};
         let sys = self.sys.as_mut().ok_or("The process list is unavailable on this system.")?;
         sys.refresh_processes_specifics(ProcessesToUpdate::All, true, ProcessRefreshKind::nothing().with_exe(UpdateKind::OnlyIfNotSet));
+        let clients: Vec<_> = sys.processes().values().filter(|p| is_client_exe(&p.name().to_string_lossy())).collect();
+        // Window titles only matter for a running client: skip enumerating every
+        // top-level window on the idle scans (no game running).
         #[cfg(windows)]
-        let windows = crate::overlay::win::game_window_pids();
+        let windows = if clients.is_empty() { Vec::new() } else { crate::overlay::win::game_window_pids() };
         #[cfg(not(windows))]
         let windows: Vec<(u32, GameId)> = Vec::new();
-        Ok(sys
-            .processes()
-            .values()
-            .filter(|p| is_client_exe(&p.name().to_string_lossy()))
+        Ok(clients
+            .into_iter()
             .map(|p| {
                 let pid = p.pid().as_u32();
                 ProcInfo {

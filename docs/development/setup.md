@@ -47,3 +47,19 @@ started from that package afterwards. Found 2026-11-19: a stale `vaalytics.db` (
 paired with the real, newer `vaalytics.db-wal`, so dev runs reported "database disk image is malformed" while the real
 database (seen by the release build) was intact. To test on real data, copy the real database into the QA folder
 with a tool outside the package (Python's `sqlite3` backup API worked) and point `VAALYTICS_DATA_DIR` at it.
+
+## Performance measurements (dev only)
+`scripts/perf-measure.mjs` measures one build under fixed conditions so before/after numbers are comparable:
+startup (CDP target, first rendered shell), idle CPU/RAM of the host and its WebView2 processes (60 s), idle on
+Location Atlas, median IPC times of the heaviest reads, first visit of every module in both games, and repeated
+navigation rounds (JS heap after a forced GC, DOM nodes, memory) for leak checks.
+
+1. Build a binary that honours `VAALYTICS_DATA_DIR` and embeds the frontend: `npx tauri build --debug --no-bundle`,
+   then copy `src-tauri/target/debug/vaalytics.exe` somewhere stable (one copy per build you compare).
+2. Make `$PERF_DIR/qa-base/` a **copy** of a data folder (database via the `sqlite3` backup API as above, plus
+   `crafting/` and the `trade-*.json` caches, so no run starts with a cold download).
+3. `PERF_DIR=<folder> node scripts/perf-measure.mjs <exe> <label> [navRounds] [idleSecs]` → `result-<label>.json`.
+   Alternate builds (A, B, A, B) and compare medians; market data may refetch from poe.ninja during a run.
+
+Debug-build CPU numbers are higher than a release build's; compare like with like. Logs of these runs go to the
+normal log folder (`%LOCALAPPDATA%\app.vaalytics.desktop\logs`).
