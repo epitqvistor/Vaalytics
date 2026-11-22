@@ -1,7 +1,10 @@
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "@/app/App";
 import "@/styles/index.css";
+
+// The main app is code-split too, so the helper windows below never download or
+// evaluate the shell (game selection, navigation, contexts) they don't render.
+const App = lazy(() => import("@/app/App").then((m) => ({ default: m.App })));
 
 // The price-check overlay is a separate window loading the same bundle with #overlay.
 const OverlayApp = lazy(() => import("@/app/overlay/OverlayApp"));
@@ -28,7 +31,9 @@ createRoot(document.getElementById("root")!).render(
         <OverlayApp />
       </Suspense>
     ) : (
-      <App />
+      <Suspense fallback={null}>
+        <App />
+      </Suspense>
     )}
   </StrictMode>,
 );

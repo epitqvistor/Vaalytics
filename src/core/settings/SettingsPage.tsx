@@ -125,9 +125,16 @@ function HotkeyStatus() {
     invoke<OverlayStatus>("overlay_status")
       .then(setStatus)
       .catch(() => {});
+    // Unlisten even when the page unmounts before listen() resolves.
     let un: (() => void) | undefined;
-    listen<OverlayStatus>("overlay:status", ({ payload }) => setStatus(payload)).then((u) => (un = u));
-    return () => un?.();
+    let disposed = false;
+    listen<OverlayStatus>("overlay:status", ({ payload }) => setStatus(payload))
+      .then((u) => (disposed ? u() : (un = u)))
+      .catch(() => {});
+    return () => {
+      disposed = true;
+      un?.();
+    };
   }, []);
   if (!status) return null;
   if (!status.supported) return <Badge tone="warning">{status.lastError ?? "Not supported on this system"}</Badge>;

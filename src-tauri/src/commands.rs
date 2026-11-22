@@ -1,5 +1,10 @@
 //! IPC command surface for the trusted main window. Commands stay thin:
 //! validate, delegate to a module, return serializable data.
+//!
+//! Sync commands run on the main (UI) thread. Anything that reads many rows, waits on
+//! the shared DB connection behind a background writer, or refreshes process lists is
+//! `async` (runs on the async runtime). Small single-row settings reads/writes stay sync,
+//! which also keeps their order as sent by the frontend.
 
 use crate::diagnostics::DiagnosticsSnapshot;
 use crate::error::AppResult;
@@ -40,7 +45,7 @@ pub fn set_game_setting(state: State<'_, AppState>, game: GameId, key: String, v
 }
 
 #[tauri::command]
-pub fn get_diagnostics(state: State<'_, AppState>) -> AppResult<DiagnosticsSnapshot> {
+pub async fn get_diagnostics(state: State<'_, AppState>) -> AppResult<DiagnosticsSnapshot> {
     state.diagnostics.snapshot(&state.db)
 }
 
@@ -62,7 +67,7 @@ pub async fn market_leagues(state: State<'_, AppState>, game: GameId) -> AppResu
 }
 
 #[tauri::command]
-pub fn market_overview(state: State<'_, AppState>, game: GameId, league: String, category: String) -> AppResult<Snapshot> {
+pub async fn market_overview(state: State<'_, AppState>, game: GameId, league: String, category: String) -> AppResult<Snapshot> {
     state.market.snapshot(game, &league, &category)
 }
 
@@ -72,7 +77,7 @@ pub fn market_refresh(state: State<'_, AppState>, game: GameId, league: String, 
 }
 
 #[tauri::command]
-pub fn market_history(
+pub async fn market_history(
     state: State<'_, AppState>,
     game: GameId,
     league: String,
@@ -385,13 +390,13 @@ pub async fn session_diagnostics(state: State<'_, AppState>, game: GameId) -> Ap
 }
 
 #[tauri::command]
-pub fn session_list(state: State<'_, AppState>, game: GameId, query: session_store::HistoryQuery) -> AppResult<Vec<session_store::SessionSummary>> {
+pub async fn session_list(state: State<'_, AppState>, game: GameId, query: session_store::HistoryQuery) -> AppResult<Vec<session_store::SessionSummary>> {
     sessions::require_poe2(game)?;
     session_store::list(&*state.db.conn()?, game, &query)
 }
 
 #[tauri::command]
-pub fn session_detail(state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<Option<SessionDetailResponse>> {
+pub async fn session_detail(state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<Option<SessionDetailResponse>> {
     sessions::require_poe2(game)?;
     let conn = state.db.conn()?;
     let Some(detail) = session_store::detail(&conn, game, id)? else { return Ok(None) };

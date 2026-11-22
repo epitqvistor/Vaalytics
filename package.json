@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.15.4",
   "type": "module",
-  "description": "Vaalytics \u0102\u02d8\u00e2\u201a\u00ac\u00e2\u20ac\u0165 desktop companion for Path of Exile 1 and Path of Exile 2",
+  "description": "Vaalytics \u2014 desktop companion for Path of Exile 1 and Path of Exile 2",
   "scripts": {
     "dev": "vite",
     "build": "npm run typecheck && vite build",

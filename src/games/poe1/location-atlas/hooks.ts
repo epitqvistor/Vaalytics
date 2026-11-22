@@ -48,7 +48,6 @@ export interface AtlasTracking {
   location: CharacterLocation | null;
   /** Last read error (log missing, unreadable…); tracking keeps trying while visible. */
   error: string | null;
-  syncing: boolean;
 }
 
 const sameJson = <T,>(a: T | null, b: T) => (a !== null && JSON.stringify(a) === JSON.stringify(b) ? a : b);
@@ -58,13 +57,11 @@ export function useAtlasTracking(areas: ReadonlyMap<string, CampaignArea>, chara
   const [characters, setCharacters] = useState<CampaignCharacter[] | null>(null);
   const [events, setEvents] = useState<CampaignEventRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [syncing, setSyncing] = useState(false);
   const busy = useRef(false);
 
   const tick = useCallback(async () => {
     if (busy.current || document.visibilityState !== "visible") return;
     busy.current = true;
-    setSyncing(true);
     try {
       await atlasSync(GAME);
       setError(null);
@@ -78,7 +75,6 @@ export function useAtlasTracking(areas: ReadonlyMap<string, CampaignArea>, chara
       setError(String(e));
     } finally {
       busy.current = false;
-      setSyncing(false);
     }
   }, []);
 
@@ -125,5 +121,5 @@ export function useAtlasTracking(areas: ReadonlyMap<string, CampaignArea>, chara
   }, [revision, cid]);
 
   const location = useMemo(() => (events && areas.size ? locate(events, areas) : null), [events, areas]);
-  return { status, characters, character, events, location, error, syncing };
+  return { status, characters, character, events, location, error };
 }
