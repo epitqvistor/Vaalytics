@@ -4847,7 +4847,7 @@ dependencies = [
 
 [[package]]
 name = "vaalytics"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "arboard",
  "image",

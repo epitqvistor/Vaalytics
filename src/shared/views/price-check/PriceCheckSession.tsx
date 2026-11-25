@@ -15,6 +15,7 @@ import {
   buildFilters,
   buildQuery,
   defaultOptions,
+  marketPricedCategory,
   searchBasis,
   tradeSiteSearchUrl,
   type RangePreset,
@@ -28,6 +29,7 @@ import { cn } from "@/shared/utilities/cn";
 import { FilterEditor } from "./FilterEditor";
 import { ItemSummary } from "./ItemSummary";
 import { isListingSort, Listings, type ListingSort } from "./Listings";
+import { MarketValue } from "./MarketValue";
 import { ValueSummary, type ResultState } from "./ValueSummary";
 
 export interface PriceCheckSessionProps {
@@ -40,6 +42,7 @@ export interface PriceCheckSessionProps {
 
 /** One search fetches this many of the cheapest matching listings (the host caps a call at 20). */
 const FIRST_FETCH = 20;
+const NOTHING_SEARCHED: ReadonlySet<string> = new Set();
 
 export function PriceCheckSession({ item, league, config, compact }: PriceCheckSessionProps) {
   const { index, error: indexError } = useStatIndex(item.game);
@@ -65,6 +68,10 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   const [defaultSort] = useGameSetting<ListingSort>(item.game, "priceCheck.defaultSort", "price", isListingSort);
   const [sortOverride, setSort] = useState<ListingSort | null>(null);
   const sort = sortOverride ?? defaultSort;
+  // Divination cards: poe.ninja price only; Trade is searched only when the user asks.
+  const marketCategory = marketPricedCategory(item);
+  const [tradeRequested, setTradeRequested] = useState(false);
+  const marketOnly = marketCategory != null && !tradeRequested;
 
   // New item → fresh filters.
   useEffect(() => {
@@ -80,6 +87,7 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
     setListings([]);
     setError(null);
     setSearchedStats([]);
+    setTradeRequested(false);
   }, [item, index]);
 
   // Latest search wins: a response for an older search (filters changed meanwhile) is dropped.
@@ -138,11 +146,11 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   // before a re-render (e.g. React StrictMode) — every search costs rate limit.
   const autoSearched = useRef<string | null>(null);
   useEffect(() => {
-    if (!index || !contact || filtersFor !== item.raw) return;
+    if (!index || !contact || filtersFor !== item.raw || marketOnly) return;
     if (autoSearched.current === `${item.raw}\u0000${league}`) return;
     autoSearched.current = `${item.raw}\u0000${league}`;
     void search(stats, opts);
-  }, [index, contact, stats, opts, item, search, filtersFor, league]);
+  }, [index, contact, stats, opts, item, search, filtersFor, league, marketOnly]);
 
   const loadMore = async () => {
     if (!result) return;
@@ -187,6 +195,9 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   // cheapest single listings. Shown separately and labelled — never mixed into the listing estimate.
   const isCurrency = item.rarity === "Currency" && item.itemClass !== "Corpses";
   const { snapshot: currencyMarket } = useMarketOverview(item.game, isCurrency ? league : null, "currency");
+  const { snapshot: cardMarket, error: cardMarketError } = useMarketOverview(item.game, marketCategory ? league : null, marketCategory);
+  const cardName = item.baseType ?? item.name;
+  const cardRow = useMemo(() => cardMarket?.items.find((r) => r.name === cardName && r.variant == null) ?? null, [cardMarket, cardName]);
   const market = useMemo(() => {
     const row = currencyMarket?.items.find((r) => r.name === item.baseType && r.variant == null);
     return row && currencyMarket ? { value: row.value, at: currencyMarket.fetchedAt, league, isPremium: item.baseType === config.premiumUnit.name } : null;
@@ -218,6 +229,24 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
     setDirty(true);
   };
   const openTrade = lastQuery ? () => openUrl(result && !dirty ? result.tradeUrl : tradeSiteSearchUrl(item.game, league, lastQuery)).catch((e) => setError(String(e))) : null;
+
+  if (marketOnly) {
+    return (
+      <div className={cn("grid items-start gap-3", compact ? "grid-cols-1" : "grid-cols-[minmax(300px,380px)_minmax(0,1fr)] gap-5")}>
+        <ItemSummary item={item} searched={NOTHING_SEARCHED} icon={cardRow?.icon ?? null} collapsed={compact} />
+        <MarketValue
+          row={cardRow}
+          fetchedAt={cardMarket?.fetchedAt ?? null}
+          league={league}
+          loading={!cardMarket && !cardMarketError}
+          error={cardMarketError ?? cardMarket?.lastError ?? null}
+          stack={item.stackSize}
+          config={config}
+          onSearchTrade={() => setTradeRequested(true)}
+        />
+      </div>
+    );
+  }
 
   if (contact === null) return <ContactGate />;
 

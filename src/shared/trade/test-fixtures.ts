@@ -237,3 +237,17 @@ Note: ~b/o 1 chaos
 /** The same item as an in-game advanced copy marks the synthesis implicit "— Unscalable Value". */
 export const NEBULIS_ADVANCED_TEXT = NEBULIS_TEXT.replace("109% increased Implicit Modifier magnitudes", "109% increased Implicit Modifier magnitudes — Unscalable Value");
 export const parseNebulisForTest = (advanced = false) => parse("poe1", advanced ? NEBULIS_ADVANCED_TEXT : NEBULIS_TEXT);
+
+/** Divination card in the in-game copy layout (constructed; the reward line is not checked). */
+export const DIV_CARD_TEXT = `Item Class: Divination Cards
+Rarity: Divination Card
+The Dragon's Heart
+--------
+Stack Size: 1/11
+--------
+Level 4 Empower Support
+Corrupted
+--------
+A long time ago, in a cave far away.
+`;
+export const parseDivCardForTest = (game: "poe1" | "poe2" = "poe1") => parse(game, DIV_CARD_TEXT);

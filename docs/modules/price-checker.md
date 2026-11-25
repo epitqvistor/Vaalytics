@@ -82,6 +82,13 @@ unsupported claims: a rare searched by base type only could show "High confidenc
   summary also shows the poe.ninja rate from Market Data ("Market rate 428 ex · market · poe.ninja"), labelled with
   `ProvenanceTag` and never mixed into the listing estimate. The premium currency itself is shown in the base unit.
 
+- **Divination cards (PoE 1): poe.ninja only.** Cards are almost never listed one by one, so the cheapest listings are
+  noise (user report: The Dragon's Heart, listings from 1 c to 50 div, "~130 c Low confidence"). `marketPricedCategory`
+  routes them to the Market Data `divination` category: the check shows the poe.ninja price per card, the full set
+  (× stack size), the copied stack, 7-day change and listing count (`MarketValue.tsx`). **No Trade request is made** —
+  "Search Trade" runs the normal search only on the user's click. A card poe.ninja doesn't know says so honestly
+  (no fallback price). PoE 2 has no divination cards.
+
 - **Synthesised items (PoE 1).** The copy shows "Synthesised <base>"; Trade only knows the base ("Unknown item base
   type" otherwise — user report, Synthesised Nebulis). The parser strips the prefix and sets `synthesised`; the query adds
   `misc_filters.synthesised_item` (and `fractured_item` for fractured items) — filter ids from `/api/trade/data/filters`.

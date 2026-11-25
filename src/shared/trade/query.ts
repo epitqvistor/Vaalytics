@@ -328,3 +328,13 @@ export function applyMode(stats: readonly StatFilter[], defaults: readonly StatF
   const def = new Map(defaults.map((d) => [d.key, d.enabled]));
   return stats.map((s) => ({ ...s, enabled: s.enabled || (def.get(s.key) ?? false) }));
 }
+
+/**
+ * Items priced from the bulk market (poe.ninja) instead of Trade listings. PoE 1 divination cards
+ * are hardly ever listed individually, so the cheapest few listings are noise (1 c next to 130 div).
+ * Returns the Market Data category, or null for items checked on Trade.
+ */
+export function marketPricedCategory(item: Pick<ParsedItem, "game" | "rarity" | "itemClass">): "divination" | null {
+  if (item.game === "poe1" && (item.rarity === "Divination Card" || item.itemClass === "Divination Cards")) return "divination";
+  return null;
+}
