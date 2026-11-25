@@ -1,6 +1,6 @@
 [package]
 name = "vaalytics"
-version = "0.15.5"
+version = "0.16.1"
 description = "Vaalytics — desktop companion for Path of Exile 1 and Path of Exile 2"
 edition = "2021"
 rust-version = "1.85"
@@ -30,6 +30,8 @@ sysinfo = { version = "0.40", default-features = false, features = ["system"] }
 reqwest = { version = "0.13", default-features = false, features = ["native-tls", "gzip", "charset", "json"] }
 tokio = { version = "1", features = ["time", "sync"] }
 arboard = { version = "3", default-features = false }
+# Loot Journal inventory screenshots: encode the stored crop, decode cached reference icons.
+png = "0.18"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.56"
@@ -44,6 +46,8 @@ windows = { version = "0.62", features = [
 ] }
 
 [dev-dependencies]
+# Tests decode the WebP / PNG inventory screenshots in tests/fixtures/inventory.
+image = { version = "0.25", default-features = false, features = ["webp", "png"] }
 tempfile = "3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "sync"] }
 

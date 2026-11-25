@@ -557,7 +557,11 @@ pub async fn loot_detail(state: State<'_, AppState>, game: GameId, id: i64) -> A
 #[tauri::command]
 pub async fn loot_edit(state: State<'_, AppState>, game: GameId, id: i64, edit: loot_store::ItemEdit) -> AppResult<()> {
     require_loot_game(game)?;
-    loot_store::edit(&*state.db.conn()?, game, id, &edit)
+    loot_store::edit(&*state.db.conn()?, game, id, &edit)?;
+    if edit.needs_revalue() {
+        state.loot.value_items(&[id], false)?;
+    }
+    Ok(())
 }
 
 /// Re-values items now from cached market data (and asks the Market engine to refresh expired categories).
@@ -686,6 +690,195 @@ pub async fn loot_import(app: tauri::AppHandle, state: State<'_, AppState>, game
     let result = loot::import_json(&state.db, game, &text, crate::market::http::unix_now())?;
     state.loot.poke();
     Ok(Some(result))
+}
+
+// ---------- Loot Journal: map records (src-tauri/src/loot/maps.rs) ----------
+
+#[tauri::command]
+pub async fn loot_maps(state: State<'_, AppState>, game: GameId, session_id: Option<i64>, limit: i64) -> AppResult<Vec<loot::maps::MapRun>> {
+    require_loot_game(game)?;
+    loot::maps::list(&*state.db.conn()?, game, session_id, limit, crate::market::http::unix_now())
+}
+
+#[tauri::command]
+pub async fn loot_map_counts(state: State<'_, AppState>, game: GameId) -> AppResult<loot::maps::Counts> {
+    require_loot_game(game)?;
+    loot::maps::counts(&*state.db.conn()?, game)
+}
+
+/// Manual map control: "start" (optional name) | "pause" | "resume" | "finish" (by id).
+#[tauri::command]
+pub async fn loot_map_control(state: State<'_, AppState>, game: GameId, action: String, id: Option<i64>, name: Option<String>) -> AppResult<Option<loot::maps::MapRun>> {
+    require_loot_game(game)?;
+    state.loot.map_control(&action, id, name.as_deref())
+}
+
+#[tauri::command]
+pub async fn loot_map_edit(state: State<'_, AppState>, game: GameId, id: i64, strategy: Option<String>, notes: Option<String>, confirmed: Option<bool>) -> AppResult<()> {
+    require_loot_game(game)?;
+    loot::maps::edit(&*state.db.conn()?, game, id, strategy.as_deref(), notes.as_deref(), confirmed)?;
+    state.loot.notify_changed();
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn loot_map_delete(state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<usize> {
+    require_loot_game(game)?;
+    let n = loot::maps::delete(&*state.db.conn()?, game, id)?;
+    state.loot.notify_changed();
+    Ok(n)
+}
+
+/// Assigns captures to a map record (`map_id` None = unassign).
+#[tauri::command]
+pub async fn loot_assign_map(state: State<'_, AppState>, game: GameId, item_ids: Vec<i64>, map_id: Option<i64>) -> AppResult<usize> {
+    require_loot_game(game)?;
+    if item_ids.len() > 20_000 {
+        return Err(crate::error::AppError::InvalidInput("Too many items selected.".into()));
+    }
+    let n = loot::maps::assign(&*state.db.conn()?, game, &item_ids, map_id)?;
+    state.loot.notify_changed();
+    Ok(n)
+}
+
+// ---------- Loot Tracker overlay (src-tauri/src/loot/tracker_window.rs) ----------
+
+fn loot_window_error(e: tauri::Error) -> crate::error::AppError {
+    log::error!("loot tracker window: {e}");
+    crate::error::AppError::InvalidInput("The Loot Tracker window couldn't be shown.".into())
+}
+
+#[tauri::command]
+pub async fn loot_tracker_summary(state: State<'_, AppState>, game: GameId, recent: i64) -> AppResult<loot::TrackerSummary> {
+    require_loot_game(game)?;
+    state.loot.tracker_summary(recent)
+}
+
+#[tauri::command]
+pub async fn loot_tracker_state(app: tauri::AppHandle, game: GameId) -> AppResult<loot::tracker_window::TrackerWindowState> {
+    require_loot_game(game)?;
+    Ok(loot::tracker_window::state(&app))
+}
+
+/// open | hide | toggle | close. Async: window creation must not block (Windows deadlock).
+#[tauri::command]
+pub async fn loot_tracker_window(app: tauri::AppHandle, game: GameId, action: String) -> AppResult<loot::tracker_window::TrackerWindowState> {
+    require_loot_game(game)?;
+    match action.as_str() {
+        "open" => loot::tracker_window::open(&app),
+        "hide" => loot::tracker_window::hide(&app),
+        "toggle" => loot::tracker_window::toggle(&app),
+        "close" => loot::tracker_window::close(&app),
+        _ => return Err(crate::error::AppError::InvalidInput("Unknown window action.".into())),
+    }
+    .map_err(loot_window_error)?;
+    Ok(loot::tracker_window::state(&app))
+}
+
+#[tauri::command]
+pub async fn loot_tracker_set_click_through(app: tauri::AppHandle, game: GameId, on: bool) -> AppResult<loot::tracker_window::TrackerWindowState> {
+    require_loot_game(game)?;
+    loot::tracker_window::set_click_through(&app, on)?;
+    Ok(loot::tracker_window::state(&app))
+}
+
+/// "Reset session" for the Loot Tracker counters (nothing is deleted); `clear` = follow the game session again.
+#[tauri::command]
+pub async fn loot_reset_session(state: State<'_, AppState>, game: GameId, clear: bool) -> AppResult<Option<i64>> {
+    require_loot_game(game)?;
+    state.loot.reset_session(clear)
+}
+
+/// Checks a hotkey before it is saved: None = fine, else a user-facing reason.
+#[tauri::command]
+pub async fn loot_hotkey_problem(game: GameId, key: String) -> AppResult<Option<String>> {
+    require_loot_game(game)?;
+    Ok(loot::hotkeys::key_problem(&key))
+}
+
+// ---------- Loot Journal: inventory snapshots (src-tauri/src/loot/inventory) ----------
+
+#[tauri::command]
+pub async fn loot_inventory_snapshots(state: State<'_, AppState>, game: GameId, limit: i64) -> AppResult<Vec<loot::inventory::snapshots::Snapshot>> {
+    require_loot_game(game)?;
+    loot::inventory::snapshots::list(&*state.db.conn()?, game, limit)
+}
+
+#[tauri::command]
+pub async fn loot_inventory_detail(state: State<'_, AppState>, game: GameId, id: i64, against: Option<i64>) -> AppResult<Option<loot::inventory::service::SnapshotDetail>> {
+    require_loot_game(game)?;
+    state.loot.snapshot_detail(id, against)
+}
+
+#[tauri::command]
+pub async fn loot_inventory_edit_entry(state: State<'_, AppState>, game: GameId, entry_id: i64, edit: loot::inventory::snapshots::EntryEdit) -> AppResult<()> {
+    require_loot_game(game)?;
+    loot::inventory::snapshots::edit_entry(&*state.db.conn()?, game, entry_id, &edit)?;
+    state.loot.notify_changed();
+    Ok(())
+}
+
+/// status: review | confirmed | cancelled; baseline: mark / unmark; mapId: assign; clearMap: unassign.
+#[tauri::command]
+pub async fn loot_inventory_update(
+    state: State<'_, AppState>,
+    game: GameId,
+    id: i64,
+    status: Option<String>,
+    baseline: Option<bool>,
+    map_id: Option<i64>,
+    clear_map: Option<bool>,
+) -> AppResult<()> {
+    require_loot_game(game)?;
+    {
+        let c = state.db.conn()?;
+        if let Some(s) = status {
+            loot::inventory::snapshots::set_status(&c, game, id, &s, crate::market::http::unix_now())?;
+        }
+        if let Some(b) = baseline {
+            loot::inventory::snapshots::set_baseline(&c, game, id, b)?;
+        }
+        if clear_map == Some(true) {
+            loot::inventory::snapshots::assign_map(&c, game, id, None)?;
+        } else if let Some(m) = map_id {
+            loot::inventory::snapshots::assign_map(&c, game, id, Some(m))?;
+        }
+    }
+    state.loot.notify_changed();
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn loot_inventory_reprocess(state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<()> {
+    require_loot_game(game)?;
+    state.loot.reprocess_snapshot(id)
+}
+
+#[tauri::command]
+pub async fn loot_inventory_delete(state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<()> {
+    require_loot_game(game)?;
+    state.loot.delete_snapshot(id)
+}
+
+/// Recognises a PNG screenshot the user picks (instead of the shortcut). None = cancelled.
+#[tauri::command]
+pub async fn loot_inventory_from_file(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId) -> AppResult<Option<i64>> {
+    use tauri_plugin_dialog::DialogExt;
+    require_loot_game(game)?;
+    let picked = app.dialog().file().set_title("Recognise an inventory screenshot").add_filter("PNG screenshot", &["png"]).blocking_pick_file();
+    let Some(file) = picked else { return Ok(None) };
+    let path = file.into_path().map_err(|_| crate::error::AppError::InvalidInput("Unsupported file location.".into()))?;
+    if std::fs::metadata(&path)?.len() > 40 * 1024 * 1024 {
+        return Err(crate::error::AppError::InvalidInput("The file is larger than 40 MB.".into()));
+    }
+    let bytes = std::fs::read(&path)?;
+    state.loot.capture_inventory_file(&bytes).map(Some)
+}
+
+#[tauri::command]
+pub async fn loot_inventory_item_names(state: State<'_, AppState>, game: GameId) -> AppResult<Vec<(String, String)>> {
+    require_loot_game(game)?;
+    state.loot.inventory_item_names()
 }
 
 // ---------- Campaign Intelligence (PoE 2) ----------

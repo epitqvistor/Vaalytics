@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { lootClear, lootExport, lootImport, lootSetConfig, type LootConfig } from "@/core/ipc/commands";
 import { Button, Input, Modal, Panel, Select, Switch, useToast } from "@/shared/components";
+import { TrackerSettings } from "./TrackerSettings";
 
 const GAME = "poe2" as const;
 const DUPES = [
@@ -76,6 +77,8 @@ export function SettingsTab({ config, setConfig }: { config: LootConfig; setConf
           </p>
         </div>
       </Panel>
+
+      <TrackerSettings config={config} setConfig={setConfig} />
 
       <Panel title="Notifications">
         <div className="flex flex-col gap-4">

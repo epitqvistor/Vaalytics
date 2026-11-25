@@ -50,6 +50,21 @@ pub struct OverlayStatus {
     /// Act Tracker show/hide key, registered while PoE 1 is in the foreground.
     pub tracker_hotkey: Option<String>,
     pub last_error: Option<String>,
+    /// Loot Tracker keys (PoE 2), registered while PoE 2 is in the foreground.
+    pub loot_hotkeys: Vec<LootKeyState>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LootKeyState {
+    pub action: crate::loot::hotkeys::Action,
+    pub key: String,
+    pub registered: bool,
+    pub error: Option<String>,
+}
+
+fn same_key(a: &str, b: &Shortcut) -> bool {
+    a.parse::<Shortcut>().is_ok_and(|s| s.id() == b.id())
 }
 
 #[derive(Default)]
@@ -86,6 +101,13 @@ pub fn init(app: &tauri::App) -> tauri::Result<()> {
         tauri_plugin_global_shortcut::Builder::new()
             .with_handler(|app, shortcut, event| {
                 if event.state != ShortcutState::Pressed {
+                    return;
+                }
+                // Loot Tracker keys (PoE 2).
+                let loot = app.state::<OverlayState>().status().loot_hotkeys;
+                if let Some(k) = loot.iter().find(|k| k.registered && same_key(&k.key, shortcut)) {
+                    let (h, action) = (app.clone(), k.action);
+                    std::thread::spawn(move || crate::loot::on_hotkey(&h, action));
                     return;
                 }
                 // The Act Tracker's show/hide key (PoE 1 only, registered next to the price-check key).
@@ -141,12 +163,15 @@ fn on_foreground(app: &AppHandle, game: Option<GameId>) {
                 .then(|| crate::act_tracker::hotkey(app))
                 .flatten()
                 .filter(|t| t.parse::<Shortcut>().ok().map(|t| t.id()) != wanted.parse::<Shortcut>().ok().map(|w| w.id()));
-            if current.as_deref() == Some(wanted.as_str()) && status.tracker_hotkey == tracker {
+            let loot_wanted = loot_keys_for(app, g, &wanted);
+            let loot_current: Vec<(crate::loot::hotkeys::Action, String)> = status.loot_hotkeys.iter().map(|k| (k.action, k.key.clone())).collect();
+            if current.as_deref() == Some(wanted.as_str()) && status.tracker_hotkey == tracker && loot_current == loot_wanted {
                 set_status(app, |s| s.foreground_game = Some(g));
                 return;
             }
             let _ = gs.unregister_all();
             register_tracker_hotkey(app, tracker);
+            register_loot_hotkeys(app, loot_wanted);
             match gs.register(wanted.as_str()) {
                 Ok(()) => set_status(app, |s| {
                     s.foreground_game = Some(g);
@@ -164,16 +189,53 @@ fn on_foreground(app: &AppHandle, game: Option<GameId>) {
             }
         }
         None => {
-            if current.is_some() || status.tracker_hotkey.is_some() {
+            if current.is_some() || status.tracker_hotkey.is_some() || !status.loot_hotkeys.is_empty() {
                 let _ = gs.unregister_all();
             }
             set_status(app, |s| {
                 s.foreground_game = None;
                 s.registered_hotkey = None;
                 s.tracker_hotkey = None;
+                s.loot_hotkeys.clear();
             });
         }
     }
+}
+
+/// Loot Tracker keys to register for `game` (PoE 2 only), minus any that clash with the price-check key.
+fn loot_keys_for(app: &AppHandle, game: GameId, price_key: &str) -> Vec<(crate::loot::hotkeys::Action, String)> {
+    if game != crate::loot::GAME {
+        return Vec::new();
+    }
+    let cfg = app.state::<AppState>().loot.config();
+    let price = price_key.parse::<Shortcut>().ok();
+    cfg.hotkeys
+        .bound()
+        .into_iter()
+        .filter(|(_, k)| crate::loot::hotkeys::key_problem(k).is_none() && !price.as_ref().is_some_and(|p| same_key(k, p)))
+        .collect()
+}
+
+/// Registers the Loot Tracker keys (after `unregister_all`); each failure is reported, never blocks the others.
+fn register_loot_hotkeys(app: &AppHandle, keys: Vec<(crate::loot::hotkeys::Action, String)>) {
+    let states: Vec<LootKeyState> = keys
+        .into_iter()
+        .map(|(action, key)| match app.global_shortcut().register(key.as_str()) {
+            Ok(()) => LootKeyState { action, key, registered: true, error: None },
+            Err(e) => {
+                log::warn!("loot tracker: could not register {key}: {e}");
+                LootKeyState { action, error: Some(format!("{key} is already used by another application.")), key, registered: false }
+            }
+        })
+        .collect();
+    set_status(app, |s| s.loot_hotkeys = states);
+}
+
+/// Registers the keys again after the user changed one (only does anything while a game is in the foreground).
+pub fn refresh_hotkeys(app: &AppHandle) {
+    let status = app.state::<OverlayState>().status();
+    set_status(app, |s| s.registered_hotkey = None);
+    on_foreground(app, status.foreground_game);
 }
 
 /// Registers the Act Tracker key (after `unregister_all`); a failure is logged, never blocks price check.

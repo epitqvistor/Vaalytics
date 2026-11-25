@@ -509,7 +509,25 @@ export interface LootConfig {
   notifyValueChanges: boolean;
   notifyErrors: boolean;
   retentionDays: number;
+  /** Loot Tracker overlay. */
+  overlayOpacity: number;
+  overlayScale: number;
+  overlayMode: "compact" | "expanded";
+  overlayCollapsed: boolean;
+  overlayRows: number;
+  overlayAlwaysOnTop: boolean;
+  /** Registered only while PoE 2 is in the foreground; "" = off. */
+  hotkeys: LootHotkeys;
 }
+
+export interface LootHotkeys {
+  toggleOverlay: string;
+  collapseOverlay: string;
+  startMap: string;
+  finishMap: string;
+  screenshot: string;
+}
+export type LootHotkeyAction = "toggleOverlay" | "collapseOverlay" | "startMap" | "finishMap" | "screenshot";
 
 export interface LootCaptureStatus {
   enabled: boolean;
@@ -560,6 +578,20 @@ export interface LootItem {
   valueCheckedAt: number | null;
   /** Note of the latest valuation (e.g. the price range of an unidentified unique). */
   valueNote: string | null;
+  /** Latest valuation's source ("poe.ninja", "user"), confidence, market data time and league. */
+  valueSource: string | null;
+  valueConfidence: "high" | "medium" | "low" | null;
+  valueFetchedAt: number | null;
+  valueLeague: string | null;
+  /** First known value (at capture time); market changes never overwrite it. */
+  valueAtCapture: number | null;
+  mapRunId: number | null;
+  /** "auto" = copied inside that map, "user" = assigned by the user. */
+  mapAssignment: "auto" | "user" | null;
+  verified: boolean;
+  /** Set when the user corrected the recognised category / quantity (the recognised value). */
+  originalCategory: string | null;
+  originalStackSize: number | null;
 }
 
 export interface LootValuation {
@@ -578,7 +610,7 @@ export interface LootValuation {
   note: string | null;
 }
 
-export type LootSort = "newest" | "oldest" | "value_desc" | "value_asc" | "category";
+export type LootSort = "newest" | "oldest" | "value_desc" | "value_asc" | "quantity" | "category";
 export interface LootQuery {
   search?: string | null;
   category?: string | null;
@@ -591,6 +623,9 @@ export interface LootQuery {
   from?: number | null;
   to?: number | null;
   favoritesOnly?: boolean;
+  unpricedOnly?: boolean;
+  verifiedOnly?: boolean;
+  mapRunId?: number | null;
   sort?: LootSort;
   limit?: number;
 }
@@ -602,6 +637,44 @@ export interface LootEdit {
   favorite?: boolean;
   originStatus?: LootOrigin;
   originNote?: string;
+  verified?: boolean;
+  /** Corrections of what was recognised (the raw copy never changes). */
+  category?: string;
+  stackSize?: number;
+  resetCorrections?: boolean;
+}
+
+/** A map record (src-tauri/src/loot/maps.rs): an instance detected by Session Intelligence ("auto") or the user's own ("manual"). */
+export interface LootMapRun {
+  id: number;
+  sessionId: number | null;
+  source: "auto" | "manual";
+  areaId: string | null;
+  areaName: string | null;
+  areaLevel: number | null;
+  seed: number | null;
+  startedAt: number;
+  endedAt: number | null;
+  status: "active" | "paused" | "finished";
+  strategy: string | null;
+  notes: string | null;
+  userConfirmed: boolean;
+  /** Time in the map (auto: inside the instance; manual: minus pauses), at query time. */
+  durationSecs: number;
+  /** While counting: duration = now − runningSince. */
+  runningSince: number | null;
+  /** 1-based number within its session. */
+  ordinal: number;
+  items: number;
+  quantity: number;
+  itemTypes: number;
+  /** Known values only (base unit). */
+  value: number;
+  unpriced: number;
+  bestItemId: number | null;
+  bestItemName: string | null;
+  bestItemValue: number | null;
+  bestItemIcon: string | null;
 }
 
 export interface LootCaptureEventRow {
@@ -636,6 +709,146 @@ export const lootEvents = (game: GameId, limit: number) => invoke<LootCaptureEve
 export const lootExport = (game: GameId, ids: number[], format: "json" | "csv") => invoke<boolean>("loot_export", { game, ids, format });
 /** Opens a file dialog; null = cancelled. */
 export const lootImport = (game: GameId) => invoke<{ imported: number; skippedDuplicates: number; rejected: number } | null>("loot_import", { game });
+export const lootMaps = (game: GameId, sessionId: number | null, limit: number) => invoke<LootMapRun[]>("loot_maps", { game, sessionId, limit });
+export const lootMapCounts = (game: GameId) => invoke<{ maps: number; sessions: number }>("loot_map_counts", { game });
+export const lootMapControl = (game: GameId, action: "start" | "pause" | "resume" | "finish", id: number | null, name: string | null = null) =>
+  invoke<LootMapRun | null>("loot_map_control", { game, action, id, name });
+export const lootMapEdit = (game: GameId, id: number, edit: { strategy?: string; notes?: string; confirmed?: boolean }) =>
+  invoke<void>("loot_map_edit", { game, id, strategy: edit.strategy ?? null, notes: edit.notes ?? null, confirmed: edit.confirmed ?? null });
+export const lootMapDelete = (game: GameId, id: number) => invoke<number>("loot_map_delete", { game, id });
+export const lootAssignMap = (game: GameId, itemIds: number[], mapId: number | null) => invoke<number>("loot_assign_map", { game, itemIds, mapId });
+
+/** Everything the Loot Tracker overlay shows (`loot::TrackerSummary`). */
+export interface LootTrackerSummary {
+  now: number;
+  sessionId: number | null;
+  sessionStartedAt: number | null;
+  areaName: string | null;
+  areaKind: string | null;
+  openMap: LootMapRun | null;
+  lastMap: LootMapRun | null;
+  mapsFinished: number;
+  sessionTotals: { items: number; quantity: number; itemTypes: number; value: number; unpriced: number };
+  recent: LootItem[];
+  capture: LootCaptureStatus;
+  /** Snapshot assigned to the last map: [snapshot id, estimated inventory gain, lines needing review]. */
+  lastMapInventory: [number, number, number] | null;
+  /** Counters start at the user's "Reset session" (unix s) instead of the game session. */
+  resetAt: number | null;
+}
+export interface LootTrackerWindowState {
+  open: boolean;
+  visible: boolean;
+  clickThrough: boolean;
+}
+export const LOOT_TRACKER_STATE_EVENT = "loot-tracker:state";
+/** Payload: the saved LootConfig (emitted by every lootSetConfig). */
+export const LOOT_CONFIG_EVENT = "loot:config";
+export const LOOT_TRACKER_COLLAPSE_EVENT = "loot-tracker:collapse";
+export const LOOT_HOTKEY_EVENT = "loot:hotkey";
+export interface LootHotkeyEvent {
+  action: LootHotkeyAction;
+  ok: boolean;
+  message: string;
+}
+export const lootTrackerSummary = (game: GameId, recent: number) => invoke<LootTrackerSummary>("loot_tracker_summary", { game, recent });
+export const lootTrackerState = (game: GameId) => invoke<LootTrackerWindowState>("loot_tracker_state", { game });
+export const lootTrackerWindow = (game: GameId, action: "open" | "hide" | "toggle" | "close") => invoke<LootTrackerWindowState>("loot_tracker_window", { game, action });
+export const lootTrackerSetClickThrough = (game: GameId, on: boolean) => invoke<LootTrackerWindowState>("loot_tracker_set_click_through", { game, on });
+// Inventory snapshots (src-tauri/src/loot/inventory)
+export type InventoryConfidence = "high" | "medium" | "low" | "unknown";
+export interface InventorySnapshot {
+  id: number;
+  takenAt: number;
+  source: "hotkey" | "file";
+  status: "review" | "confirmed" | "cancelled";
+  isBaseline: boolean;
+  sessionId: number | null;
+  mapRunId: number | null;
+  mapAssignment: "auto" | "user" | null;
+  screenW: number;
+  screenH: number;
+  league: string | null;
+  note: string | null;
+  confirmedAt: number | null;
+  recognizerVersion: number;
+  cells: number;
+  toReview: number;
+}
+export interface InventoryEntry {
+  id: number;
+  col: number;
+  row: number;
+  recognizedName: string | null;
+  recognizedCategory: string | null;
+  iconScore: number;
+  tierStrokes: number;
+  recognizedQuantity: number | null;
+  quantityConfidence: number;
+  confidence: InventoryConfidence;
+  alternatives: string[];
+  name: string | null;
+  quantity: number | null;
+  excluded: boolean;
+  corrected: boolean;
+}
+export interface InventoryDeltaLine {
+  name: string;
+  category: string | null;
+  before: number;
+  after: number;
+  change: number;
+  status: "confirmed" | "estimated" | "needs_review";
+  unitValue: number | null;
+  value: number | null;
+}
+export interface InventoryDelta {
+  snapshotId: number;
+  againstId: number | null;
+  lines: InventoryDeltaLine[];
+  estimatedGain: number;
+  needsReview: number;
+}
+export interface InventorySnapshotDetail {
+  snapshot: InventorySnapshot;
+  entries: InventoryEntry[];
+  /** data: URL of the stored inventory crop. */
+  image: string | null;
+  /** Grid in the crop's pixels. */
+  grid: { left: number; top: number; cell: number; score: number } | null;
+  delta: InventoryDelta;
+}
+export const LOOT_INVENTORY_EVENT = "loot:inventory";
+export interface LootInventoryEvent {
+  kind: "working" | "captured" | "error";
+  message: string;
+  snapshotId: number | null;
+  cells: number | null;
+  toReview: number | null;
+}
+export const lootInventorySnapshots = (game: GameId, limit: number) => invoke<InventorySnapshot[]>("loot_inventory_snapshots", { game, limit });
+export const lootInventoryDetail = (game: GameId, id: number, against: number | null = null) => invoke<InventorySnapshotDetail | null>("loot_inventory_detail", { game, id, against });
+export const lootInventoryEditEntry = (game: GameId, entryId: number, edit: { name?: string; quantity?: number; excluded?: boolean; reset?: boolean }) =>
+  invoke<void>("loot_inventory_edit_entry", { game, entryId, edit });
+export const lootInventoryUpdate = (game: GameId, id: number, change: { status?: InventorySnapshot["status"]; baseline?: boolean; mapId?: number | null }) =>
+  invoke<void>("loot_inventory_update", {
+    game,
+    id,
+    status: change.status ?? null,
+    baseline: change.baseline ?? null,
+    mapId: change.mapId ?? null,
+    clearMap: "mapId" in change && change.mapId === null,
+  });
+export const lootInventoryReprocess = (game: GameId, id: number) => invoke<void>("loot_inventory_reprocess", { game, id });
+export const lootInventoryDelete = (game: GameId, id: number) => invoke<void>("loot_inventory_delete", { game, id });
+export const lootInventoryFromFile = (game: GameId) => invoke<number | null>("loot_inventory_from_file", { game });
+export const lootInventoryItemNames = (game: GameId) => invoke<[string, string][]>("loot_inventory_item_names", { game });
+
+/** "Reset session": the Loot Tracker counters start now (nothing is deleted); clear = follow the game session again. */
+export const lootResetSession = (game: GameId, clear: boolean) => invoke<number | null>("loot_reset_session", { game, clear });
+
+/** null = the key can be used; otherwise why not. */
+export const lootHotkeyProblem = (game: GameId, key: string) => invoke<string | null>("loot_hotkey_problem", { game, key });
 
 // ---------- campaign intelligence (src-tauri/src/campaign) ----------
 
@@ -760,5 +973,8 @@ export interface HotkeyStatus {
   foregroundGame: GameId | null;
   registeredHotkey: string | null;
   trackerHotkey: string | null;
+  /** Loot Tracker keys (PoE 2) and whether Windows accepted them. */
+  lootHotkeys: { action: LootHotkeyAction; key: string; registered: boolean; error: string | null }[];
 }
+export const HOTKEY_STATUS_EVENT = "overlay:status";
 export const hotkeyStatus = () => invoke<HotkeyStatus>("overlay_status");

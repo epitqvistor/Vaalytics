@@ -12,10 +12,17 @@ const isAtlas = window.location.hash.startsWith("#atlas");
 // The Act Tracker (PoE 1) overlay is another window of the same bundle at #act-tracker.
 const TrackerWindow = lazy(() => import("@/games/poe1/act-tracker/TrackerWindow"));
 const isTracker = window.location.hash === "#act-tracker";
+// The Loot Tracker (PoE 2) overlay is another window of the same bundle at #loot-tracker.
+const LootTrackerWindow = lazy(() => import("@/games/poe2/loot-journal/TrackerWindow"));
+const isLootTracker = window.location.hash === "#loot-tracker";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {isTracker ? (
+    {isLootTracker ? (
+      <Suspense fallback={null}>
+        <LootTrackerWindow />
+      </Suspense>
+    ) : isTracker ? (
       <Suspense fallback={null}>
         <TrackerWindow />
       </Suspense>

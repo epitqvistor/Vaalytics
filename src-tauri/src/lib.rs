@@ -70,6 +70,7 @@ pub fn run() {
             let sessions = session::SessionService::new(Arc::clone(&db));
             sessions.start(app.handle().clone());
             let loot = loot::LootService::new(Arc::clone(&db), Some(Arc::clone(&market)), loot::session_context_from(sessions.clone()), market::http::unix_now);
+            loot.set_data_dir(data_dir.clone());
             loot.start(app.handle().clone());
             app.manage(AppState { db, diagnostics: diagnostics::Diagnostics::new(), market, trade, pob: pob::PobService::new(), crafting: crafting::CraftingService::new(data_dir.clone()), sessions, loot });
             app.manage(overlay::OverlayState::default());
@@ -175,6 +176,26 @@ pub fn run() {
             commands::loot_events,
             commands::loot_export,
             commands::loot_import,
+            commands::loot_maps,
+            commands::loot_map_counts,
+            commands::loot_map_control,
+            commands::loot_map_edit,
+            commands::loot_map_delete,
+            commands::loot_assign_map,
+            commands::loot_tracker_summary,
+            commands::loot_tracker_state,
+            commands::loot_tracker_window,
+            commands::loot_tracker_set_click_through,
+            commands::loot_hotkey_problem,
+            commands::loot_reset_session,
+            commands::loot_inventory_snapshots,
+            commands::loot_inventory_detail,
+            commands::loot_inventory_edit_entry,
+            commands::loot_inventory_update,
+            commands::loot_inventory_reprocess,
+            commands::loot_inventory_delete,
+            commands::loot_inventory_from_file,
+            commands::loot_inventory_item_names,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Vaalytics");

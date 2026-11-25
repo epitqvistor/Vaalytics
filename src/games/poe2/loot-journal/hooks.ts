@@ -5,22 +5,26 @@
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  LOOT_CONFIG_EVENT,
   LOOT_STATUS_EVENT,
   LOOT_UPDATED_EVENT,
   lootConfig,
   lootDetail,
   lootList,
+  lootMapCounts,
+  lootMaps,
   lootStatus,
   type LootCaptureStatus,
   type LootConfig,
   type LootItem,
+  type LootMapRun,
   type LootQuery,
   type LootValuation,
 } from "@/core/ipc/commands";
 
 const GAME = "poe2" as const;
 
-function useEvent<T>(name: string, fn: (payload: T) => void) {
+export function useEvent<T>(name: string, fn: (payload: T) => void) {
   const cb = useRef(fn);
   cb.current = fn;
   useEffect(() => {
@@ -67,9 +71,16 @@ export const useLootItems = (query: LootQuery) => useLoaded<LootItem[]>(() => lo
 export const useLootDetail = (id: number | null) =>
   useLoaded<{ item: LootItem; rawText: string; valuations: LootValuation[] } | null>(() => (id === null ? Promise.resolve(null) : lootDetail(GAME, id)), String(id));
 
+/** Map records, newest first (Session Intelligence updates arrive as `loot:updated` when they change a record). */
+export const useLootMaps = (sessionId: number | null, limit = 200) => useLoaded<LootMapRun[]>(() => lootMaps(GAME, sessionId, limit), `${sessionId}:${limit}`);
+
+export const useLootMapCounts = () => useLoaded<{ maps: number; sessions: number }>(() => lootMapCounts(GAME), "counts");
+
 export function useLootConfig() {
   const r = useLoaded<LootConfig>(() => lootConfig(GAME), "config");
   const [override, setOverride] = useState<LootConfig | null>(null);
+  // Saved from another window (main window ↔ Loot Tracker overlay).
+  useEvent<LootConfig>(LOOT_CONFIG_EVENT, setOverride);
   return { ...r, data: override ?? r.data, set: setOverride };
 }
 

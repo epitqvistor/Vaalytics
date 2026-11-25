@@ -5,23 +5,26 @@
  * never presented as all loot. Spec: docs/modules/loot-journal.md
  */
 import { useEffect, useRef, useState } from "react";
-import { lootRevalue } from "@/core/ipc/commands";
+import { LOOT_INVENTORY_EVENT, lootRevalue, lootTrackerWindow, type LootInventoryEvent } from "@/core/ipc/commands";
 import { useLeague } from "@/core/market/LeagueContext";
 import type { SectionProps } from "@/core/game-context/sections";
-import { EmptyState, PageHeader, SegmentedControl } from "@/shared/components";
+import { Button, EmptyState, PageHeader, SegmentedControl, useToast } from "@/shared/components";
 import { DisplayCurrencySelect, LeagueSelect } from "@/shared/views/market-ui";
 import { AnalyticsTab } from "./AnalyticsTab";
-import { useLootConfig, useLootItems, useLootStatus } from "./hooks";
+import { useEvent, useLootConfig, useLootItems, useLootStatus } from "./hooks";
+import { InventoryTab } from "./InventoryTab";
 import { ItemDetailModal } from "./ItemDetail";
 import { LibraryTab } from "./LibraryTab";
 import { OverviewTab } from "./OverviewTab";
 import { SettingsTab } from "./SettingsTab";
+import { useTrackerWindowState } from "./TrackerSettings";
 import { CaptureBadge } from "./ui";
 
-type Tab = "overview" | "library" | "analytics" | "settings";
+type Tab = "overview" | "library" | "inventory" | "analytics" | "settings";
 const TABS = [
   { value: "overview", label: "Overview" },
   { value: "library", label: "Library" },
+  { value: "inventory", label: "Inventory" },
   { value: "analytics", label: "Analytics" },
   { value: "settings", label: "Settings" },
 ] as const;
@@ -34,6 +37,13 @@ export default function LootJournal(_props: SectionProps) {
   const config = useLootConfig();
   const items = useLootItems(ALL_ITEMS);
   const { league } = useLeague();
+  const tracker = useTrackerWindowState();
+  const notify = useToast();
+  // A snapshot taken with the shortcut while this page is open: say so and offer the review.
+  useEvent<LootInventoryEvent>(LOOT_INVENTORY_EVENT, (e) => {
+    if (e.kind === "captured") notify(e.toReview ? "warning" : "success", e.message, tab === "inventory" ? undefined : "Open the Inventory tab to review it.");
+    else if (e.kind === "error" && tab !== "inventory") notify("warning", "Inventory screenshot", e.message);
+  });
   const prevLeague = useRef<string | null>(null);
   useEffect(() => {
     // Prices come from the selected league; re-value when it changes.
@@ -49,6 +59,14 @@ export default function LootJournal(_props: SectionProps) {
         actions={
           <>
             {status && <CaptureBadge listening={status.listening} enabled={status.enabled} />}
+            <Button
+              size="sm"
+              variant={tracker?.visible ? "secondary" : "ghost"}
+              icon="compact"
+              onClick={() => void lootTrackerWindow("poe2", tracker?.visible ? "hide" : "open").catch((e) => notify("warning", "Couldn't open the overlay", String(e)))}
+            >
+              {tracker?.visible ? "Hide tracker" : "Loot Tracker"}
+            </Button>
             <DisplayCurrencySelect />
             <LeagueSelect />
           </>
@@ -65,6 +83,8 @@ export default function LootJournal(_props: SectionProps) {
         <OverviewTab items={items.data} status={status} onOpen={setOpenId} />
       ) : tab === "library" ? (
         <LibraryTab onOpen={setOpenId} />
+      ) : tab === "inventory" ? (
+        <InventoryTab config={config.data} setConfig={config.set} />
       ) : tab === "analytics" ? (
         <AnalyticsTab items={items.data} onOpen={setOpenId} />
       ) : config.data ? (

@@ -1,6 +1,6 @@
 /** Item details: parsed properties (existing PoE 2 parser on the raw copy), valuation history, user actions. */
 import { useEffect, useMemo, useState } from "react";
-import { lootDelete, lootEdit, lootRevalue, lootSetManualValue, type LootItem, type LootOrigin, type LootStatus } from "@/core/ipc/commands";
+import { lootAssignMap, lootDelete, lootEdit, lootRevalue, lootSetManualValue, type LootItem, type LootOrigin, type LootStatus } from "@/core/ipc/commands";
 import { useLeague } from "@/core/market/LeagueContext";
 import { Badge, Button, EmptyState, Input, Modal, SegmentedControl, Select, useToast } from "@/shared/components";
 import { Icon } from "@/shared/icons/Icon";
@@ -9,9 +9,9 @@ import { Price } from "@/shared/views/common";
 import { PriceCheckSession } from "@/shared/views/price-check/PriceCheckSession";
 import { POE2_CONFIG } from "../config";
 import { parsePoe2Item } from "../parser";
-import { useLootDetail } from "./hooks";
-import { categoryLabel, VALUE_STATUS_LABEL } from "./stats";
-import { fmtDateTime, ValueCell } from "./ui";
+import { useLootDetail, useLootMaps } from "./hooks";
+import { CATEGORY_LABEL, categoryLabel, mapName, quantityOf, VALUE_STATUS_LABEL } from "./stats";
+import { fmtDateTime, ItemIcon, PriceSource, ValueCell } from "./ui";
 
 const GAME = "poe2" as const;
 const unit = POE2_CONFIG.baseUnit;
@@ -53,7 +53,10 @@ function Detail({ item, raw, valuations, reload, onDeleted }: { item: LootItem; 
   const [manual, setManual] = useState("");
   const [trade, setTrade] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [qty, setQty] = useState(String(quantityOf(item)));
+  const maps = useLootMaps(item.sessionId, 200);
   useEffect(() => setNotes(item.notes ?? ""), [item.notes]);
+  useEffect(() => setQty(String(quantityOf(item))), [item.stackSize]);
 
   const act = async (f: () => Promise<unknown>, ok?: string) => {
     try {
@@ -70,18 +73,23 @@ function Detail({ item, raw, valuations, reload, onDeleted }: { item: LootItem; 
   return (
     <div className="flex max-h-[72vh] flex-col gap-5 overflow-y-auto pr-1 text-sm">
       {/* identity */}
-      <div className="flex flex-wrap items-center gap-2">
-        {item.icon && <img src={item.icon} alt="" className="size-8 object-contain" />}
+      <div className="flex flex-wrap items-center gap-3">
+        <ItemIcon item={item} size={52} />
         <div className="min-w-0">
           {item.itemName && <p className="font-display text-base font-semibold text-fg">{item.itemName}</p>}
           <p className={item.itemName ? "text-fg-muted" : "font-display text-base font-semibold text-fg"}>{item.baseType}</p>
         </div>
         <div className="ml-auto flex flex-wrap gap-1.5">
           <Badge tone={item.rarity === "Unique" ? "accent" : "neutral"}>{item.rarity}</Badge>
-          <Badge>{categoryLabel(item.category)}</Badge>
+          {categoryLabel(item.category) !== item.rarity && <Badge>{categoryLabel(item.category)}</Badge>}
           {item.corrupted && <Badge tone="danger">Corrupted</Badge>}
           {item.unidentified && <Badge tone="warning">Unidentified</Badge>}
           <Badge tone={item.parserConfidence === "high" ? "success" : item.parserConfidence === "medium" ? "warning" : "danger"}>Parser: {item.parserConfidence}</Badge>
+          {item.verified && (
+            <Badge tone="success" dot>
+              Verified
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -94,7 +102,19 @@ function Detail({ item, raw, valuations, reload, onDeleted }: { item: LootItem; 
               <ValueCell item={item} strong full />
             </div>
           </div>
-          <span className="text-2xs text-fg-subtle">{item.valueCheckedAt ? `checked ${fmtDateTime(item.valueCheckedAt)}` : "not checked yet"}</span>
+          <span className="flex flex-col text-2xs text-fg-subtle">
+            <PriceSource item={item} className="text-2xs" />
+            <span>
+              {item.valueFetchedAt ? `market data ${fmtDateTime(item.valueFetchedAt)}` : item.valueCheckedAt ? `checked ${fmtDateTime(item.valueCheckedAt)}` : "not checked yet"}
+              {item.valueLeague && ` · ${item.valueLeague}`}
+            </span>
+          </span>
+          {item.valueAtCapture !== null && (
+            <div className="border-l border-line pl-3">
+              <p className="text-2xs text-fg-subtle">Value when captured</p>
+              <Price amount={item.valueAtCapture} unit={unit} />
+            </div>
+          )}
           {item.valueNote && <p className="basis-full text-2xs leading-relaxed text-fg-muted">{item.valueNote}</p>}
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <Button size="sm" variant="secondary" icon="refresh" onClick={() => act(() => lootRevalue(GAME, [item.id]), "Price rechecked")}>
@@ -151,12 +171,62 @@ function Detail({ item, raw, valuations, reload, onDeleted }: { item: LootItem; 
         )}
       </section>
 
+      {/* recognition & corrections */}
+      <section className="rounded-md border border-line p-3">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <h3 className="text-xs font-semibold text-fg">Recognition</h3>
+          <span className="text-2xs text-fg-subtle">Corrections change how the item is filed and valued; the original copy below never changes.</span>
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <Select
+            label={item.originalCategory ? `Category (recognised: ${categoryLabel(item.originalCategory)})` : "Category"}
+            value={item.category}
+            onChange={(v: string) => edit({ category: v }, "Category corrected")}
+            options={Object.entries(CATEGORY_LABEL).map(([value, label]) => ({ value, label }))}
+            className="w-56"
+          />
+          <Input
+            label={item.originalStackSize ? `Quantity (recognised: ${item.originalStackSize})` : "Quantity"}
+            type="number"
+            min={1}
+            value={qty}
+            onChange={(e) => setQty(e.target.value)}
+            onBlur={() => {
+              const n = Math.round(Number(qty));
+              if (n >= 1 && n !== quantityOf(item)) void edit({ stackSize: n }, "Quantity corrected — revalued");
+              else setQty(String(quantityOf(item)));
+            }}
+            containerClassName="w-40"
+          />
+          <Button size="sm" variant={item.verified ? "primary" : "secondary"} icon="check" onClick={() => edit({ verified: !item.verified })}>
+            {item.verified ? "Verified" : "Mark verified"}
+          </Button>
+          {(item.originalCategory || item.originalStackSize) && (
+            <Button size="sm" variant="ghost" onClick={() => edit({ resetCorrections: true }, "Recognised values restored")}>
+              Undo corrections
+            </Button>
+          )}
+        </div>
+      </section>
+
       {/* capture & origin */}
       <section className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs sm:grid-cols-3">
         <Field label="Captured">{fmtDateTime(item.capturedAt)}{item.captureCount > 1 && ` · copied ${item.captureCount}× (last ${fmtDateTime(item.lastCapturedAt)})`}</Field>
         <Field label="Session">{item.sessionId !== null ? `#${item.sessionId}${item.sessionElapsedSecs !== null ? ` · ${Math.round(item.sessionElapsedSecs / 60)} min in` : ""}` : "none (no active session)"}</Field>
         <Field label="Area when copied">{item.captureAreaName ? `${item.captureAreaName}${item.captureAreaKind ? ` (${item.captureAreaKind})` : ""}` : "—"}</Field>
       </section>
+      <div className="flex flex-wrap items-end gap-3">
+        <Select
+          label={item.mapAssignment === "auto" ? "Map (copied inside it)" : item.mapAssignment === "user" ? "Map (your assignment)" : "Map"}
+          value={item.mapRunId === null ? "" : String(item.mapRunId)}
+          onChange={(v: string) => act(() => lootAssignMap(GAME, [item.id], v === "" ? null : Number(v)), v === "" ? "Removed from the map" : "Assigned to the map")}
+          options={[
+            { value: "", label: "Not assigned" },
+            ...(maps.data ?? []).map((m) => ({ value: String(m.id), label: `#${String(m.ordinal).padStart(3, "0")} ${mapName(m)} · ${fmtDateTime(m.startedAt)}` })),
+          ]}
+          className="w-80"
+        />
+      </div>
       <p className="-mt-3 flex items-start gap-1.5 text-2xs text-fg-subtle">
         <Icon name="info" size={12} className="mt-px shrink-0" />
         Where an item was copied isn't where it dropped — it may have come from your stash or a trade. Origin stays unknown unless you set it.

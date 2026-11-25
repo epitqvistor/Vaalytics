@@ -32,6 +32,8 @@ pub struct CaptureContext {
     pub area_name: Option<String>,
     pub area_kind: Option<String>,
     pub session_elapsed_secs: Option<i64>,
+    /// Map record the copy belongs to (see maps.rs), when reliable.
+    pub map_run_id: Option<i64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -80,18 +82,37 @@ pub struct LootItem {
     pub value_checked_at: Option<i64>,
     /// Note of the latest valuation (e.g. the range of an unidentified unique).
     pub value_note: Option<String>,
+    /// Latest valuation: source ("poe.ninja", "user"…), confidence, market data time and league.
+    pub value_source: Option<String>,
+    pub value_confidence: Option<String>,
+    pub value_fetched_at: Option<i64>,
+    pub value_league: Option<String>,
+    /// First known value (at capture time), kept apart from the current one.
+    pub value_at_capture: Option<f64>,
+    pub map_run_id: Option<i64>,
+    /// "auto" (copied inside the map) or "user" (assigned by the user).
+    pub map_assignment: Option<String>,
+    pub verified: bool,
+    /// Category / quantity corrected by the user (the recognised values are kept).
+    pub original_category: Option<String>,
+    pub original_stack_size: Option<i64>,
 }
 
 const COLS: &str = "id, fingerprint, item_class, rarity, item_name, base_type, category, icon, item_level, stack_size, quality, corrupted, unidentified, \
     parser_confidence, parser_warnings, captured_at, last_captured_at, capture_count, source, session_id, capture_area_name, capture_area_kind, \
     session_elapsed_secs, origin_status, origin_note, status, favorite, notes, tags, value_status, value_total, value_checked_at, \
-    (SELECT v.note FROM loot_valuations v WHERE v.item_id = loot_items.id ORDER BY v.at DESC, v.id DESC LIMIT 1)";
+    (SELECT json_array(v.note, v.source, v.confidence, v.data_fetched_at, v.league) FROM loot_valuations v WHERE v.item_id = loot_items.id ORDER BY v.at DESC, v.id DESC LIMIT 1), \
+    (SELECT v.total_value FROM loot_valuations v WHERE v.item_id = loot_items.id AND v.status IN ('priced', 'manual') AND v.total_value IS NOT NULL ORDER BY v.at, v.id LIMIT 1), \
+    map_run_id, map_assignment, verified, original_category, original_stack_size";
 
 fn json_list(s: String) -> Vec<String> {
     serde_json::from_str(&s).unwrap_or_default()
 }
 
 fn item_row(r: &Row<'_>) -> rusqlite::Result<LootItem> {
+    let latest_json: Option<String> = r.get(32)?;
+    let latest_v: Option<serde_json::Value> = latest_json.and_then(|s| serde_json::from_str(&s).ok());
+    let latest = |k: usize| latest_v.as_ref().and_then(|v| v.get(k)).cloned();
     Ok(LootItem {
         id: r.get(0)?,
         fingerprint: r.get(1)?,
@@ -125,7 +146,17 @@ fn item_row(r: &Row<'_>) -> rusqlite::Result<LootItem> {
         value_status: r.get(29)?,
         value_total: r.get(30)?,
         value_checked_at: r.get(31)?,
-        value_note: r.get(32)?,
+        value_note: latest(0).and_then(|v| v.as_str().map(str::to_owned)),
+        value_source: latest(1).and_then(|v| v.as_str().map(str::to_owned)),
+        value_confidence: latest(2).and_then(|v| v.as_str().map(str::to_owned)),
+        value_fetched_at: latest(3).and_then(|v| v.as_i64()),
+        value_league: latest(4).and_then(|v| v.as_str().map(str::to_owned)),
+        value_at_capture: r.get(33)?,
+        map_run_id: r.get(34)?,
+        map_assignment: r.get(35)?,
+        verified: r.get::<_, i64>(36)? == 1,
+        original_category: r.get(37)?,
+        original_stack_size: r.get(38)?,
     })
 }
 
@@ -213,8 +244,9 @@ pub fn capture(conn: &Connection, game: GameId, raw: &str, h: &Header, fp: &str,
     conn.execute(
         "INSERT INTO loot_items (game, fingerprint, raw_text, item_class, rarity, item_name, base_type, category, item_level, stack_size, quality,
             corrupted, unidentified, parser_confidence, parser_warnings, captured_at, last_captured_at, source, session_id, capture_area_name,
-            capture_area_kind, session_elapsed_secs)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?16, ?17, ?18, ?19, ?20, ?21)",
+            capture_area_kind, session_elapsed_secs, map_run_id, map_assignment)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?16, ?17, ?18, ?19, ?20, ?21, ?22,
+                 CASE WHEN ?22 IS NULL THEN NULL ELSE 'auto' END)",
         params![
             game.as_str(),
             fp,
@@ -237,6 +269,7 @@ pub fn capture(conn: &Connection, game: GameId, raw: &str, h: &Header, fp: &str,
             ctx.area_name,
             ctx.area_kind,
             ctx.session_elapsed_secs,
+            ctx.map_run_id,
         ],
     )?;
     let id = conn.last_insert_rowid();
@@ -423,7 +456,11 @@ pub struct LibraryQuery {
     pub from: Option<i64>,
     pub to: Option<i64>,
     pub favorites_only: Option<bool>,
-    /// newest (default) | oldest | value_desc | value_asc | category
+    /// Not priced (no market data, manual valuation required, pending).
+    pub unpriced_only: Option<bool>,
+    pub verified_only: Option<bool>,
+    pub map_run_id: Option<i64>,
+    /// newest (default) | oldest | value_desc | value_asc | quantity | category
     pub sort: Option<String>,
     pub limit: Option<i64>,
 }
@@ -440,6 +477,7 @@ pub fn list(conn: &Connection, game: GameId, q: &LibraryQuery) -> AppResult<Vec<
         "value_desc" => "value_total IS NULL, value_total DESC, id DESC",
         "value_asc" => "value_total IS NULL, value_total ASC, id DESC",
         "category" => "category ASC, last_captured_at DESC",
+        "quantity" => "COALESCE(stack_size, 1) * capture_count DESC, last_captured_at DESC",
         _ => return Err(AppError::InvalidInput("Unknown sort order.".into())),
     };
     let search = q.search.as_deref().map(str::trim).filter(|s| !s.is_empty()).map(like);
@@ -450,6 +488,8 @@ pub fn list(conn: &Connection, game: GameId, q: &LibraryQuery) -> AppResult<Vec<
            AND (?6 IS NULL OR value_status = ?6) AND (?7 IS NULL OR value_total >= ?7) AND (?8 IS NULL OR value_total <= ?8)
            AND (?9 IS NULL OR session_id = ?9) AND (?10 IS NULL OR captured_at >= ?10) AND (?11 IS NULL OR captured_at < ?11)
            AND (?12 = 0 OR favorite = 1)
+           AND (?14 = 0 OR value_status NOT IN ('priced', 'manual') OR value_total IS NULL)
+           AND (?15 = 0 OR verified = 1) AND (?16 IS NULL OR map_run_id = ?16)
          ORDER BY {order} LIMIT ?13"
     );
     let mut stmt = conn.prepare(&sql)?;
@@ -467,7 +507,10 @@ pub fn list(conn: &Connection, game: GameId, q: &LibraryQuery) -> AppResult<Vec<
             q.from,
             q.to,
             q.favorites_only.unwrap_or(false) as i64,
-            q.limit.unwrap_or(500).clamp(1, 20_000)
+            q.limit.unwrap_or(500).clamp(1, 20_000),
+            q.unpriced_only.unwrap_or(false) as i64,
+            q.verified_only.unwrap_or(false) as i64,
+            q.map_run_id,
         ],
         item_row,
     )?;
@@ -491,6 +534,26 @@ pub struct ItemEdit {
     pub favorite: Option<bool>,
     pub origin_status: Option<String>,
     pub origin_note: Option<String>,
+    /// "I checked this item" (manual verification).
+    pub verified: Option<bool>,
+    /// Corrections of the recognised category / stack size (the raw copy is unchanged).
+    pub category: Option<String>,
+    pub stack_size: Option<i64>,
+    /// Restores the recognised category and stack size.
+    pub reset_corrections: Option<bool>,
+}
+
+/// Categories an item can be filed under (same keys as the UI's CATEGORY_LABEL).
+pub const CATEGORIES: &[&str] = &[
+    "currency", "socketable", "omen", "fragment", "weapon", "armour", "accessory", "flask", "jewel", "relic", "unique", "skill_gem", "support_gem",
+    "waystone", "tablet", "other",
+];
+
+impl ItemEdit {
+    /// True when the edit changes what the item is worth (quantity) and it must be valued again.
+    pub fn needs_revalue(&self) -> bool {
+        self.stack_size.is_some() || self.reset_corrections == Some(true)
+    }
 }
 
 /// Edits user fields only; the captured raw text and parsed header never change.
@@ -515,12 +578,44 @@ pub fn edit(conn: &Connection, game: GameId, id: i64, e: &ItemEdit) -> AppResult
         }
         None => None,
     };
+    if let Some(c) = &e.category {
+        if !CATEGORIES.contains(&c.as_str()) {
+            return Err(AppError::InvalidInput("Unknown category.".into()));
+        }
+    }
+    if let Some(n) = e.stack_size {
+        if !(1..=1_000_000).contains(&n) {
+            return Err(AppError::InvalidInput("Quantity must be between 1 and 1,000,000.".into()));
+        }
+    }
+    if e.reset_corrections == Some(true) {
+        conn.execute(
+            "UPDATE loot_items SET category = COALESCE(original_category, category), stack_size = CASE WHEN original_stack_size IS NOT NULL THEN original_stack_size ELSE stack_size END,
+                original_category = NULL, original_stack_size = NULL WHERE game = ?1 AND id = ?2",
+            params![game.as_str(), id],
+        )?;
+    }
+    if let Some(c) = &e.category {
+        conn.execute(
+            "UPDATE loot_items SET original_category = COALESCE(original_category, category), category = ?3 WHERE game = ?1 AND id = ?2 AND category != ?3",
+            params![game.as_str(), id, c],
+        )?;
+        conn.execute("UPDATE loot_items SET original_category = NULL WHERE game = ?1 AND id = ?2 AND original_category = category", params![game.as_str(), id])?;
+    }
+    if let Some(n) = e.stack_size {
+        conn.execute(
+            "UPDATE loot_items SET original_stack_size = COALESCE(original_stack_size, stack_size, 1), stack_size = ?3 WHERE game = ?1 AND id = ?2 AND COALESCE(stack_size, 1) != ?3",
+            params![game.as_str(), id, n],
+        )?;
+        conn.execute("UPDATE loot_items SET original_stack_size = NULL WHERE game = ?1 AND id = ?2 AND original_stack_size = stack_size", params![game.as_str(), id])?;
+    }
     let cap = |s: &Option<String>| s.as_ref().map(|x| x.chars().take(MAX_NOTES).collect::<String>());
     let n = conn.execute(
         "UPDATE loot_items SET notes = COALESCE(?3, notes), tags = COALESCE(?4, tags), status = COALESCE(?5, status),
-            favorite = COALESCE(?6, favorite), origin_status = COALESCE(?7, origin_status), origin_note = COALESCE(?8, origin_note)
+            favorite = COALESCE(?6, favorite), origin_status = COALESCE(?7, origin_status), origin_note = COALESCE(?8, origin_note),
+            verified = COALESCE(?9, verified)
          WHERE game = ?1 AND id = ?2",
-        params![game.as_str(), id, cap(&e.notes), tags, e.status, e.favorite.map(|b| b as i64), e.origin_status, cap(&e.origin_note)],
+        params![game.as_str(), id, cap(&e.notes), tags, e.status, e.favorite.map(|b| b as i64), e.origin_status, cap(&e.origin_note), e.verified.map(|b| b as i64)],
     )?;
     if n == 0 {
         return Err(AppError::InvalidInput("Item not found.".into()));
@@ -674,6 +769,7 @@ pub fn import_items(conn: &Connection, game: GameId, items: &[ExportedItem], now
                 favorite: Some(e.favorite),
                 origin_status: e.origin_status.clone().filter(|s| matches!(s.as_str(), "unknown" | "user_confirmed_drop" | "user_not_a_drop")),
                 origin_note: e.origin_note.clone(),
+                ..Default::default()
             },
         )?;
         r.imported += 1;
@@ -803,7 +899,7 @@ mod tests {
         let cats = list(&c, GameId::Poe2, &LibraryQuery { category: Some("waystone".into()), ..Default::default() }).unwrap();
         assert_eq!(cats.len(), 1);
         let id = cats[0].id;
-        edit(&c, GameId::Poe2, id, &ItemEdit { notes: Some("keep for T15".into()), tags: Some(vec!["juice".into()]), status: Some("kept".into()), favorite: Some(true), origin_status: Some("user_confirmed_drop".into()), origin_note: None }).unwrap();
+        edit(&c, GameId::Poe2, id, &ItemEdit { notes: Some("keep for T15".into()), tags: Some(vec!["juice".into()]), status: Some("kept".into()), favorite: Some(true), origin_status: Some("user_confirmed_drop".into()), origin_note: None, ..Default::default() }).unwrap();
         let it = get(&c, GameId::Poe2, id).unwrap().unwrap();
         assert_eq!((it.status.as_str(), it.favorite, it.tags.clone(), it.origin_status.as_str()), ("kept", true, vec!["juice".to_string()], "user_confirmed_drop"));
         assert_eq!(raw_text(&c, GameId::Poe2, id).unwrap().unwrap(), samples::WAYSTONE, "raw text never changes");
@@ -838,11 +934,65 @@ mod tests {
         let sid = crate::session::store::create_session(&c, GameId::Poe2, 100, None, None, true, 100).unwrap();
         crate::session::store::finish(&c, sid, 500, "game_closed").unwrap();
         let h = parse_header(samples::RARE).unwrap();
-        let ctx = CaptureContext { now: 300, session_id: Some(sid), area_name: Some("Razed Fields".into()), area_kind: Some("map".into()), session_elapsed_secs: Some(200) };
+        let ctx = CaptureContext { now: 300, session_id: Some(sid), area_name: Some("Razed Fields".into()), area_kind: Some("map".into()), session_elapsed_secs: Some(200), ..Default::default() };
         let CaptureOutcome::New(id) = capture(&c, GameId::Poe2, samples::RARE, &h, &fingerprint(samples::RARE), &ctx, DuplicateMode::Merge, 0, "clipboard").unwrap() else { panic!() };
         let it = get(&c, GameId::Poe2, id).unwrap().unwrap();
         assert_eq!((it.session_id, it.capture_area_name.as_deref(), it.origin_status.as_str()), (Some(sid), Some("Razed Fields"), "unknown"));
         crate::session::store::delete(&c, GameId::Poe2, &[sid]).unwrap();
         assert_eq!(get(&c, GameId::Poe2, id).unwrap().unwrap().session_id, None);
+    }
+
+    #[test]
+    fn corrections_verification_and_new_filters() {
+        let db = Database::open_in_memory().unwrap();
+        let c = db.conn().unwrap();
+        let CaptureOutcome::New(cur) = cap(&c, samples::CURRENCY, 1000, DuplicateMode::Merge) else { panic!() };
+        let CaptureOutcome::New(rare) = cap(&c, samples::RARE, 2000, DuplicateMode::Merge) else { panic!() };
+        let raw_before = raw_text(&c, GameId::Poe2, cur).unwrap();
+        // Correct quantity and category; the recognised values are kept, the raw copy is untouched.
+        edit(&c, GameId::Poe2, cur, &ItemEdit { stack_size: Some(5), category: Some("fragment".into()), ..Default::default() }).unwrap();
+        let it = get(&c, GameId::Poe2, cur).unwrap().unwrap();
+        assert_eq!((it.stack_size, it.category.as_str(), it.original_stack_size, it.original_category.as_deref()), (Some(5), "fragment", Some(3), Some("currency")));
+        edit(&c, GameId::Poe2, cur, &ItemEdit { stack_size: Some(7), ..Default::default() }).unwrap();
+        assert_eq!(get(&c, GameId::Poe2, cur).unwrap().unwrap().original_stack_size, Some(3), "first recognised value kept");
+        assert_eq!(raw_text(&c, GameId::Poe2, cur).unwrap(), raw_before);
+        assert!(edit(&c, GameId::Poe2, cur, &ItemEdit { category: Some("bogus".into()), ..Default::default() }).is_err());
+        assert!(edit(&c, GameId::Poe2, cur, &ItemEdit { stack_size: Some(0), ..Default::default() }).is_err());
+        assert!(ItemEdit { stack_size: Some(2), ..Default::default() }.needs_revalue());
+        assert!(!ItemEdit { verified: Some(true), ..Default::default() }.needs_revalue());
+        edit(&c, GameId::Poe2, cur, &ItemEdit { reset_corrections: Some(true), ..Default::default() }).unwrap();
+        let it = get(&c, GameId::Poe2, cur).unwrap().unwrap();
+        assert_eq!((it.stack_size, it.category.as_str(), it.original_stack_size, it.original_category), (Some(3), "currency", None, None));
+        // Setting the recognised value back clears the correction marker too.
+        edit(&c, GameId::Poe2, cur, &ItemEdit { stack_size: Some(4), ..Default::default() }).unwrap();
+        edit(&c, GameId::Poe2, cur, &ItemEdit { stack_size: Some(3), ..Default::default() }).unwrap();
+        assert_eq!(get(&c, GameId::Poe2, cur).unwrap().unwrap().original_stack_size, None);
+
+        // Verification and filters.
+        edit(&c, GameId::Poe2, rare, &ItemEdit { verified: Some(true), ..Default::default() }).unwrap();
+        let ids = |q: LibraryQuery| list(&c, GameId::Poe2, &q).unwrap().into_iter().map(|i| i.id).collect::<Vec<_>>();
+        assert_eq!(ids(LibraryQuery { verified_only: Some(true), ..Default::default() }), vec![rare]);
+        assert_eq!(ids(LibraryQuery { unpriced_only: Some(true), ..Default::default() }).len(), 2, "nothing priced yet");
+        assert_eq!(ids(LibraryQuery { sort: Some("quantity".into()), ..Default::default() }), vec![cur, rare]);
+        // Latest valuation details and the value at capture time.
+        let v = |unit: f64, at: i64| NewValuation {
+            status: "priced",
+            unit_value: Some(unit),
+            quantity: 3,
+            unit: "exalted",
+            source: "poe.ninja".into(),
+            market_category: Some("currency".into()),
+            league: Some("Rise".into()),
+            confidence: Some("high"),
+            data_fetched_at: Some(at - 10),
+            note: None,
+            icon: None,
+        };
+        record_valuation(&c, GameId::Poe2, cur, &v(1.0, 1500), 1500).unwrap();
+        record_valuation(&c, GameId::Poe2, cur, &v(2.0, 2500), 2500).unwrap();
+        let it = get(&c, GameId::Poe2, cur).unwrap().unwrap();
+        assert_eq!((it.value_total, it.value_at_capture), (Some(6.0), Some(3.0)), "market changes never overwrite the value at capture");
+        assert_eq!((it.value_source.as_deref(), it.value_confidence.as_deref(), it.value_fetched_at, it.value_league.as_deref()), (Some("poe.ninja"), Some("high"), Some(2490), Some("Rise")));
+        assert_eq!(ids(LibraryQuery { unpriced_only: Some(true), ..Default::default() }), vec![rare]);
     }
 }

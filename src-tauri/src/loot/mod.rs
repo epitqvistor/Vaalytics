@@ -8,8 +8,12 @@
 //! stored, logged or sent anywhere. The clipboard is never written.
 
 pub mod clipboard;
+pub mod hotkeys;
+pub mod inventory;
 pub mod item_text;
+pub mod maps;
 pub mod store;
+pub mod tracker_window;
 pub mod valuation;
 
 use crate::db::Database;
@@ -23,13 +27,20 @@ use std::sync::mpsc;
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::Duration;
 use store::{CaptureContext, CaptureOutcome, DuplicateMode};
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Listener};
 
 pub const GAME: GameId = GameId::Poe2;
 pub const CONFIG_KEY: &str = "loot.config";
+/// Game setting: unix time of the user's last "Reset session" (overlay counters start there); absent = follow
+/// the game session from Session Intelligence.
+pub const RUN_KEY: &str = "loot.sessionResetAt";
 pub const EVENT_UPDATED: &str = "loot:updated";
 pub const EVENT_CAPTURED: &str = "loot:captured";
 pub const EVENT_STATUS: &str = "loot:status";
+/// The saved configuration changed (payload: the config), so every window can follow it.
+pub const EVENT_CONFIG: &str = "loot:config";
+/// Result of a Loot Tracker hotkey press (shown by the overlay).
+pub const EVENT_HOTKEY: &str = "loot:hotkey";
 /// Coalesces bursts of clipboard notifications.
 const SETTLE: Duration = Duration::from_millis(80);
 const RETRY_NO_DATA_SECS: i64 = 180;
@@ -61,6 +72,17 @@ pub struct LootConfig {
     pub notify_errors: bool,
     /// 0 = keep forever (favourites are always kept).
     pub retention_days: u32,
+    /// Loot Tracker overlay: background opacity (0.4–1), scale (0.8–1.4), layout, rows in compact mode (5–7).
+    pub overlay_opacity: f64,
+    pub overlay_scale: f64,
+    /// "compact" | "expanded"
+    pub overlay_mode: String,
+    /// Collapsed to its header bar.
+    pub overlay_collapsed: bool,
+    pub overlay_rows: u32,
+    pub overlay_always_on_top: bool,
+    /// Global hotkeys, registered only while PoE 2 is in the foreground ("" = off).
+    pub hotkeys: hotkeys::LootHotkeys,
 }
 
 impl Default for LootConfig {
@@ -79,6 +101,13 @@ impl Default for LootConfig {
             notify_value_changes: false,
             notify_errors: false,
             retention_days: 0,
+            overlay_opacity: 0.9,
+            overlay_scale: 1.0,
+            overlay_mode: "compact".into(),
+            overlay_collapsed: false,
+            overlay_rows: 6,
+            overlay_always_on_top: true,
+            hotkeys: hotkeys::LootHotkeys::default(),
         }
     }
 }
@@ -95,6 +124,21 @@ impl LootConfig {
             self.notify_threshold = 0.0;
         }
         self.retention_days = self.retention_days.min(3650);
+        self.overlay_opacity = if self.overlay_opacity.is_finite() { self.overlay_opacity.clamp(0.4, 1.0) } else { 0.9 };
+        self.overlay_scale = if self.overlay_scale.is_finite() { self.overlay_scale.clamp(0.8, 1.4) } else { 1.0 };
+        if !matches!(self.overlay_mode.as_str(), "compact" | "expanded") {
+            self.overlay_mode = "compact".into();
+        }
+        self.overlay_rows = self.overlay_rows.clamp(5, 7);
+        for k in [
+            &mut self.hotkeys.toggle_overlay,
+            &mut self.hotkeys.collapse_overlay,
+            &mut self.hotkeys.start_map,
+            &mut self.hotkeys.finish_map,
+            &mut self.hotkeys.screenshot,
+        ] {
+            *k = k.trim().chars().take(64).collect();
+        }
         self
     }
 }
@@ -128,15 +172,46 @@ pub struct CapturedEvent {
     pub notify: Option<String>,
 }
 
+/// Everything the Loot Tracker overlay shows, in one read.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackerSummary {
+    pub now: i64,
+    pub session_id: Option<i64>,
+    pub session_started_at: Option<i64>,
+    /// Area the player is in right now (from Session Intelligence), when known.
+    pub area_name: Option<String>,
+    pub area_kind: Option<String>,
+    pub open_map: Option<maps::MapRun>,
+    /// The most recent finished map of this session (shown when no map is open).
+    pub last_map: Option<maps::MapRun>,
+    pub maps_finished: i64,
+    pub session_totals: maps::Totals,
+    /// Newest first: this session's captures, or the latest captures when no session is active.
+    pub recent: Vec<store::LootItem>,
+    pub capture: CaptureStatus,
+    /// Inventory snapshot assigned to the last map, with its change: (snapshot id, estimated gain, lines to review).
+    pub last_map_inventory: Option<(i64, f64, usize)>,
+    /// Set when the counters start at the user's "Reset session" instead of the game session.
+    pub reset_at: Option<i64>,
+}
+
 /// Session context for a capture (from Session Intelligence).
 pub type SessionContextFn = Box<dyn Fn() -> Option<SessionContext> + Send + Sync>;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct SessionContext {
     pub session_id: i64,
     pub started_at: i64,
+    /// Current (open) area; None between areas.
     pub area_name: Option<String>,
     pub area_kind: Option<String>,
+    pub area_id: Option<String>,
+    pub area_level: Option<i64>,
+    pub seed: Option<i64>,
+    pub area_entered_at: Option<i64>,
+    /// The player is inside that area right now (its visit has no exit yet).
+    pub in_area: bool,
 }
 
 struct Inner {
@@ -148,6 +223,7 @@ struct Inner {
     app: std::sync::OnceLock<AppHandle>,
     wake: (Mutex<bool>, Condvar),
     now: fn() -> i64,
+    inventory: inventory::service::InventoryState,
 }
 
 #[derive(Clone)]
@@ -177,7 +253,12 @@ pub fn session_context_from(sessions: SessionService) -> SessionContextFn {
                 session_id: a.id,
                 started_at: a.started_at,
                 area_name: area.as_ref().map(|v| v.area_name.clone().unwrap_or_else(|| v.area_id.clone())),
-                area_kind: area.map(|v| v.kind),
+                area_kind: area.as_ref().map(|v| v.kind.clone()),
+                area_id: area.as_ref().map(|v| v.area_id.clone()),
+                area_level: area.as_ref().and_then(|v| v.area_level),
+                seed: area.as_ref().and_then(|v| v.seed),
+                area_entered_at: area.as_ref().map(|v| v.entered_at),
+                in_area: area.is_some(),
             }
         }),
         Err(e) => {
@@ -185,6 +266,73 @@ pub fn session_context_from(sessions: SessionService) -> SessionContextFn {
             None
         }
     })
+}
+
+/// Categories to offer the Market engine, the ones items were actually priced from first.
+fn refresh_order(priority: Vec<&'static str>, rest: Vec<&'static str>) -> Vec<&'static str> {
+    let mut order = priority;
+    for c in rest {
+        if !order.contains(&c) {
+            order.push(c);
+        }
+    }
+    order
+}
+
+/// Loot Tracker hotkey pressed (only registered while PoE 2 is in the foreground). Runs off the main thread.
+/// Presses of the same action within 400 ms are ignored (one press = one action).
+pub fn on_hotkey(app: &AppHandle, action: hotkeys::Action) {
+    static LAST: Mutex<Vec<(hotkeys::Action, std::time::Instant)>> = Mutex::new(Vec::new());
+    if let Ok(mut last) = LAST.lock() {
+        let now = std::time::Instant::now();
+        if last.iter().any(|(a, t)| *a == action && now.duration_since(*t) < Duration::from_millis(400)) {
+            return;
+        }
+        last.retain(|(a, _)| *a != action);
+        last.push((action, now));
+    }
+    let Some(service) = SERVICE.get() else { return };
+    let report = |ok: bool, message: String| {
+        let _ = app.emit(EVENT_HOTKEY, serde_json::json!({ "action": action, "ok": ok, "message": message }));
+    };
+    match action {
+        hotkeys::Action::ToggleOverlay => {
+            let h = app.clone();
+            let _ = app.run_on_main_thread(move || {
+                if let Err(e) = tracker_window::toggle(&h) {
+                    log::error!("loot tracker toggle: {e}");
+                }
+            });
+        }
+        hotkeys::Action::CollapseOverlay => {
+            let h = app.clone();
+            let _ = app.run_on_main_thread(move || {
+                if tracker_window::state(&h).visible {
+                    tracker_window::request_collapse_toggle(&h);
+                } else if let Err(e) = tracker_window::open(&h) {
+                    log::error!("loot tracker open: {e}");
+                }
+            });
+        }
+        hotkeys::Action::StartMap => match service.map_control("start", None, None) {
+            Ok(_) => report(true, "Map started".into()),
+            Err(e) => report(false, e.to_string()),
+        },
+        hotkeys::Action::FinishMap => {
+            let open = service.inner.db.conn().ok().and_then(|c| maps::open_run(&c, GAME, (service.inner.now)()).ok().flatten());
+            match open {
+                Some(m) => match service.map_control("finish", Some(m.id), None) {
+                    Ok(_) => report(true, "Map finished".into()),
+                    Err(e) => report(false, e.to_string()),
+                },
+                None => report(false, "No map is open.".into()),
+            }
+        }
+        hotkeys::Action::Screenshot => {
+            report(true, "Capturing the inventory…".into());
+            service.capture_inventory_hotkey();
+        }
+    }
 }
 
 /// Called by the foreground hook (overlay) with the game in the foreground.
@@ -213,6 +361,7 @@ impl LootService {
                 app: std::sync::OnceLock::new(),
                 wake: (Mutex::new(false), Condvar::new()),
                 now,
+                inventory: Default::default(),
             }),
         }
     }
@@ -223,12 +372,30 @@ impl LootService {
 
     pub fn set_config(&self, c: LootConfig) -> AppResult<LootConfig> {
         let c = c.sanitized();
+        let before = self.config();
+        if c.hotkeys != before.hotkeys {
+            let price = hotkeys::price_check_key(&self.inner.db);
+            hotkeys::validate(&c.hotkeys, &[("Price check", price)]).map_err(AppError::InvalidInput)?;
+        }
         crate::settings::set_game(&self.inner.db, GAME, CONFIG_KEY, &serde_json::to_value(&c)?)?;
         *self.inner.config.lock().map_err(|_| AppError::StatePoisoned)? = c.clone();
         CAPTURE_ENABLED.store(c.enabled, Ordering::SeqCst);
         clipboard::set_listening(c.enabled && FOREGROUND_POE2.load(Ordering::SeqCst));
         self.update_status(|s| s.enabled = c.enabled);
         self.poke();
+        if let Some(app) = self.inner.app.get() {
+            let _ = app.emit(EVENT_CONFIG, &c);
+            let h = app.clone();
+            let (keys, top) = (c.hotkeys != before.hotkeys, c.overlay_always_on_top != before.overlay_always_on_top);
+            let _ = app.run_on_main_thread(move || {
+                if keys {
+                    crate::overlay::refresh_hotkeys(&h);
+                }
+                if top {
+                    tracker_window::apply_always_on_top(&h);
+                }
+            });
+        }
         Ok(c)
     }
 
@@ -276,6 +443,15 @@ impl LootService {
         let _ = std::thread::Builder::new().name("vaalytics-loot-capture".into()).spawn(move || me.capture_worker(rx));
         let me = self.clone();
         let _ = std::thread::Builder::new().name("vaalytics-loot-values".into()).spawn(move || me.valuation_worker());
+        // Map records follow Session Intelligence's (debounced) updates — event-driven, no polling.
+        if let Some(app) = self.inner.app.get() {
+            let me = self.clone();
+            app.listen(crate::session::EVENT_UPDATED, move |_| {
+                if let Err(e) = me.sync_maps() {
+                    log::warn!("loot: map sync failed: {e}");
+                }
+            });
+        }
         // Retention once per start; uniques saved before unique prices existed get valued again.
         let cfg = self.config();
         if let Ok(c) = self.inner.db.conn() {
@@ -287,6 +463,11 @@ impl LootService {
             }
             if let Err(e) = store::apply_retention(&c, GAME, cfg.retention_days, (self.inner.now)()) {
                 log::warn!("loot retention failed: {e}");
+            }
+            match maps::backfill(&c, GAME, (self.inner.now)()) {
+                Ok(n) if n > 0 => log::info!("loot: {n} earlier map instances imported from Session Intelligence"),
+                Ok(_) => {}
+                Err(e) => log::warn!("loot: map backfill failed: {e}"),
             }
         }
     }
@@ -324,18 +505,146 @@ impl LootService {
         }
     }
 
+    /// The Loot Tracker overlay's data (read-only).
+    pub fn tracker_summary(&self, recent: i64) -> AppResult<TrackerSummary> {
+        let now = (self.inner.now)();
+        let ctx = (self.inner.session)();
+        // Read before locking the connection (settings take it too).
+        let reset_at = self.session_reset_at();
+        let c = self.inner.db.conn()?;
+        let open_map = maps::open_run(&c, GAME, now)?;
+        let sid = ctx.as_ref().map(|s| s.session_id);
+        let last_map = match (&open_map, reset_at, sid) {
+            (Some(_), _, _) => None,
+            (None, Some(t), _) => maps::latest_since(&c, GAME, t, now)?,
+            (None, None, Some(s)) => maps::list(&c, GAME, Some(s), 1, now)?.into_iter().next(),
+            _ => None,
+        };
+        let (maps_finished, session_totals) = match (reset_at, sid) {
+            (Some(t), _) => (maps::finished_since(&c, GAME, t)?, maps::totals_since(&c, GAME, t)?),
+            (None, Some(s)) => (maps::finished_in_session(&c, GAME, s)?, maps::session_totals(&c, GAME, s)?),
+            (None, None) => (0, maps::Totals::default()),
+        };
+        let snap_for_last: Option<i64> = match &last_map {
+            Some(m) => c
+                .query_row(
+                    "SELECT id FROM loot_inventory_snapshots WHERE game = ?1 AND map_run_id = ?2 AND status != 'cancelled' ORDER BY taken_at DESC LIMIT 1",
+                    rusqlite::params![GAME.as_str(), m.id],
+                    |r| r.get(0),
+                )
+                .ok(),
+            None => None,
+        };
+        let recent = store::list(
+            &c,
+            GAME,
+            &store::LibraryQuery {
+                session_id: if reset_at.is_some() { None } else { sid },
+                from: reset_at,
+                sort: Some("newest".into()),
+                limit: Some(recent.clamp(1, 200)),
+                ..Default::default()
+            },
+        )?;
+        drop(c);
+        let last_map_inventory = snap_for_last.and_then(|id| self.snapshot_delta(id, None).ok().map(|d| (id, d.estimated_gain, d.needs_review)));
+        Ok(TrackerSummary {
+            last_map_inventory,
+            now,
+            session_id: sid,
+            session_started_at: reset_at.or(ctx.as_ref().map(|s| s.started_at)),
+            reset_at,
+            area_name: ctx.as_ref().filter(|s| s.in_area).and_then(|s| s.area_name.clone()),
+            area_kind: ctx.as_ref().filter(|s| s.in_area).and_then(|s| s.area_kind.clone()),
+            open_map,
+            last_map,
+            maps_finished,
+            session_totals,
+            recent,
+            capture: self.status(),
+        })
+    }
+
+    pub fn session_reset_at(&self) -> Option<i64> {
+        crate::settings::get_game(&self.inner.db, GAME, RUN_KEY).ok().flatten().and_then(|v| v.as_i64())
+    }
+
+    /// "Reset session": overlay counters (time, value, captures, maps) start now; nothing is deleted.
+    /// `clear` goes back to following the game session.
+    pub fn reset_session(&self, clear: bool) -> AppResult<Option<i64>> {
+        let at = if clear {
+            crate::settings::set_game(&self.inner.db, GAME, RUN_KEY, &serde_json::Value::Null)?;
+            None
+        } else {
+            let now = (self.inner.now)();
+            crate::settings::set_game(&self.inner.db, GAME, RUN_KEY, &serde_json::json!(now))?;
+            Some(now)
+        };
+        self.emit_updated();
+        Ok(at)
+    }
+
+    /// Tells every view (main window, overlay) that Loot Journal data changed.
+    pub fn notify_changed(&self) {
+        self.emit_updated();
+    }
+
+    /// Manual map control (see maps.rs): "start" | "pause" | "resume" | "finish".
+    pub fn map_control(&self, action: &str, id: Option<i64>, name: Option<&str>) -> AppResult<Option<maps::MapRun>> {
+        let now = (self.inner.now)();
+        let ctx = (self.inner.session)();
+        let c = self.inner.db.conn()?;
+        let need_id = || id.ok_or_else(|| AppError::InvalidInput("Which map?".into()));
+        let target = match action {
+            "start" => maps::start_manual(&c, GAME, ctx.as_ref(), name, now)?,
+            "pause" => {
+                maps::set_paused(&c, GAME, need_id()?, true, now)?;
+                need_id()?
+            }
+            "resume" => {
+                maps::set_paused(&c, GAME, need_id()?, false, now)?;
+                need_id()?
+            }
+            "finish" => {
+                maps::finish(&c, GAME, need_id()?, now)?;
+                need_id()?
+            }
+            _ => return Err(AppError::InvalidInput("Unknown map action.".into())),
+        };
+        let run = maps::get(&c, GAME, target, now)?;
+        drop(c);
+        self.emit_updated();
+        Ok(run)
+    }
+
+    /// Brings map records in line with Session Intelligence; emits `loot:updated` when they changed.
+    pub fn sync_maps(&self) -> AppResult<bool> {
+        let ctx = (self.inner.session)();
+        let changed = maps::sync(&*self.inner.db.conn()?, GAME, ctx.as_ref(), (self.inner.now)())?;
+        if changed {
+            self.emit_updated();
+        }
+        Ok(changed)
+    }
+
     /// Handles clipboard text. Non-item text returns Ok(None) and is dropped.
     pub fn process_text(&self, text: &str) -> AppResult<Option<CaptureOutcome>> {
         let Some(h) = item_text::parse_header(text) else { return Ok(None) };
         let cfg = self.config();
         let now = (self.inner.now)();
         let session = (self.inner.session)();
+        let map_run_id = {
+            let c = self.inner.db.conn()?;
+            maps::sync(&c, GAME, session.as_ref(), now)?;
+            maps::map_for_capture(&c, GAME, session.as_ref(), now)?
+        };
         let ctx = CaptureContext {
             now,
             session_id: session.as_ref().map(|s| s.session_id),
             area_name: session.as_ref().and_then(|s| s.area_name.clone()),
             area_kind: session.as_ref().and_then(|s| s.area_kind.clone()),
             session_elapsed_secs: session.as_ref().map(|s| (now - s.started_at).max(0)),
+            map_run_id,
         };
         let fp = item_text::fingerprint(text);
         let outcome = {
@@ -411,6 +720,7 @@ impl LootService {
         let league = valuation::league_for(db, GAME);
         let now = (self.inner.now)();
         let mut changed = 0;
+        let mut priority: Vec<&'static str> = Vec::new();
         let mut wanted: Vec<&'static str> = Vec::new();
         for id in ids {
             let Some(t) = store::value_target(&*db.conn()?, GAME, *id)? else { continue };
@@ -419,7 +729,16 @@ impl LootService {
             let v = valuation::value(db, GAME, league.as_deref(), &t, &cfg.min_confidence)?;
             let v = valuation::with_last_listed(db, GAME, league.as_deref(), &t, v, now, &cfg.min_confidence)?;
             if v.status == "no_market_data" || v.status == "priced" {
-                for c in valuation::market_categories_for(&t) {
+                let all = valuation::market_categories_for(&t);
+                // The category the item was actually priced from goes first: with a per-pass budget, the
+                // fast-expiring categories at the head of the list must not starve it (found 2026-11-25:
+                // delirium data 128 h old while currency/fragments/essences/runes refreshed every pass).
+                if let Some(own) = v.market_category.as_deref().and_then(|m| all.iter().find(|c| **c == m)) {
+                    if !priority.contains(own) {
+                        priority.push(own);
+                    }
+                }
+                for c in all {
                     if !wanted.contains(&c) {
                         wanted.push(c);
                     }
@@ -439,8 +758,8 @@ impl LootService {
                 self.announce(*id)?;
             }
         }
-        if !wanted.is_empty() {
-            self.refresh_market(league.as_deref(), &wanted, cfg.max_requests as usize);
+        if !wanted.is_empty() || !priority.is_empty() {
+            self.refresh_market(league.as_deref(), &refresh_order(priority, wanted), cfg.max_requests as usize);
         }
         Ok(changed)
     }
@@ -613,6 +932,40 @@ mod tests {
         crate::market::store::replace_items(db, GAME, league, "essences", &rows, at).unwrap();
     }
 
+    #[test]
+    fn categories_items_were_priced_from_are_refreshed_first() {
+        let order = refresh_order(vec!["delirium", "essences"], vec!["currency", "fragments", "essences", "runes", "delirium", "ritual"]);
+        assert_eq!(order, vec!["delirium", "essences", "currency", "fragments", "runes", "ritual"]);
+        assert_eq!(&order[..4], &["delirium", "essences", "currency", "fragments"], "within a budget of 4");
+    }
+
+    static RESET_CLOCK: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(3_000_000);
+    fn reset_clock() -> i64 {
+        RESET_CLOCK.load(Ordering::SeqCst)
+    }
+
+    #[test]
+    fn reset_session_restarts_the_counters_without_deleting_anything() {
+        RESET_CLOCK.store(3_000_000, Ordering::SeqCst);
+        let db = Arc::new(Database::open_in_memory().unwrap());
+        let s = LootService::new(db.clone(), None, Box::new(|| None), reset_clock);
+        s.process_text(ESSENCE).unwrap();
+        let before = s.tracker_summary(10).unwrap();
+        assert_eq!((before.reset_at, before.recent.len(), before.session_totals.items), (None, 1, 0), "no game session, no reset: latest captures, no session totals");
+        RESET_CLOCK.fetch_add(60, Ordering::SeqCst);
+        assert_eq!(s.reset_session(false).unwrap(), Some(reset_clock()));
+        let after = s.tracker_summary(10).unwrap();
+        assert_eq!((after.reset_at, after.session_started_at, after.recent.len(), after.session_totals.items), (Some(reset_clock()), Some(reset_clock()), 0, 0));
+        RESET_CLOCK.fetch_add(10, Ordering::SeqCst);
+        s.process_text(ESSENCE_ONE).unwrap();
+        let t = s.tracker_summary(10).unwrap();
+        assert_eq!((t.recent.len(), t.session_totals.items, t.session_totals.quantity), (1, 1, 1));
+        let all = store::list(&db.conn().unwrap(), GAME, &Default::default()).unwrap();
+        assert_eq!(all.len(), 2, "history is kept");
+        assert_eq!(s.reset_session(true).unwrap(), None);
+        assert_eq!(s.tracker_summary(10).unwrap().reset_at, None);
+    }
+
     /// poe.ninja lists only recently traded items: a thinly traded essence drops out of a
     /// snapshot and comes back. The journal keeps the last listed price (same league, ≤ 7 days,
     /// low confidence, labelled), keeps rechecking, and never prices from another league.
@@ -678,7 +1031,7 @@ mod tests {
 
     #[test]
     fn captures_items_only_and_links_the_session_without_claiming_a_drop() {
-        let s = service(Some(SessionContext { session_id: 7, started_at: now() - 600, area_name: Some("Razed Fields".into()), area_kind: Some("map".into()) }));
+        let s = service(Some(SessionContext { session_id: 7, started_at: now() - 600, area_name: Some("Razed Fields".into()), area_kind: Some("map".into()), ..Default::default() }));
         // The session row must exist for the foreign key.
         {
             let c = s.db().conn().unwrap();
