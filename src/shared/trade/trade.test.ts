@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseClusterForTest, parseCorpseForTest, parseRealBootsForTest, parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
+import { parseClusterForTest, parseCorpseForTest, parseNebulisForTest, parseRealBootsForTest, parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
 import { applyMode, applyRange, buildFilters, buildQuery, defaultOptions, rangeFor, searchBasis, splitOptionId, suggestedMin, tradeSiteSearchUrl } from "./query";
 import { buildStatIndex, matchMod, templateKey, type TradeStat } from "./stats";
 
@@ -348,5 +348,28 @@ describe("live finding: local stats on armour (a rare boot's own search found 0 
   it("jewellery keeps the global stat", () => {
     const ring = parseRareForTest("+120 to Armour");
     expect(buildFilters(ring, index).stats.find((s) => s.label === "+120 to Armour")?.statId).toBe("explicit.stat_809229260");
+  });
+});
+
+describe("user report: synthesised unique (Unknown item base type)", () => {
+  // Real id from /api/trade/data/stats (PoE 1, 2026-11-25).
+  const index = buildStatIndex([{ id: "explicit.stat_2304729532", text: "#% increased Implicit Modifier magnitudes", type: "explicit" }]);
+
+  it("searches the base without the Synthesised prefix, with the Synthesised Item filter", () => {
+    const item = parseNebulisForTest();
+    expect(item).toMatchObject({ rarity: "Unique", name: "Nebulis", baseType: "Void Sceptre", synthesised: true });
+    const q = buildQuery(item, [], defaultOptions(item)).query as { name: string; type: string; filters: { misc_filters: { filters: Record<string, unknown> } } };
+    expect(q.name).toBe("Nebulis");
+    expect(q.type).toBe("Void Sceptre");
+    expect(q.filters.misc_filters.filters.synthesised_item).toEqual({ option: "true" });
+  });
+
+  it("advanced copy: the Unscalable Value marker is not part of the modifier", () => {
+    const item = parseNebulisForTest(true);
+    const mod = item.mods.find((m) => m.text.startsWith("109%"))!;
+    expect(mod.text).toBe("109% increased Implicit Modifier magnitudes");
+    const { stats, unmatched } = buildFilters(item, index);
+    expect(unmatched.map((u) => u.text)).not.toContain("109% increased Implicit Modifier magnitudes");
+    expect(stats.find((s) => s.statId === "explicit.stat_2304729532")).toMatchObject({ value: 109 });
   });
 });

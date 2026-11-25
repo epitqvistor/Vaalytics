@@ -197,3 +197,43 @@ Item Level: 79
 Note: ~b/o 1 alch
 `;
 export const parseRealBootsForTest = () => parse("poe1", REAL_BOOTS_TEXT);
+
+/** Synthesised unique — real item text from the PoE 1 Trade API (Covens, 2026-11-25). User report: "Unknown item base type". */
+export const NEBULIS_TEXT = `Item Class: Sceptres
+Rarity: Unique
+Nebulis
+Synthesised Void Sceptre
+--------
+Sceptre
+Physical Damage: 50-76
+Critical Strike Chance: 7.30%
+Attacks per Second: 1.25
+Weapon Range: 1.1 metres
+--------
+Requirements:
+Level: 68
+Str: 104
+Int: 122
+--------
+Sockets: R-W W 
+--------
+Item Level: 87
+--------
++22 to Dexterity
+25% increased Cast Speed
+Regenerate 0.6% of Mana per second
+--------
+109% increased Implicit Modifier magnitudes
+18% increased Cast Speed
+7% increased Elemental Damage per 1% Fire, Cold, or Lightning Resistance above 75%
+--------
+The vastness of the cosmos holds energies beyond comprehension,
+should one have the fortitude to grasp them.
+--------
+Synthesised Item
+--------
+Note: ~b/o 1 chaos
+`;
+/** The same item as an in-game advanced copy marks the synthesis implicit "— Unscalable Value". */
+export const NEBULIS_ADVANCED_TEXT = NEBULIS_TEXT.replace("109% increased Implicit Modifier magnitudes", "109% increased Implicit Modifier magnitudes — Unscalable Value");
+export const parseNebulisForTest = (advanced = false) => parse("poe1", advanced ? NEBULIS_ADVANCED_TEXT : NEBULIS_TEXT);

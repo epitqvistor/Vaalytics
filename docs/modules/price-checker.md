@@ -82,6 +82,12 @@ unsupported claims: a rare searched by base type only could show "High confidenc
   summary also shows the poe.ninja rate from Market Data ("Market rate 428 ex · market · poe.ninja"), labelled with
   `ProvenanceTag` and never mixed into the listing estimate. The premium currency itself is shown in the base unit.
 
+- **Synthesised items (PoE 1).** The copy shows "Synthesised <base>"; Trade only knows the base ("Unknown item base
+  type" otherwise — user report, Synthesised Nebulis). The parser strips the prefix and sets `synthesised`; the query adds
+  `misc_filters.synthesised_item` (and `fractured_item` for fractured items) — filter ids from `/api/trade/data/filters`.
+  The advanced copy's "— Unscalable Value" marker is stripped from modifier text; a weapon's type line ("Sceptre") is
+  the `Category` property, not an unparsed line.
+
 ### Results, cache, interaction
 - Results are cached in memory per game + league + exact query for 5 minutes and always labelled **Cached** (with
   age); **Refresh** searches live. States: Live / Cached / Refreshing / Request failed.

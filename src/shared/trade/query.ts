@@ -247,6 +247,10 @@ export function buildQuery(
   const misc: Json = {};
   if (opts.corrupted !== "any") misc.corrupted = { option: opts.corrupted === "yes" ? "true" : "false" };
   if (opts.itemLevelMin != null) misc.ilvl = { min: opts.itemLevelMin };
+  // PoE 1 item kinds Trade filters on (verified in /api/trade/data/filters): a synthesised or fractured
+  // item is only comparable with its own kind.
+  if (item.game === "poe1" && item.synthesised) misc.synthesised_item = { option: "true" };
+  if (item.game === "poe1" && item.fractured) misc.fractured_item = { option: "true" };
   if (item.rarity === "Gem") {
     const range = (r: Range) => (r.min == null && r.max == null ? null : { ...(r.min != null ? { min: r.min } : {}), ...(r.max != null ? { max: r.max } : {}) });
     const level = range(opts.gemLevel);

@@ -142,7 +142,8 @@ function stripMarker(line: string, rules: ParserRules): { text: string; kind?: M
 }
 
 function makeMod(item: ParsedItem, rawLine: string, rules: ParserRules, header: ReturnType<typeof parseHeader>, fallbackKind: ModKind): ParsedMod {
-  const marked = stripMarker(stripMarkup(rawLine), rules);
+  // Advanced copies mark some values "— Unscalable Value" (not part of the modifier text Trade knows).
+  const marked = stripMarker(stripMarkup(rawLine).replace(UNSCALABLE, ""), rules);
   const { text, ranges } = extractRanges(marked.text);
   const kind = marked.kind ?? header?.kind ?? fallbackKind;
   return {
@@ -166,6 +167,9 @@ function looksLikeMods(section: string[], rules: ParserRules): boolean {
   const markers = Object.keys(rules.lineMarkers);
   return section.some((l) => markers.some((m) => l.endsWith(m)));
 }
+
+const UNSCALABLE = /\s+—\s+Unscalable Value$/;
+const SYNTHESISED = "Synthesised ";
 
 const PROPERTY_LINE = /^([^:]+):\s*(.+)$/;
 /** Modifier lines that contain a colon, e.g. cluster jewels' "Added Small Passive Skills also grant: +10 to Maximum Life". */
@@ -209,6 +213,12 @@ export function parseWith(rules: ParserRules, rawText: string): ParseResult {
     item.baseType = names[1]!;
   } else {
     item.baseType = names[0] ?? item.itemClass;
+  }
+  // PoE 1 synthesised items show "Synthesised <base>"; Trade knows the base without the prefix and
+  // has a separate "Synthesised Item" filter ("Unknown item base type" otherwise — user report).
+  if (item.baseType.startsWith(SYNTHESISED)) {
+    item.baseType = item.baseType.slice(SYNTHESISED.length);
+    item.synthesised = true;
   }
 
   let sawItemLevel = false;
@@ -288,6 +298,8 @@ export function parseWith(rules: ParserRules, rawText: string): ParseResult {
         if (!m) {
           // A gem's tag line ("Attack, Melee, Strike, …") has no "name: value" form.
           if (item.rarity === "Gem" && !inReq && GEM_TAGS.test(line)) item.properties.push({ name: "Tags", value: line });
+          // A weapon's type line ("Sceptre", "Two Handed Sword") opens its properties block.
+          else if (line === section[0] && !inReq && !/\d/.test(line)) item.properties.push({ name: "Category", value: line });
           else if (line !== "Requirements:") item.unparsed.push(line);
           continue;
         }

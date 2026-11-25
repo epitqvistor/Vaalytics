@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { extractRanges, isItemText, stripMarkup } from "@/shared/item-parser/core";
 import { parsePoe1Item } from ".";
-import { CLUSTER_TEXT, CORPSE_TEXT } from "@/shared/trade/test-fixtures";
+import { CLUSTER_TEXT, CORPSE_TEXT, NEBULIS_ADVANCED_TEXT } from "@/shared/trade/test-fixtures";
 
 // Real item text returned by the PoE 1 trade API (item.extended.text), Nov 2026.
 const TRADE_SIMPLE = `Item Class: Rings
@@ -181,6 +181,14 @@ describe("PoE 1 parser", () => {
     expect(r.item).toMatchObject({ itemClass: "Corpses", rarity: "Currency", baseType: "Perfect Serpent Warrior", itemLevel: 83 });
     expect(r.item.properties.map((p) => [p.name, p.value])).toEqual([["Corpse Level", "83"], ["Monster Category", "Eldritch"]]);
     expect(r.item.mods.map((m) => m.text)).toContain("Fires Mortars when Defensive");
+    expect(r.item.unparsed).toEqual([]);
+  });
+
+  it("synthesised unique: base without prefix, flag set, Unscalable Value marker stripped (real Trade text)", () => {
+    const r = parsePoe1Item(NEBULIS_ADVANCED_TEXT);
+    if (!r.ok) throw new Error(r.error);
+    expect(r.item).toMatchObject({ rarity: "Unique", name: "Nebulis", baseType: "Void Sceptre", synthesised: true, itemLevel: 87 });
+    expect(r.item.mods.map((m) => m.text)).toContain("109% increased Implicit Modifier magnitudes");
     expect(r.item.unparsed).toEqual([]);
   });
 
