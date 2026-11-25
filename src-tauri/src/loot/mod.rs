@@ -194,6 +194,8 @@ pub struct TrackerSummary {
     pub last_map_inventory: Option<(i64, f64, usize)>,
     /// Set when the counters start at the user's "Reset session" instead of the game session.
     pub reset_at: Option<i64>,
+    /// The latest inventory snapshot of this session (or since the reset).
+    pub inventory: Option<inventory::service::OverlayInventory>,
 }
 
 /// Session context for a capture (from Session Intelligence).
@@ -548,7 +550,14 @@ impl LootService {
         )?;
         drop(c);
         let last_map_inventory = snap_for_last.and_then(|id| self.snapshot_delta(id, None).ok().map(|d| (id, d.estimated_gain, d.needs_review)));
+        // Snapshots of this session: since the reset, else since the game session started, else the last 12 h.
+        let since = reset_at.or(ctx.as_ref().map(|s| s.started_at)).unwrap_or(now - 12 * 3600);
+        let inventory = self.overlay_inventory(since).unwrap_or_else(|e| {
+            log::warn!("loot tracker: inventory summary failed: {e}");
+            None
+        });
         Ok(TrackerSummary {
+            inventory,
             last_map_inventory,
             now,
             session_id: sid,

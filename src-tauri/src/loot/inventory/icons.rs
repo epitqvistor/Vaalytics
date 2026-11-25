@@ -13,13 +13,47 @@ use super::image::Rgba;
 /// Side of the comparison grid.
 pub const N: usize = 24;
 
+/// Scales the art is tried at: the game draws 1×1 items slightly differently sized than the CDN images.
+pub const SCALES: &[f32] = &[0.84, 0.92, 1.0, 1.08];
+
+#[derive(Debug, Clone)]
+struct Variant {
+    /// N×N RGB and a weight (alpha 0–1) per pixel.
+    rgb: Vec<[f32; 3]>,
+    weight: Vec<f32>,
+}
+
 #[derive(Debug, Clone)]
 pub struct Reference {
     pub name: String,
     pub category: String,
-    /// N×N RGB and a weight (alpha 0–1) per pixel.
-    rgb: Vec<[f32; 3]>,
-    weight: Vec<f32>,
+    variants: Vec<Variant>,
+}
+
+/// The icon drawn at `scale` of the cell, centred (transparent around when smaller, cropped when larger).
+fn scaled(icon: &Rgba, scale: f32) -> Rgba {
+    // Non-square art is stretched to a square first, as the cell comparison always did.
+    let base = icon.w.max(icon.h);
+    let sq;
+    let icon = if icon.w != icon.h {
+        sq = icon.resize(base, base);
+        &sq
+    } else {
+        icon
+    };
+    let side = (icon.w.max(icon.h) as f32 / scale).round().max(1.0) as usize;
+    let mut out = Rgba::new(side, side);
+    let ox = (side as i64 - icon.w as i64) / 2;
+    let oy = (side as i64 - icon.h as i64) / 2;
+    for y in 0..side {
+        for x in 0..side {
+            let (sx, sy) = (x as i64 - ox, y as i64 - oy);
+            if sx >= 0 && sy >= 0 && (sx as usize) < icon.w && (sy as usize) < icon.h {
+                out.put(x, y, icon.get(sx as usize, sy as usize));
+            }
+        }
+    }
+    out
 }
 
 /// Pixels of the N×N grid that are compared (stack size and tier numeral corners excluded).
@@ -33,17 +67,24 @@ fn compared(x: usize, y: usize) -> bool {
 impl Reference {
     /// From a decoded icon (RGBA with transparency). None when it has almost no visible pixels.
     pub fn new(name: &str, category: &str, icon: &Rgba) -> Option<Self> {
-        let small = icon.resize(N, N);
-        let mut rgb = Vec::with_capacity(N * N);
-        let mut weight = Vec::with_capacity(N * N);
-        for y in 0..N {
-            for x in 0..N {
-                let p = small.get(x, y);
-                rgb.push([p[0] as f32, p[1] as f32, p[2] as f32]);
-                weight.push(if compared(x, y) { p[3] as f32 / 255.0 } else { 0.0 });
-            }
-        }
-        (weight.iter().filter(|w| **w > 0.5).count() > N * N / 10).then(|| Self { name: name.into(), category: category.into(), rgb, weight })
+        let variants: Vec<Variant> = SCALES
+            .iter()
+            .map(|&s| {
+                let small = scaled(icon, s).resize(N, N);
+                let mut rgb = Vec::with_capacity(N * N);
+                let mut weight = Vec::with_capacity(N * N);
+                for y in 0..N {
+                    for x in 0..N {
+                        let p = small.get(x, y);
+                        rgb.push([p[0] as f32, p[1] as f32, p[2] as f32]);
+                        weight.push(if compared(x, y) { p[3] as f32 / 255.0 } else { 0.0 });
+                    }
+                }
+                Variant { rgb, weight }
+            })
+            .filter(|v| v.weight.iter().filter(|w| **w > 0.5).count() > N * N / 10)
+            .collect();
+        (!variants.is_empty()).then(|| Self { name: name.into(), category: category.into(), variants })
     }
 }
 
@@ -74,8 +115,12 @@ pub fn sample(cell: &Rgba) -> CellSample {
     CellSample { rgb, detail: (s2 / n - mean * mean).max(0.0).sqrt(), mean_luma: mean }
 }
 
-/// Weighted correlation of colours (−1…1).
+/// Best weighted colour correlation over the scale variants (−1…1).
 pub fn similarity(r: &Reference, c: &CellSample) -> f32 {
+    r.variants.iter().map(|v| variant_similarity(v, c)).fold(-1.0, f32::max)
+}
+
+fn variant_similarity(r: &Variant, c: &CellSample) -> f32 {
     let mut wsum = 0f32;
     let mut mr = [0f32; 3];
     let mut mc = [0f32; 3];

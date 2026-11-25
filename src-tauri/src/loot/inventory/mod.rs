@@ -120,6 +120,26 @@ mod explore {
                 }
             }
         }
+        // The real capture (native resolution): (row, col, stack size).
+        let (real, rg) = real_capture();
+        for (r, c, n) in [(0usize, 0usize, 1u32), (1, 0, 1), (2, 0, 1), (3, 0, 54), (2, 2, 10)] {
+            let (x, y, s) = rg.cell_rect(c, r, 0.0);
+            let q = real.crop(x, y, (s as f32 * 0.62) as usize, (s as f32 * 0.36) as usize);
+            let gl = text::glyphs(&q);
+            let digits: Vec<u32> = n.to_string().chars().map(|ch| ch.to_digit(10).unwrap()).collect();
+            if gl.len() != digits.len() {
+                println!("real r{r} c{c}: {} glyphs for {n}", gl.len());
+                bad += 1;
+                continue;
+            }
+            for (gv, d) in gl.iter().zip(digits) {
+                let e = &mut sums[d as usize];
+                for (a, b) in e.0.iter_mut().zip(gv) {
+                    *a += b;
+                }
+                e.1 += 1;
+            }
+        }
         println!("segmentation mismatches: {bad}");
         for (d, (v, n)) in sums.iter().enumerate() {
             if *n == 0 {
@@ -153,6 +173,12 @@ mod explore {
             println!("r{r} {}", line.join(" "));
         }
         println!("correct {ok}, wrong {wrong}, unread {none}");
+        let (real, rg) = real_capture();
+        for (r, c, n) in [(0usize, 0usize, 1u32), (1, 0, 1), (2, 0, 1), (3, 0, 54), (2, 2, 10)] {
+            let (x, y, s) = rg.cell_rect(c, r, 0.0);
+            let q = real.crop(x, y, (s as f32 * 0.62) as usize, (s as f32 * 0.36) as usize);
+            println!("real r{r} c{c}: expected {n}, read {:?}", super::digits::read(&q));
+        }
     }
 
     #[test]
@@ -175,5 +201,29 @@ mod explore {
         }
         let count = |c: Confidence| cells.iter().filter(|x| x.confidence == c).count();
         println!("cells {} high {} medium {} low {} unknown {}", cells.len(), count(Confidence::High), count(Confidence::Medium), count(Confidence::Low), count(Confidence::Unknown));
+    }
+
+    /// The real 2560×1440 capture (inventory crop as stored): grid from the snapshot record.
+    pub fn real_capture() -> (super::image::Rgba, grid::Grid) {
+        (load_fixture("poe2-2560x1440-capture-crop.png"), grid::Grid { left: 11.128, top: 10.952, cell: 70.209, score: 24.0 })
+    }
+
+    #[test]
+    #[ignore]
+    fn match_real_capture() {
+        let refs = load_refs();
+        let (img, g) = real_capture();
+        for r in 0..grid::ROWS {
+            for c in 0..3 {
+                let (x, y, s) = g.cell_rect(c, r, 0.0);
+                let cell = img.crop(x, y, s, s);
+                let inner = cell.crop((s as f32 * 0.04) as usize, (s as f32 * 0.04) as usize, (s as f32 * 0.92) as usize, (s as f32 * 0.92) as usize);
+                let smp = icons::sample(&inner);
+                let corners = [(2usize, 2usize), (s - 6, 2), (2, s - 6), (s - 6, s - 6)].map(|(x, y)| cell.get(x, y));
+                let top = icons::rank(&refs, &smp, 3);
+                let t: Vec<String> = top.iter().map(|k| format!("{} {:.2}", k.name, k.score)).collect();
+                println!("r{r} c{c} detail {:.0} mean {:.0} corners {:?} | {}", smp.detail, smp.mean_luma, corners.map(|p| [p[0], p[1], p[2]]), t.join(" | "));
+            }
+        }
     }
 }

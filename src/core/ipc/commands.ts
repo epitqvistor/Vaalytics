@@ -735,6 +735,18 @@ export interface LootTrackerSummary {
   lastMapInventory: [number, number, number] | null;
   /** Counters start at the user's "Reset session" (unix s) instead of the game session. */
   resetAt: number | null;
+  /** The latest inventory snapshot of this session. */
+  inventory: {
+    snapshotId: number;
+    takenAt: number;
+    status: "review" | "confirmed" | "cancelled";
+    value: number;
+    toReview: number;
+    unpriced: number;
+    /** Estimated gain since the previous confirmed snapshot. */
+    change: number | null;
+    items: { name: string; quantity: number; value: number | null; icon: string | null; uncertain: boolean }[];
+  } | null;
 }
 export interface LootTrackerWindowState {
   open: boolean;

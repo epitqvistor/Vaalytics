@@ -49,6 +49,35 @@ pub struct CellResult {
     pub quantity_confidence: f32,
     pub icon_confidence: Confidence,
     pub confidence: Confidence,
+    /// The cell holds something that isn't a stackable (equipment, its own coloured background):
+    /// stored excluded, not counted and not asked about.
+    pub not_stackable: bool,
+}
+
+/// Stackable currency sits on the inventory's navy slot background; equipment and other items get a
+/// coloured background (e.g. dark red) over all the cells they cover. Decided from the cell corners.
+fn stackable_background(cell: &Rgba) -> bool {
+    let s = cell.w;
+    let k = (s as f32 * 0.07).max(2.0) as usize;
+    let corners = [(1usize, 1usize), (s - k - 1, 1), (1, s - k - 1), (s - k - 1, s - k - 1)];
+    let navy = corners
+        .iter()
+        .filter(|(x, y)| {
+            let (mut r, mut g, mut b, mut n) = (0f32, 0f32, 0f32, 0f32);
+            for yy in *y..(*y + k).min(cell.h) {
+                for xx in *x..(*x + k).min(cell.w) {
+                    let p = cell.get(xx, yy);
+                    r += p[0] as f32;
+                    g += p[1] as f32;
+                    b += p[2] as f32;
+                    n += 1.0;
+                }
+            }
+            let (r, g, b) = (r / n, g / n, b / n);
+            b > r + 8.0 && b > g + 8.0
+        })
+        .count();
+    navy >= 2
 }
 
 /// Empty slots are flat and dark.
@@ -94,6 +123,22 @@ pub fn cell(refs: &[Reference], cell_img: &Rgba, col: usize, row: usize) -> Opti
     if is_empty(&sample) {
         return None;
     }
+    if !stackable_background(cell_img) {
+        return Some(CellResult {
+            col,
+            row,
+            name: None,
+            category: Some("other".into()),
+            icon_score: 0.0,
+            alternatives: Vec::new(),
+            tier_strokes: 0,
+            quantity: None,
+            quantity_confidence: 0.0,
+            icon_confidence: Confidence::Unknown,
+            confidence: Confidence::Unknown,
+            not_stackable: true,
+        });
+    }
     let strokes = text::tier_strokes(cell_img);
     let qty_region = cell_img.crop(0, 0, (s as f32 * 0.62) as usize, (s as f32 * 0.36) as usize);
     let qty = digits::read(&qty_region);
@@ -111,6 +156,7 @@ pub fn cell(refs: &[Reference], cell_img: &Rgba, col: usize, row: usize) -> Opti
             quantity_confidence: qty.map(|q| q.confidence).unwrap_or(0.0),
             icon_confidence: Confidence::Unknown,
             confidence: Confidence::Unknown,
+            not_stackable: false,
         });
     };
     // Same art (tier variants) scores the same; pick the variant the numeral names.
@@ -138,6 +184,7 @@ pub fn cell(refs: &[Reference], cell_img: &Rgba, col: usize, row: usize) -> Opti
         quantity_confidence: qty.map(|q| q.confidence).unwrap_or(0.0),
         icon_confidence: ic,
         confidence: ic.min(qc),
+        not_stackable: false,
     })
 }
 
@@ -161,6 +208,40 @@ pub fn inventory(refs: &[Reference], screenshot: &Rgba) -> Result<(Grid, Vec<Cel
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The real in-game capture (2560×1440, inventory crop as stored by Vaalytics).
+    fn real() -> (Rgba, Grid) {
+        (super::super::image::load_fixture("poe2-2560x1440-capture-crop.png"), Grid { left: 11.128, top: 10.952, cell: 70.209, score: 24.0 })
+    }
+
+    #[test]
+    fn real_capture_stack_sizes_and_equipment_cells() {
+        let (img, g) = real();
+        let cell = |c: usize, r: usize| {
+            let (x, y, s) = g.cell_rect(c, r, 0.0);
+            img.crop(x, y, s, s)
+        };
+        let qty = |c: usize, r: usize| {
+            let k = cell(c, r);
+            let s = k.w;
+            digits::read(&k.crop(0, 0, (s as f32 * 0.62) as usize, (s as f32 * 0.36) as usize)).map(|q| q.value)
+        };
+        assert_eq!(qty(0, 3), Some(54), "the 5 is known");
+        assert_eq!(qty(2, 2), Some(10));
+        assert_eq!(qty(0, 0), Some(1));
+        // Currency on the navy slot background; the helmet / ring cells (dark red background) aren't stackables.
+        for (c, r) in [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4), (2, 2)] {
+            assert!(stackable_background(&cell(c, r)), "c{c} r{r}");
+        }
+        for (c, r) in [(1, 0), (2, 0), (1, 1), (2, 1), (1, 3), (2, 3), (1, 4), (2, 4)] {
+            assert!(!stackable_background(&cell(c, r)), "c{c} r{r}");
+        }
+        // Without references: equipment cells come back as excluded "other", empty slots not at all.
+        let refs: Vec<Reference> = Vec::new();
+        let equip = super::cell(&refs, &cell(1, 3), 1, 3).unwrap();
+        assert!(equip.not_stackable && equip.name.is_none());
+        assert!(super::cell(&refs, &cell(8, 2), 8, 2).is_none(), "empty slot");
+    }
 
     #[test]
     fn tier_numerals_pick_the_variant() {

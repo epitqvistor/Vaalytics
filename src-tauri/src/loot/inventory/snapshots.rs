@@ -134,8 +134,8 @@ fn entry_row(r: &Row<'_>) -> rusqlite::Result<Entry> {
 fn insert_entries(conn: &Connection, game: GameId, id: i64, cells: &[CellResult]) -> AppResult<()> {
     let mut ins = conn.prepare(
         "INSERT INTO loot_inventory_entries (snapshot_id, game, col, row, recognized_name, recognized_category, icon_score, tier_strokes,
-            recognized_quantity, quantity_confidence, confidence, alternatives, name, quantity)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?5, ?9)",
+            recognized_quantity, quantity_confidence, confidence, alternatives, name, quantity, excluded)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?5, ?9, ?13)",
     )?;
     for c in cells {
         ins.execute(params![
@@ -151,6 +151,7 @@ fn insert_entries(conn: &Connection, game: GameId, id: i64, cells: &[CellResult]
             c.quantity_confidence as f64,
             c.confidence.as_str(),
             serde_json::to_string(&c.alternatives)?,
+            c.not_stackable as i64,
         ])?;
     }
     Ok(())
@@ -437,6 +438,7 @@ mod tests {
             quantity_confidence: 0.6,
             icon_confidence: conf,
             confidence: conf,
+            not_stackable: false,
         }
     }
 

@@ -36,6 +36,18 @@ pub fn sources(db: &Database, league: &str) -> crate::error::AppResult<Vec<Sourc
     Ok(rows.filter_map(Result::ok).filter(|s| s.url.starts_with(HOST)).collect())
 }
 
+/// The market art URL of an item (for showing it), if listed in `league`.
+pub fn icon_for(db: &Database, league: &str, name: &str) -> Option<String> {
+    db.conn()
+        .ok()?
+        .query_row(
+            "SELECT icon FROM market_items WHERE game = ?1 AND league = ?2 AND name = ?3 AND variant IS NULL AND icon IS NOT NULL LIMIT 1",
+            params![GameId::Poe2.as_str(), league, name],
+            |r| r.get(0),
+        )
+        .ok()
+}
+
 /// Cache file of a URL (FNV-1a of the URL; the CDN path already embeds a content hash).
 pub fn cache_file(dir: &Path, url: &str) -> PathBuf {
     let mut h: u64 = 0xcbf2_9ce4_8422_2325;

@@ -89,7 +89,9 @@ pub fn glyphs_checked(region: &Rgba) -> (Vec<Vec<f32>>, bool) {
     let suspicious = comps.iter().any(|c| {
         let ch = (c.3 - c.1) as f32;
         let starts = c.0 as f32;
-        starts >= end && starts - end <= th * 0.7 && ch >= th * 0.33 && (c.1 as f32) < first.1 as f32 + th * 0.8
+        // Right behind the number (closer than digits are spaced from art), at least 60 % of a digit tall and
+        // starting on the digit line — a digit fused with item art. Art further away doesn't count.
+        starts >= end && starts - end <= th * 0.45 && ch >= th * 0.6 && (c.1 as f32) <= first.1 as f32 + th * 0.3
     });
     let mut out = Vec::new();
     for (cx0, _, cx1, _, _) in chain {

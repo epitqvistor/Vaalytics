@@ -65,7 +65,74 @@ pub struct SnapshotDetail {
     pub delta: snapshots::Delta,
 }
 
+/// The latest inventory snapshot as the Loot Tracker overlay shows it.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OverlayInventory {
+    pub snapshot_id: i64,
+    pub taken_at: i64,
+    pub status: String,
+    /// Known value of everything recognised (base unit).
+    pub value: f64,
+    pub to_review: i64,
+    pub unpriced: usize,
+    /// Change since the previous confirmed snapshot (estimated gain), when there is one.
+    pub change: Option<f64>,
+    pub items: Vec<OverlayInventoryItem>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OverlayInventoryItem {
+    pub name: String,
+    pub quantity: i64,
+    pub value: Option<f64>,
+    pub icon: Option<String>,
+    pub uncertain: bool,
+}
+
 impl LootService {
+    /// Summary of the latest snapshot taken at or after `since` (None = no snapshot yet).
+    pub fn overlay_inventory(&self, since: i64) -> AppResult<Option<OverlayInventory>> {
+        let (snap, totals) = {
+            let c = self.inner.db.conn()?;
+            let id: Option<i64> = c
+                .query_row(
+                    "SELECT id FROM loot_inventory_snapshots WHERE game = ?1 AND status != 'cancelled' AND taken_at >= ?2 ORDER BY taken_at DESC, id DESC LIMIT 1",
+                    rusqlite::params![GAME.as_str(), since],
+                    |r| r.get(0),
+                )
+                .ok();
+            let Some(id) = id else { return Ok(None) };
+            let Some(snap) = snapshots::get(&c, GAME, id)? else { return Ok(None) };
+            let totals = snapshots::totals(&snapshots::entries(&c, GAME, id)?);
+            (snap, totals)
+        };
+        let league = snap.league.clone().or_else(|| valuation::league_for(&self.inner.db, GAME));
+        let mut items: Vec<OverlayInventoryItem> = totals
+            .into_iter()
+            .map(|(name, t)| {
+                let unit = league.as_deref().and_then(|l| crate::market::store::find_by_name(&self.inner.db, GAME, l, &name).ok().flatten()).map(|m| m.value);
+                let icon = league.as_deref().and_then(|l| refs::icon_for(&self.inner.db, l, &name));
+                OverlayInventoryItem { value: unit.map(|u| u * t.quantity as f64), quantity: t.quantity, icon, uncertain: t.uncertain, name }
+            })
+            .collect();
+        items.sort_by(|a, b| b.value.unwrap_or(-1.0).total_cmp(&a.value.unwrap_or(-1.0)).then(a.name.cmp(&b.name)));
+        let value = items.iter().filter_map(|i| i.value).sum();
+        let unpriced = items.iter().filter(|i| i.value.is_none()).count();
+        let delta = self.snapshot_delta(snap.id, None).ok();
+        Ok(Some(OverlayInventory {
+            snapshot_id: snap.id,
+            taken_at: snap.taken_at,
+            status: snap.status.clone(),
+            value,
+            to_review: snap.to_review,
+            unpriced,
+            change: delta.filter(|d| d.against_id.is_some()).map(|d| d.estimated_gain),
+            items,
+        }))
+    }
+
     fn inv(&self) -> &InventoryState {
         &self.inner.inventory
     }
@@ -132,6 +199,17 @@ impl LootService {
         })();
         if let Err(e) = r {
             self.emit_inventory(InventoryEvent { kind: "error", message: e.to_string(), snapshot_id: None, cells: None, to_review: None });
+        }
+        // The result (or the reason it failed) is shown in the Loot Tracker: open it if it was hidden.
+        if let Some(app) = self.inner.app.get() {
+            if !tracker_window::state(app).visible {
+                let h = app.clone();
+                let _ = app.run_on_main_thread(move || {
+                    if let Err(e) = tracker_window::open(&h) {
+                        log::warn!("loot tracker: couldn't show the overlay after a snapshot: {e}");
+                    }
+                });
+            }
         }
     }
 

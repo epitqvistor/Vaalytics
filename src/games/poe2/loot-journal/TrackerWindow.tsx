@@ -153,23 +153,35 @@ function Overlay() {
   );
 }
 
-/** Re-reads the summary on Loot Journal and Session Intelligence changes (coalesced). */
+/**
+ * Re-reads the summary on Loot Journal and Session Intelligence changes. No timers (a background window's
+ * timers can be throttled): an event starts a read at once; events during a read cause one more read.
+ */
 function useSummary(recent: number) {
   const [data, setData] = useState<LootTrackerSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const timer = useRef<number | undefined>(undefined);
+  const state = useRef({ busy: false, again: false, recent });
+  state.current.recent = recent;
   const load = useCallback(() => {
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => {
-      lootTrackerSummary(GAME, recent)
+    const st = state.current;
+    if (st.busy) {
+      st.again = true;
+      return;
+    }
+    st.busy = true;
+    const run = () =>
+      lootTrackerSummary(GAME, st.recent)
         .then((d) => (setData(d), setError(null)))
-        .catch((e) => setError(String(e)));
-    }, 150);
-  }, [recent]);
-  useEffect(() => {
-    load();
-    return () => window.clearTimeout(timer.current);
-  }, [load]);
+        .catch((e) => setError(String(e)))
+        .finally(() => {
+          if (st.again) {
+            st.again = false;
+            void run();
+          } else st.busy = false;
+        });
+    void run();
+  }, []);
+  useEffect(load, [load, recent]);
   useLootUpdates(load);
   useEvent(SESSION_UPDATED_EVENT, load);
   return { data, error, reload: load };
@@ -306,8 +318,10 @@ function Body({ cfg, clickThrough, onCollapse, onMode }: { cfg: LootConfig; clic
         </div>
       </section>
 
-      {/* Recent loot */}
+      {/* Inventory snapshot (shortcut) and recent captures share one scroll area. */}
       <section className="min-h-0 flex-1 overflow-y-auto">
+        {s.data?.inventory && <InventoryBlock inv={s.data.inventory} fmt={fmt} rows={expanded ? 40 : cfg.overlayRows} />}
+        {s.data?.inventory && <p className="px-3 pt-2 pb-1 text-[10px] font-semibold tracking-[0.12em] text-fg-subtle uppercase">Recent captures</p>}
         {!s.data ? null : s.data.recent.length === 0 ? (
           <p className="px-3 py-4 text-center text-xs text-fg-subtle">Copy items in game with Ctrl+C — they appear here.</p>
         ) : (
@@ -381,6 +395,51 @@ function ResetButton({ onReset }: { onReset: () => void }) {
     >
       {armed ? "Sure?" : "Reset"}
     </button>
+  );
+}
+
+/** The last inventory screenshot: its value, the change since the previous confirmed one, the items. */
+function InventoryBlock({ inv, fmt, rows }: { inv: NonNullable<LootTrackerSummary["inventory"]>; fmt: (v: number) => string; rows: number }) {
+  return (
+    <div className="border-b border-line">
+      <div className="flex items-center justify-between px-3 pt-2">
+        <p className="text-[10px] font-semibold tracking-[0.12em] text-fg-subtle uppercase">
+          Inventory · {new Date(inv.takenAt * 1000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+        </p>
+        {inv.toReview > 0 ? (
+          <span className="text-[10.5px] text-warning" title="Uncertain cells — check them in Loot Journal → Inventory">
+            {inv.toReview} to check
+          </span>
+        ) : (
+          inv.status === "confirmed" && <span className="text-[10.5px] text-success">confirmed</span>
+        )}
+      </div>
+      <div className="flex items-baseline justify-between gap-2 px-3 pb-1.5">
+        <span className="tabular font-display text-[18px] leading-6 font-semibold text-accent-2" title="Known value of the recognised items">
+          {fmt(inv.value)}
+        </span>
+        <span className="truncate text-2xs text-fg-muted">
+          {inv.change !== null ? (inv.change > 0.0005 ? `+${fmt(inv.change)} gained since last` : "no gain since last") : `${inv.items.length} types`}
+          {inv.unpriced > 0 && ` · ${inv.unpriced} unpriced`}
+        </span>
+      </div>
+      <ul>
+        {inv.items.slice(0, rows).map((i) => (
+          <li key={i.name} className="flex h-8 items-center gap-2 px-3">
+            <ItemIcon item={{ icon: i.icon, category: "currency", rarity: "Currency" }} size={24} />
+            <span className="min-w-0 flex-1 truncate text-xs text-fg">
+              {i.name}
+              <span className="tabular text-fg-muted"> ×{i.quantity}</span>
+            </span>
+            <span className={cn("tabular shrink-0 text-xs", i.uncertain ? "text-warning/90" : i.value !== null ? "text-fg" : "text-fg-subtle")} title={i.uncertain ? "Not certain — check in Loot Journal" : undefined}>
+              {i.value !== null ? fmt(i.value) : "no price"}
+              {i.uncertain && " ?"}
+            </span>
+          </li>
+        ))}
+        {inv.items.length > rows && <li className="px-3 pb-1.5 text-[10.5px] text-fg-subtle">+{inv.items.length - rows} more in Loot Journal → Inventory</li>}
+      </ul>
+    </div>
   );
 }
 

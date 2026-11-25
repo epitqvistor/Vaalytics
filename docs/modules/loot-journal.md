@@ -206,6 +206,18 @@ correct, 9 unread, 3 wrong — all 3 flagged LOW (in-sample: the digit templates
 whole pipeline 0.7 s (release). Result: 15 HIGH, 12 MEDIUM, 24 LOW, 9 UNKNOWN — real full-resolution
 captures are sharper, but every LOW/UNKNOWN cell is put in front of the user.
 
+**Overlay** (0.16.3): pressing the shortcut opens the Loot Tracker if it was hidden and shows an
+**Inventory** block for the latest snapshot of the session (since the reset / game session / last 12 h):
+known value of the recognised items, gain since the previous confirmed snapshot, cells to check, and the
+items (art, quantity, value; uncertain ones amber with "?"). The overlay re-reads its data on every
+`loot:updated` / `session:updated` event without timers (a background window's timers can be throttled).
+
+**Real capture** (0.16.3, `poe2-2560x1440-capture-crop.png`): cells on a non-navy slot background
+(equipment, e.g. dark red over a 2×2 helmet) are stored **excluded** as "other" and not asked about;
+art is compared at scales 0.84–1.08 of the cell (Divine 0.62 → 0.73, Exalted 0.67 → 0.74); digit
+templates now include that capture (the 5 from "54"); the "fused digit" check only fires for ink right
+behind the number (≤ 0.45 digit width), so item art beside a number no longer caps confidence.
+
 **Map completed** (overlay): after a map record finishes (not yet confirmed, within 15 min) the overlay
 shows time, captures and value, best capture, unpriced count, the assigned snapshot's estimated change and
 lines to check, and "Confirm map" (`user_confirmed`).
