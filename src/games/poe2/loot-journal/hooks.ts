@@ -14,6 +14,7 @@ import {
   lootMapCounts,
   lootMaps,
   lootStatus,
+  lootTrackerSummary,
   type LootCaptureStatus,
   type LootConfig,
   type LootItem,
@@ -75,6 +76,12 @@ export const useLootDetail = (id: number | null) =>
 export const useLootMaps = (sessionId: number | null, limit = 200) => useLoaded<LootMapRun[]>(() => lootMaps(GAME, sessionId, limit), `${sessionId}:${limit}`);
 
 export const useLootMapCounts = () => useLoaded<{ maps: number; sessions: number }>(() => lootMapCounts(GAME), "counts");
+
+/** Unix time of the user's last "Reset session" (null = none), kept current through `loot:updated`. */
+export function useSessionReset(): number | null | undefined {
+  const r = useLoaded<number | null>(() => lootTrackerSummary(GAME, 1).then((s) => s.resetAt), "reset");
+  return r.error ? null : (r.data ?? undefined);
+}
 
 export function useLootConfig() {
   const r = useLoaded<LootConfig>(() => lootConfig(GAME), "config");

@@ -135,7 +135,9 @@ remembered (`lootTracker.window`, implausible or off-screen bounds are ignored).
 - **Reset session** (overlay "Reset" → "Sure?", Overview strip, Settings → Loot Tracker overlay): the
   SESSION time, value, captures, maps and the recent list count from that moment (game setting
   `loot.sessionResetAt`), across game restarts; "Follow game session" goes back to Session
-  Intelligence's game session. Nothing is deleted.
+  Intelligence's game session. Nothing is deleted. The **Overview** then shows only that session too
+  (figures, recent / most valuable captures, maps, "Session time") with "Show all history" to switch back;
+  Library and Analytics always show everything.
 - **Settings** (`loot.config`, shared with the main window through the `loot:config` event):
   `overlayOpacity` 0.4–1, `overlayScale` 0.8–1.4 (window width follows), `overlayMode`
   compact|expanded, `overlayCollapsed`, `overlayRows` 5–7, `overlayAlwaysOnTop`; click-through is a

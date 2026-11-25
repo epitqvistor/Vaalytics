@@ -5,18 +5,29 @@ import { Button, EmptyState, Panel, useToast } from "@/shared/components";
 import { Icon } from "@/shared/icons/Icon";
 import { Price } from "@/shared/views/common";
 import { POE2_CONFIG } from "../config";
-import { useLootMapCounts, useLootMaps, useLootUpdates } from "./hooks";
+import { useLootMapCounts, useLootMaps, useLootUpdates, useSessionReset } from "./hooks";
 import { capturedSince, categoryLabel, displayName, isValued, lootTotals, mapDuration, mapName, quantityOf, startOfWeek } from "./stats";
 import { fmtClock, fmtDuration, fmtWhen, ItemIcon, MapSourceTag, Metric, MetricStrip, PriceSource, ValueCell } from "./ui";
 
 const unit = POE2_CONFIG.baseUnit;
 
-export function OverviewTab({ items, status, onOpen }: { items: LootItem[]; status: LootCaptureStatus | null; onOpen: (id: number) => void }) {
+export function OverviewTab({ items: allItems, status, onOpen }: { items: LootItem[]; status: LootCaptureStatus | null; onOpen: (id: number) => void }) {
   const [now] = useState(() => Date.now());
+  // After "Reset session" the Overview starts from that moment; the full history stays in Library / Analytics.
+  const resetAt = useSessionReset();
+  const [showAll, setShowAll] = useState(false);
+  useEffect(() => setShowAll(false), [resetAt]);
+  const since = !showAll && resetAt ? resetAt : null;
+  const items = useMemo(() => (since === null ? allItems : allItems.filter((i) => i.capturedAt >= since)), [allItems, since]);
   const t = useMemo(() => lootTotals(items), [items]);
   const top = useMemo(() => items.filter(isValued).sort((a, b) => b.valueTotal! - a.valueTotal!).slice(0, 6), [items]);
   const counts = useLootMapCounts();
-  const maps = useLootMaps(null, 8);
+  const allMaps = useLootMaps(null, 300);
+  const maps = useMemo(
+    () => ({ ...allMaps, data: allMaps.data ? allMaps.data.filter((m) => since === null || m.startedAt >= since || m.status !== "finished").slice(0, 8) : null }),
+    [allMaps, since],
+  );
+  const mapsSince = allMaps.data?.filter((m) => since !== null && m.startedAt >= since).length ?? 0;
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
   const [events, setEvents] = useState<LootCaptureEventRow[]>([]);
@@ -33,6 +44,26 @@ export function OverviewTab({ items, status, onOpen }: { items: LootItem[]; stat
   return (
     <div className="flex flex-col gap-5">
       <CaptureStrip status={status} open={open} />
+      {resetAt && (
+        <p className="-mt-2 flex flex-wrap items-center gap-2 px-1 text-xs text-fg-muted">
+          <Icon name="refresh" size={13} className="text-accent-2" />
+          {since !== null ? (
+            <>
+              Showing this session — since your reset at <span className="text-fg">{fmtWhen(resetAt, now)}</span>. Nothing was deleted; Library and Analytics keep the full history.
+              <button type="button" className="text-accent-2 hover:underline" onClick={() => setShowAll(true)}>
+                Show all history
+              </button>
+            </>
+          ) : (
+            <>
+              Showing all history.
+              <button type="button" className="text-accent-2 hover:underline" onClick={() => setShowAll(false)}>
+                Back to this session
+              </button>
+            </>
+          )}
+        </p>
+      )}
 
       <MetricStrip className="grid-cols-2 sm:grid-cols-4 min-[1500px]:grid-cols-8">
         <Metric label="Captured value" value={<Price amount={t.value} unit={unit} />} caption="captured items only" />
@@ -41,14 +72,27 @@ export function OverviewTab({ items, status, onOpen }: { items: LootItem[]; stat
         <Metric label="Priced" value={t.valued} caption={t.items ? `${Math.round((t.valued / t.items) * 100)}% of items` : "—"} />
         <Metric label="Unpriced" value={t.unpriced} caption="manual value or no market data" />
         <Metric label="Average value" value={t.average !== null ? <Price amount={t.average} unit={unit} /> : "—"} caption="per priced item" />
-        <Metric label="Maps tracked" value={counts.data?.maps ?? "—"} caption="from Session Intelligence + manual" />
-        <Metric label="Sessions" value={counts.data?.sessions ?? "—"} caption="tracked game sessions" />
+        {since !== null ? (
+          <>
+            <Metric label="Maps" value={mapsSince} caption="since the reset" />
+            <Metric label="Session time" value={fmtDuration(now / 1000 - since)} caption={`since ${fmtWhen(since, now)}`} />
+          </>
+        ) : (
+          <>
+            <Metric label="Maps tracked" value={counts.data?.maps ?? "—"} caption="from Session Intelligence + manual" />
+            <Metric label="Sessions" value={counts.data?.sessions ?? "—"} caption="tracked game sessions" />
+          </>
+        )}
       </MetricStrip>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
         <Panel title="Recent captures" flush actions={<span>newest first</span>}>
           {items.length === 0 ? (
-            <EmptyState icon="journal" title="Nothing captured yet" body="Hover an item in Path of Exile 2 and press Ctrl+C while Vaalytics is running — it appears here automatically." />
+            <EmptyState
+              icon="journal"
+              title={since !== null ? "Nothing captured since the reset" : "Nothing captured yet"}
+              body="Hover an item in Path of Exile 2 and press Ctrl+C while Vaalytics is running — it appears here automatically."
+            />
           ) : (
             <ul className="divide-y divide-line">
               {items.slice(0, 10).map((i) => (
