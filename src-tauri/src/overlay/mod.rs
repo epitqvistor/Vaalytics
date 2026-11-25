@@ -74,6 +74,35 @@ pub struct OverlayState {
     busy: Mutex<bool>,
     /// Item text the overlay currently shows (for "press again to close").
     shown: Mutex<Option<String>>,
+    /// When the overlay was last shown (Quick mode ignores the focus shuffle right after).
+    shown_at: Mutex<Option<Instant>>,
+}
+
+/// Quick mode closes the overlay when the game comes back to the foreground, but not during the
+/// focus shuffle of opening it (the game can flicker back to the front for a moment).
+const QUICK_GRACE: Duration = Duration::from_millis(1000);
+
+/// Quick mode: the user went back to the game (not just to another window) after the grace period.
+fn quick_close_due(locked: bool, visible: bool, back_in_game: bool, since_shown: Option<Duration>) -> bool {
+    !locked && visible && back_in_game && since_shown.is_some_and(|d| d >= QUICK_GRACE)
+}
+
+/// Per game, default locked (stays open until closed) — the behaviour before Quick mode existed.
+fn overlay_locked(app: &AppHandle, game: GameId) -> bool {
+    settings::get_game(&app.state::<AppState>().db, game, "priceCheck.overlayLocked")
+        .ok()
+        .flatten()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(true)
+}
+
+fn quick_close(app: &AppHandle, game: GameId) {
+    let Some(w) = app.get_webview_window(OVERLAY_LABEL) else { return };
+    let visible = w.is_visible().unwrap_or(false);
+    let since = app.state::<OverlayState>().shown_at.lock().ok().and_then(|t| t.map(|t| t.elapsed()));
+    if quick_close_due(overlay_locked(app, game), visible, true, since) {
+        let _ = w.hide();
+    }
 }
 
 impl OverlayState {
@@ -156,6 +185,9 @@ fn on_foreground(app: &AppHandle, game: Option<GameId>) {
     let gs = app.global_shortcut();
     let status = app.state::<OverlayState>().status();
     let current = status.registered_hotkey;
+    if let Some(g) = game {
+        quick_close(app, g);
+    }
     match game {
         Some(g) => {
             let wanted = hotkey_for(app, g);
@@ -403,6 +435,9 @@ fn show_overlay(app: &AppHandle, event: &CaptureEvent) -> tauri::Result<()> {
     if let Ok(mut shown) = app.state::<OverlayState>().shown.lock() {
         *shown = event.text.clone();
     }
+    if let Ok(mut at) = app.state::<OverlayState>().shown_at.lock() {
+        *at = Some(Instant::now());
+    }
     if !created {
         let _ = w.emit(EVENT_ITEM, event);
     }
@@ -432,6 +467,20 @@ pub fn preview(app: &AppHandle, game: GameId, text: Option<String>) -> tauri::Re
 #[cfg(test)]
 mod tests {
     use super::closes_overlay;
+
+    #[test]
+    fn quick_mode_closes_only_when_back_in_game_after_the_grace_period() {
+        use super::{quick_close_due, QUICK_GRACE};
+        use std::time::Duration;
+        let later = Some(QUICK_GRACE + Duration::from_millis(1));
+        assert!(quick_close_due(false, true, true, later));
+        // Locked, hidden, another window, or the opening focus shuffle: stays.
+        assert!(!quick_close_due(true, true, true, later));
+        assert!(!quick_close_due(false, false, true, later));
+        assert!(!quick_close_due(false, true, false, later));
+        assert!(!quick_close_due(false, true, true, Some(Duration::from_millis(300))));
+        assert!(!quick_close_due(false, true, true, None));
+    }
 
     #[test]
     fn second_press_on_the_same_item_or_nothing_closes() {

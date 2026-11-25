@@ -3,7 +3,7 @@
  * selection into an official Trade search query.
  */
 import type { ParsedItem } from "@/shared/item-parser/types";
-import { matchMod, mergeMultiline, pseudoTotals, type StatIndex } from "./stats";
+import { hasLocalStats, matchMod, mergeMultiline, pseudoTotals, SUM_PSEUDO_IDS, type StatIndex } from "./stats";
 
 export interface StatFilter {
   key: string;
@@ -23,6 +23,8 @@ export interface StatFilter {
    * Sending a min for them makes Trade return 0 results.
    */
   option?: number | string;
+  /** Pseudo totals: the item lines that add up to the value (shown so the sum can be checked). */
+  sources?: string[];
 }
 
 export interface FilterSet {
@@ -112,7 +114,10 @@ export function buildFilters(item: ParsedItem, index: StatIndex): FilterSet {
     "pseudo.pseudo_total_life",
     "pseudo.pseudo_total_chaos_resistance",
   ]);
+  // Sums of two or more lines (attributes, mana, speed, …) replace their lines by default too.
+  for (const p of pseudo) if (SUM_PSEUDO_IDS.has(p.id)) preferredPseudo.add(p.id);
   const coveredByPseudo = new Set(pseudo.filter((p) => preferredPseudo.has(p.id)).flatMap((p) => p.from));
+  const textOf = new Map(item.mods.map((m) => [m.id, m.text]));
 
 
   const stats: StatFilter[] = [];
@@ -132,6 +137,7 @@ export function buildFilters(item: ParsedItem, index: StatIndex): FilterSet {
       enabled: !priceByName && preferredPseudo.has(p.id) && !onlyCrafted,
       source: "pseudo",
       kind: "pseudo",
+      sources: p.from.map((id) => textOf.get(id) ?? id),
     });
   }
 
@@ -139,8 +145,9 @@ export function buildFilters(item: ParsedItem, index: StatIndex): FilterSet {
   // Corpses (Necropolis): their lines are the monster's fixed abilities, defined by the base type
   // and not searchable on Trade — the base type is the search, nothing is "unmatched".
   const corpse = item.itemClass === "Corpses";
+  const local = hasLocalStats(item);
   for (const mod of mergeMultiline(item.mods, index)) {
-    const match = corpse ? null : matchMod(mod, index);
+    const match = corpse ? null : matchMod(mod, index, local);
     if (!match) {
       if (!corpse) unmatched.push({ id: mod.id, text: mod.text });
       continue;
@@ -263,4 +270,57 @@ export function buildQuery(
 export function tradeSiteSearchUrl(game: "poe1" | "poe2", league: string, query: Json): string {
   const path = game === "poe1" ? `trade/search/${encodeURIComponent(league)}` : `trade2/search/poe2/${encodeURIComponent(league)}`;
   return `https://www.pathofexile.com/${path}?q=${encodeURIComponent(JSON.stringify(query))}`;
+}
+
+// ---------- search modes, basis, roll ranges ----------
+
+/**
+ * Quick: the default selection, searched automatically. Advanced: every filter editable.
+ * Base type: no modifiers at all — results are never presented as a valuation of the item.
+ */
+export type SearchMode = "quick" | "advanced" | "base";
+
+/** Items identified by what they are (name/base), not by rolled modifiers. */
+export function pricedByIdentity(item: ParsedItem): boolean {
+  return PRICE_BY_NAME.has(item.rarity) || item.rarity === "Other" || item.itemClass === "Corpses" || (item.rarity === "Normal" && item.mods.length === 0);
+}
+
+/** What a search with these filters actually compares (drives the confidence model). */
+export function searchBasis(item: ParsedItem, stats: readonly StatFilter[]): "exact" | "stats" | "base" {
+  if (stats.some((s) => s.enabled)) return "stats";
+  return pricedByIdentity(item) ? "exact" : "base";
+}
+
+export type RangePreset = "min10" | "pm10" | "pm20" | "exact";
+export const RANGE_PRESETS: { value: RangePreset; label: string }[] = [
+  { value: "min10", label: "−10 % min" },
+  { value: "pm10", label: "±10 %" },
+  { value: "pm20", label: "±20 %" },
+  { value: "exact", label: "Exact" },
+];
+
+/**
+ * Whole-number min/max around a roll. "min10" leaves max open (better rolls are pricier and sort
+ * after cheaper ones anyway); the ± presets bound both sides so only similar items are compared.
+ */
+export function rangeFor(value: number | null, preset: RangePreset): { min: number | null; max: number | null } {
+  if (value == null) return { min: null, max: null };
+  if (preset === "min10") return { min: suggestedMin(value), max: null };
+  if (preset === "exact") return { min: value, max: value };
+  const p = preset === "pm10" ? 0.1 : 0.2;
+  if (value < 0) return { min: Math.floor(value * (1 + p)), max: Math.ceil(value * (1 - p)) };
+  if (value < 1) return { min: Math.round(value * (1 - p) * 100) / 100, max: Math.round(value * (1 + p) * 100) / 100 };
+  return { min: Math.floor(value * (1 - p)), max: Math.ceil(value * (1 + p)) };
+}
+
+/** Applies a roll range to every numeric filter (option stats and exact cluster enchants keep theirs). */
+export function applyRange(stats: readonly StatFilter[], preset: RangePreset): StatFilter[] {
+  return stats.map((s) => (s.option != null || (s.kind === "enchant" && s.min != null && s.min === s.max) ? s : { ...s, ...rangeFor(s.value, preset) }));
+}
+
+/** Base type mode switches every filter off; leaving it restores the default selection. */
+export function applyMode(stats: readonly StatFilter[], defaults: readonly StatFilter[], mode: SearchMode): StatFilter[] {
+  if (mode === "base") return stats.map((s) => ({ ...s, enabled: false }));
+  const def = new Map(defaults.map((d) => [d.key, d.enabled]));
+  return stats.map((s) => ({ ...s, enabled: s.enabled || (def.get(s.key) ?? false) }));
 }

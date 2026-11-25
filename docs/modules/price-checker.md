@@ -41,11 +41,58 @@ Advanced headers `{ Prefix Modifier "Name" (Tier: N) — tags }` give kind, pref
 
 - **Refused by the site's protection.** On 2026-11-20 every search `POST` (PoE 1 and PoE 2) got `405 Not Allowed` as an HTML page from Cloudflare/openresty, while `GET` data endpoints still worked and the Trade page showed a "Just a moment…" challenge. An HTML 403/405/503 with those markers is reported as "The Trade site is refusing automated searches right now …" (`error_message` in `trade/mod.rs`) instead of a bare "HTTP 405"; Vaalytics never tries to get around it. The error box offers **Open this search on the Trade site** (`tradeSiteSearchUrl`: `/trade/search/<league>?q=<query JSON>`), so the user can run the same search in a browser.
 
-## 5. Estimate (`estimate.ts`)
-Labelled **Estimate**, separate from listings. Uses converted prices of fetched listings; ignores listings below 35 % of the median (bait/mistakes) when ≥4 listings; estimate = median of the 5 cheapest kept. Confidence: high (≥8 kept, p75/p25 ≤ 2), medium (≥4, ≤ 4), otherwise low.
+## 5. Valuation (`valuation.ts`, rework 2026-11-25)
+The old estimate (median of the 5 cheapest of the 10 cheapest listings, "high" whenever ≥8 were within ×2) made
+unsupported claims: a rare searched by base type only could show "High confidence". It was replaced:
+
+- **Sample.** Trade sorts by price, so a search fetches the **20 cheapest** of `total` matches. Every number is
+  "what comparable items are listed for at the cheap end" — the UI says which sample it used.
+- **Verdict per listing** (shown on the row, never silently dropped): `used`, `low-outlier` ("cheap"), `high-outlier`
+  ("pricey"), `no-price` (currency not convertible with poe.ninja rates).
+- **Outliers.** ≥5 prices: Tukey fences (1.5 × IQR) on **log** prices (prices are multiplicative), with a floor on
+  the spread and a rounding guard — an outlier must also be > 1 base unit outside the cluster (1 c among 2–3 c is a
+  price; 1 alch is bait). 3–4 prices: below 35 % / above 3× the median. Fewer: no outliers.
+- **Estimate** = median of the used listings, weighted by how well each matches the searched modifiers
+  (weight 0.5 + 0.5 × match). Lowest, median and the typical range (p25–p75) are shown separately — they are
+  different things.
+- **Search basis** (`searchBasis` in `query.ts`): `exact` (unique/gem/currency/card/corpse/white base — identity),
+  `stats` (modifiers searched), `base` (a rare/magic searched without modifiers).
+- **Confidence:** `unpriced` (no matches / nothing convertible), `base-only` (basis `base` — the number is shown
+  greyed with "Base type only — the estimate may not reflect this item's modifiers"; never graded), `insufficient`
+  (< 3 usable prices — no estimate at all), otherwise high (≥ 8 used, p75/p25 ≤ 1.6) / medium (≥ 5, ≤ 3) / low,
+  capped at medium by: > 30 % outliers, average match < 80 %, unsearchable modifiers, median listing age > 7 days;
+  capped at low when fewer than 5 listings exist. The reasons are listed under the confidence badge.
+- **Live check:** `VAALYTICS_LIVE=1 npx vitest run src/games/price-check.live.test.ts` takes real listed items
+  from Trade (both games), runs the app's own parser → filters → query → valuation and prints the result (opt-in,
+  honours the rate-limit headers, waits 6 s after each search).
+
+### Search modes and filters
+- **Quick** (default, searched automatically): the default selection; only selected filters are listed, the rest
+  under "+N more". **Advanced**: every filter editable, roll-range presets (−10 % min / ±10 % / ±20 % / exact, whole
+  numbers: +83 life → 74–92 at ±10 %), item level ≥, corruption. **Base type**: no modifiers, with a warning.
+- **Local stats.** On weapons and armour (items with Armour/Evasion/ES/Ward/damage/APS/block properties) flat
+  defence/damage/speed lines are searched as their `(Local)` Trade stat. Before, a rare boot's own search could
+  return 0 listings (global "+# to Evasion Rating" never matches a local line) — found by the live check.
+- **Pseudo totals** also sum attributes (incl. hybrids and all-attributes), mana, energy shield (not on armour, where
+  flat ES is local), cast speed, movement speed, global crit multi (PoE 1) and spell damage when **two or more** lines
+  add up; the total replaces its lines by default and lists them ("= +20 to Strength + +15 to Strength and Dexterity …").
+
+- **Currency: market reference.** Currency is traded in bulk, so the cheapest single Trade listings are a poor guide
+  (seen live: PoE 2 Divine Orbs listed at "99 waystone-3", which can't be converted → Unpriced). For currency the
+  summary also shows the poe.ninja rate from Market Data ("Market rate 428 ex · market · poe.ninja"), labelled with
+  `ProvenanceTag` and never mixed into the listing estimate. The premium currency itself is shown in the base unit.
+
+### Results, cache, interaction
+- Results are cached in memory per game + league + exact query for 5 minutes and always labelled **Cached** (with
+  age); **Refresh** searches live. States: Live / Cached / Refreshing / Request failed.
+- A newer search supersedes an older one (its late response is dropped); an identical search already running is not
+  sent again.
+- Listing rows: price with currency icon (poe.ninja icon when known), seller status (online / AFK / offline / instant
+  buyout), age, match %, verdict tag; copy price, copy whisper, item details; sort Lowest / Highest / Newest / Best
+  match. Prices are shown in the base unit below 1 premium unit (e.g. "2 c", not "0.009 div").
 
 ## 6. Overlay window
-Created on first use (no idle cost). Transparent, frameless, always on top, not in the taskbar. Drag by header, resize from edges; position/size saved (`overlay.bounds`). Esc or × hides it.
+Created on first use (no idle cost). Transparent, frameless, always on top, not in the taskbar. Drag by header, resize from edges; position/size saved (`overlay.bounds`). Esc or × hides it. **Locked / Quick** (pin button, per game setting `priceCheck.overlayLocked`, default Locked): in Quick mode the host's foreground watcher hides the overlay when the **game window** comes back to the foreground, at least 1 s after it was shown (`quick_close_due` in `overlay/mod.rs`). Switching to another app does not close it. The webview's own blur events were not usable: showing the window shuffles focus (measured: focus at 118 ms, blur at ~1.6 s without any user action). Not yet verified with a running game.
 
 **Pressing the price-check hotkey again closes it** (toggle):
 - Overlay focused (the usual case right after it opens): the game isn't in the foreground, so the global hotkey is unregistered; the overlay window catches the game's configured shortcut itself (`matchesShortcut`, `src/shared/utilities/shortcut.ts`) and hides.

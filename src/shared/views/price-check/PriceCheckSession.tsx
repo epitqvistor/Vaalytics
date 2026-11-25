@@ -1,87 +1,133 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useDisplayCurrency, useMoney } from "@/core/market/DisplayCurrency";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GameConfig } from "@/core/game-context/config";
 import { tradeFetchMore, tradePriceCheck, type TradeListing, type TradePriceCheck } from "@/core/ipc/commands";
+import { useMarketOverview } from "@/core/market/hooks";
 import { useGameSetting } from "@/core/settings/useGameSetting";
 import { isValidContact, loadGemVariants, useStatIndex, useTradeContact } from "@/core/trade/hooks";
-import { Badge, Button, Checkbox, IconButton, Input, Panel, SegmentedControl, Select, Spinner, type BadgeTone } from "@/shared/components";
+import { getCachedResult, putCachedResult, resultKey } from "@/core/trade/resultCache";
+import { Button, Input, Panel } from "@/shared/components";
 import { Icon } from "@/shared/icons/Icon";
-import { ItemCard } from "@/shared/item-renderer/ItemCard";
-import { toDisplayItem } from "@/shared/item-renderer/adapt";
 import type { ParsedItem } from "@/shared/item-parser/types";
-import { estimatePrice } from "@/shared/trade/estimate";
-import { buildFilters, buildQuery, defaultOptions, STATUS_OPTIONS, tradeSiteSearchUrl, type Range, type SearchOptions, type StatFilter } from "@/shared/trade/query";
+import {
+  applyMode,
+  applyRange,
+  buildFilters,
+  buildQuery,
+  defaultOptions,
+  searchBasis,
+  tradeSiteSearchUrl,
+  type RangePreset,
+  type SearchMode,
+  type SearchOptions,
+  type StatFilter,
+} from "@/shared/trade/query";
 import { templateKey } from "@/shared/trade/stats";
+import { valuate } from "@/shared/trade/valuation";
 import { cn } from "@/shared/utilities/cn";
-import { formatAmount, formatRelative } from "@/shared/utilities/format";
+import { FilterEditor } from "./FilterEditor";
+import { ItemSummary } from "./ItemSummary";
+import { isListingSort, Listings, type ListingSort } from "./Listings";
+import { ValueSummary, type ResultState } from "./ValueSummary";
 
 export interface PriceCheckSessionProps {
   item: ParsedItem;
   league: string;
   config: GameConfig;
-  /** Overlay mode: single column, smaller item card. */
+  /** Overlay / panel: single column. */
   compact?: boolean;
 }
 
-type Sort = "price" | "newest" | "match";
-const isSort = (v: unknown): v is Sort => v === "price" || v === "newest" || v === "match";
+/** One search fetches this many of the cheapest matching listings (the host caps a call at 20). */
+const FIRST_FETCH = 20;
 
 export function PriceCheckSession({ item, league, config, compact }: PriceCheckSessionProps) {
   const { index, error: indexError } = useStatIndex(item.game);
   const { contact } = useTradeContact();
   const [stats, setStats] = useState<StatFilter[]>([]);
+  const defaults = useRef<StatFilter[]>([]);
   const [unmatched, setUnmatched] = useState<{ id: string; text: string }[]>([]);
   /** Item whose filters are built — the auto search waits for it (an item may have no searchable stats at all). */
   const [filtersFor, setFiltersFor] = useState<string | null>(null);
+  const [mode, setMode] = useState<SearchMode>("quick");
   const [opts, setOpts] = useState<SearchOptions>(() => defaultOptions(item));
   const [result, setResult] = useState<TradePriceCheck | null>(null);
   const [listings, setListings] = useState<TradeListing[]>([]);
   const [searchedAt, setSearchedAt] = useState<number | null>(null);
+  const [fromCache, setFromCache] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  /** Last query sent — lets the user open the same search on the Trade site when the API fails. */
+  /** Last query sent — lets the user open the same search on the Trade site. */
   const [lastQuery, setLastQuery] = useState<Record<string, unknown> | null>(null);
+  /** Filters/options at the time of the shown result (basis and match scores refer to them). */
+  const [searchedStats, setSearchedStats] = useState<StatFilter[]>([]);
   const [dirty, setDirty] = useState(false);
-  const [defaultSort] = useGameSetting<Sort>(item.game, "priceCheck.defaultSort", "price", isSort);
-  const [sortOverride, setSort] = useState<Sort | null>(null);
+  const [defaultSort] = useGameSetting<ListingSort>(item.game, "priceCheck.defaultSort", "price", isListingSort);
+  const [sortOverride, setSort] = useState<ListingSort | null>(null);
   const sort = sortOverride ?? defaultSort;
 
   // New item → fresh filters.
   useEffect(() => {
     if (!index) return;
     const f = buildFilters(item, index);
+    defaults.current = f.stats;
     setStats(f.stats);
     setUnmatched(f.unmatched);
     setFiltersFor(item.raw);
+    setMode("quick");
     setOpts(defaultOptions(item));
     setResult(null);
     setListings([]);
     setError(null);
+    setSearchedStats([]);
   }, [item, index]);
 
-  const inFlight = useRef(false);
+  // Latest search wins: a response for an older search (filters changed meanwhile) is dropped.
+  const seq = useRef(0);
+  const inFlightKey = useRef<string | null>(null);
   const search = useCallback(
-    async (filters: StatFilter[], options: SearchOptions) => {
-      if (inFlight.current) return;
-      inFlight.current = true;
-      setLoading(true);
+    async (filters: StatFilter[], options: SearchOptions, force = false) => {
+      // Transfigured gems need base + discriminator; without the list the plain name is tried.
+      const gems = item.rarity === "Gem" ? await loadGemVariants(item.game).catch(() => []) : [];
+      const query = buildQuery(item, filters, options, gems);
+      const key = resultKey(item.game, league, query);
+      if (inFlightKey.current === key) return; // the same search is already running
+      setLastQuery(query);
+      setSearchedStats(filters);
+      setDirty(false);
       setError(null);
+
+      const cached = force ? null : getCachedResult(key);
+      if (cached) {
+        seq.current++;
+        inFlightKey.current = null;
+        setResult(cached.result);
+        setListings(cached.listings);
+        setSearchedAt(cached.at);
+        setFromCache(true);
+        setLoading(false);
+        return;
+      }
+
+      const mine = ++seq.current;
+      inFlightKey.current = key;
+      setLoading(true);
       try {
-        // Transfigured gems need base + discriminator; without the list the plain name is tried.
-        const gems = item.rarity === "Gem" ? await loadGemVariants(item.game).catch(() => []) : [];
-        const query = buildQuery(item, filters, options, gems);
-        setLastQuery(query);
-        const r = await tradePriceCheck(item.game, league, query, 10);
+        const r = await tradePriceCheck(item.game, league, query, FIRST_FETCH);
+        if (mine !== seq.current) return;
+        const at = Date.now();
+        putCachedResult(key, { result: r, listings: r.listings, at });
         setResult(r);
         setListings(r.listings);
-        setSearchedAt(Date.now());
-        setDirty(false);
+        setSearchedAt(at);
+        setFromCache(false);
       } catch (e) {
-        setError(String(e));
+        if (mine === seq.current) setError(String(e));
       } finally {
-        inFlight.current = false;
-        setLoading(false);
+        if (mine === seq.current) {
+          inFlightKey.current = null;
+          setLoading(false);
+        }
       }
     },
     [item, league],
@@ -93,10 +139,10 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   const autoSearched = useRef<string | null>(null);
   useEffect(() => {
     if (!index || !contact || filtersFor !== item.raw) return;
-    if (autoSearched.current === item.raw) return;
-    autoSearched.current = item.raw;
+    if (autoSearched.current === `${item.raw}\u0000${league}`) return;
+    autoSearched.current = `${item.raw}\u0000${league}`;
     void search(stats, opts);
-  }, [index, contact, stats, opts, item, search, filtersFor]);
+  }, [index, contact, stats, opts, item, search, filtersFor, league]);
 
   const loadMore = async () => {
     if (!result) return;
@@ -112,390 +158,133 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
     }
   };
 
-  const enabledKeys = useMemo(() => stats.filter((s) => s.enabled && s.source === "mod").map((s) => templateKey(s.label)), [stats]);
+  // How well each listing matches the searched (not the currently edited) modifiers.
+  const searchedKeys = useMemo(() => searchedStats.filter((s) => s.enabled && s.source === "mod" && s.option == null).map((s) => templateKey(s.label)), [searchedStats]);
   const matchOf = useCallback(
     (l: TradeListing) => {
-      if (enabledKeys.length === 0) return null;
+      if (searchedKeys.length === 0) return null;
       const keys = new Set(l.item.mods.map(templateKey));
-      return enabledKeys.filter((k) => keys.has(k)).length / enabledKeys.length;
+      return searchedKeys.filter((k) => keys.has(k)).length / searchedKeys.length;
     },
-    [enabledKeys],
+    [searchedKeys],
   );
 
-  const shown = useMemo(() => {
-    // Listings went stale since the search: drop sellers that went offline, unless buyable instantly.
-    const out = opts.status === "any" ? [...listings] : listings.filter((l) => l.status !== "offline" || l.instantBuyout);
-    const price = (l: TradeListing) => l.amountBase ?? Infinity;
-    out.sort((a, b) =>
-      sort === "price" ? price(a) - price(b) : sort === "newest" ? Date.parse(b.indexed ?? "") - Date.parse(a.indexed ?? "") : (matchOf(b) ?? 0) - (matchOf(a) ?? 0),
-    );
-    return out;
-  }, [listings, sort, opts.status, matchOf]);
+  const basis = useMemo(() => searchBasis(item, searchedStats), [item, searchedStats]);
+  const valuation = useMemo(
+    () =>
+      result
+        ? valuate({
+            listings: listings.map((l) => ({ id: l.id, amountBase: l.amountBase, indexed: l.indexed, match: matchOf(l) })),
+            total: result.total,
+            basis,
+            unsearchedMods: basis === "stats" ? unmatched.length : 0,
+          })
+        : null,
+    [result, listings, basis, unmatched.length, matchOf],
+  );
 
-  const estimate = useMemo(() => estimatePrice(listings), [listings]);
+  // Currency is traded in bulk: the poe.ninja rate (Market Data) is the better reference than the
+  // cheapest single listings. Shown separately and labelled — never mixed into the listing estimate.
+  const isCurrency = item.rarity === "Currency" && item.itemClass !== "Corpses";
+  const { snapshot: currencyMarket } = useMarketOverview(item.game, isCurrency ? league : null, "currency");
+  const market = useMemo(() => {
+    const row = currencyMarket?.items.find((r) => r.name === item.baseType && r.variant == null);
+    return row && currencyMarket ? { value: row.value, at: currencyMarket.fetchedAt, league, isPremium: item.baseType === config.premiumUnit.name } : null;
+  }, [currencyMarket, item.baseType, league, config.premiumUnit.name]);
 
-  const update = (key: string, patch: Partial<StatFilter>) => {
+  const state: ResultState = error ? "failed" : loading && result ? "refreshing" : result ? (fromCache ? "cached" : "live") : "idle";
+  const searchedIds = useMemo(() => {
+    const ids = new Set(stats.filter((s) => s.enabled && s.source === "mod").map((s) => s.key));
+    const pseudoTexts = new Set(stats.filter((s) => s.enabled && s.sources).flatMap((s) => s.sources!));
+    for (const m of item.mods) if (pseudoTexts.has(m.text)) ids.add(m.id);
+    return ids;
+  }, [stats, item.mods]);
+  const icon = useMemo(() => listings.find((l) => l.item.icon && l.item.typeLine.endsWith(item.baseType))?.item.icon ?? null, [listings, item.baseType]);
+
+  const updateStat = (key: string, patch: Partial<StatFilter>) => {
     setStats((s) => s.map((f) => (f.key === key ? { ...f, ...patch } : f)));
     setDirty(true);
   };
+  const changeMode = (m: SearchMode) => {
+    const next = applyMode(stats, defaults.current, m);
+    setMode(m);
+    setStats(next);
+    setDirty(true);
+    // Switching to/from base type is a different question: answer it right away.
+    if (m === "base" || mode === "base") void search(next, opts);
+  };
+  const changeRange = (preset: RangePreset) => {
+    setStats((s) => applyRange(s, preset));
+    setDirty(true);
+  };
+  const openTrade = lastQuery ? () => openUrl(result && !dirty ? result.tradeUrl : tradeSiteSearchUrl(item.game, league, lastQuery)).catch((e) => setError(String(e))) : null;
 
   if (contact === null) return <ContactGate />;
 
-  return (
-    <div className={cn("grid items-start gap-4", compact ? "grid-cols-1" : "grid-cols-[340px_1fr]")}>
-      <div className="flex min-w-0 flex-col gap-4">
-        {!compact && <ItemCard item={toDisplayItem(item)} />}
-        <Panel
-          title="Search filters"
-          flush
-          actions={<span className="text-xs text-fg-subtle">{stats.filter((s) => s.enabled).length} active</span>}
-        >
-          {indexError ? (
-            <p className="px-4 py-3 text-xs text-danger">Trade stat data unavailable: {indexError}</p>
-          ) : !index ? (
-            <p className="flex items-center gap-2 px-4 py-3 text-xs text-fg-muted">
-              <Spinner size={12} /> Loading Trade stat data…
-            </p>
-          ) : (
-            <>
-              {stats.length === 0 && <p className="px-4 py-3 text-xs text-fg-muted">Searching by {item.rarity === "Unique" ? "name" : "base type"} only.</p>}
-              <ul className="max-h-[340px] divide-y divide-line overflow-y-auto">
-                {stats.map((s) => (
-                  <FilterRow key={s.key} filter={s} onChange={(p) => update(s.key, p)} />
-                ))}
-              </ul>
-              {unmatched.length > 0 && (
-                <div className="flex gap-2 border-t border-line bg-warning-soft px-4 py-2 text-xs text-warning">
-                  <Icon name="warning" size={13} className="mt-px shrink-0" />
-                  <span>
-                    {unmatched.length} modifier{unmatched.length > 1 ? "s" : ""} not matched to a Trade stat and not searched: {unmatched.map((u) => u.text).join("; ")}
-                  </span>
-                </div>
-              )}
-              {item.rarity === "Gem" && (
-                <div className="flex flex-wrap items-end gap-x-5 gap-y-2 border-t border-line px-4 py-3">
-                  <RangeInput label="Gem level" value={opts.gemLevel} max={21} onChange={(r) => (setOpts((o) => ({ ...o, gemLevel: r })), setDirty(true))} />
-                  <RangeInput label="Quality" suffix="%" value={opts.gemQuality} max={23} onChange={(r) => (setOpts((o) => ({ ...o, gemQuality: r })), setDirty(true))} />
-                  <p className="mb-1 text-2xs text-fg-subtle">Empty = no limit. Defaults to this gem's level and quality.</p>
-                </div>
-              )}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line px-4 py-3">
-                <Select
-                  label="Listings"
-                  hideLabel
-                  size="sm"
-                  value={opts.status}
-                  onChange={(v) => (setOpts((o) => ({ ...o, status: v })), setDirty(true))}
-                  options={STATUS_OPTIONS[item.game]}
-                  className="w-48"
-                />
-                <SegmentedControl
-                  label="Corrupted"
-                  size="sm"
-                  value={opts.corrupted}
-                  onChange={(v) => (setOpts((o) => ({ ...o, corrupted: v })), setDirty(true))}
-                  segments={[
-                    { value: "any", label: "Any" },
-                    { value: "yes", label: "Corrupted" },
-                    { value: "no", label: "Not corrupted" },
-                  ]}
-                />
-                <Button
-                  size="sm"
-                  variant={dirty ? "primary" : "secondary"}
-                  icon="search"
-                  className="ml-auto"
-                  loading={loading}
-                  onClick={() => search(stats, opts)}
-                >
-                  {result ? "Search again" : "Search"}
-                </Button>
-              </div>
-            </>
-          )}
-        </Panel>
-      </div>
-
-      <div className="flex min-w-0 flex-col gap-4">
-        {error && (
-          <div role="alert" className="flex items-start gap-2 rounded-md border border-danger/30 bg-danger-soft px-3 py-2.5 text-sm text-danger">
-            <Icon name="error" size={16} className="mt-0.5 shrink-0" />
-            <div className="flex min-w-0 flex-col items-start gap-2">
-              <span>{error}</span>
-              {lastQuery && (
-                <Button size="sm" variant="secondary" icon="external" onClick={() => openUrl(tradeSiteSearchUrl(item.game, league, lastQuery)).catch((e) => setError(String(e)))}>
-                  Open this search on the Trade site
-                </Button>
-              )}
-            </div>
-          </div>
+  const summary = (
+    <ValueSummary valuation={valuation} config={config} state={state} searchedAt={searchedAt} loading={loading} ratesAvailable={result?.ratesAvailable ?? true} market={market} />
+  );
+  const filters = (
+    <FilterEditor
+      item={item}
+      mode={mode}
+      onMode={changeMode}
+      stats={stats}
+      onStat={updateStat}
+      onRange={changeRange}
+      opts={opts}
+      onOpts={(patch) => (setOpts((o) => ({ ...o, ...patch })), setDirty(true))}
+      unmatched={unmatched}
+      loading={loading}
+      dirty={dirty}
+      hasResult={result != null}
+      onSearch={() => search(stats, opts, !dirty)}
+      indexState={indexError ? indexError : index ? "ready" : "loading"}
+    />
+  );
+  const errorBox = error && (
+    <div role="alert" className="flex items-start gap-2 rounded-md border border-danger/30 bg-danger-soft px-3 py-2 text-xs text-danger">
+      <Icon name="error" size={14} className="mt-px shrink-0" />
+      <div className="flex min-w-0 flex-col items-start gap-1.5">
+        <span>{error}</span>
+        {lastQuery && (
+          <Button size="sm" variant="secondary" icon="external" onClick={() => openUrl(tradeSiteSearchUrl(item.game, league, lastQuery)).catch((e) => setError(String(e)))}>
+            Open this search on the Trade site
+          </Button>
         )}
-        <EstimatePanel result={result} estimate={estimate} listingsCount={listings.length} config={config} searchedAt={searchedAt} loading={loading && !result} />
-        <Panel
-          title={result ? `Listings · ${shown.length} of ${result.total.toLocaleString("en-US")}` : "Listings"}
-          flush
-          actions={
-            <>
-              <SegmentedControl
-                size="sm"
-                label="Sort listings"
-                value={sort}
-                onChange={setSort}
-                segments={[
-                  { value: "price", label: "Lowest" },
-                  { value: "newest", label: "Newest" },
-                  { value: "match", label: "Best match" },
-                ]}
-              />
-              {result && (
-                <IconButton icon="external" size="sm" label="Open this search on the official Trade site" onClick={() => openUrl(result.tradeUrl).catch((e) => setError(String(e)))} />
-              )}
-            </>
-          }
-        >
-          {!result && !loading && <p className="px-4 py-6 text-center text-sm text-fg-muted">No search yet.</p>}
-          {loading && !result && (
-            <p className="flex items-center justify-center gap-2 px-4 py-6 text-sm text-fg-muted">
-              <Spinner size={14} /> Searching official Trade…
-            </p>
-          )}
-          {result && shown.length === 0 && <p className="px-4 py-6 text-center text-sm text-fg-muted">No listings match. Try disabling some filters.</p>}
-          <ul className="divide-y divide-line">
-            {shown.map((l) => (
-              <ListingRow key={l.id} listing={l} match={matchOf(l)} config={config} compact={compact} />
-            ))}
-          </ul>
-          {result?.hasMore && (
-            <div className="border-t border-line p-2 text-center">
-              <Button size="sm" variant="ghost" loading={loading} onClick={loadMore}>
-                Load 10 more
-              </Button>
-            </div>
-          )}
-        </Panel>
       </div>
     </div>
   );
-}
-
-function FilterRow({ filter: f, onChange }: { filter: StatFilter; onChange: (p: Partial<StatFilter>) => void }) {
-  const num = (v: string) => (v.trim() === "" || Number.isNaN(Number(v)) ? null : Number(v));
-  return (
-    <li className="flex items-center gap-2 px-3 py-1.5">
-      <Checkbox
-        className="flex-1"
-        checked={f.enabled}
-        onChange={(enabled) => onChange({ enabled })}
-        label={
-          <span className={cn("flex items-center gap-1.5 text-sm", f.enabled ? "text-fg" : "text-fg-muted")}>
-            <span className="truncate" title={f.label}>
-              {f.label}
-            </span>
-            {f.source === "pseudo" && <Badge tone="info">pseudo</Badge>}
-            {f.kind !== "explicit" && f.source === "mod" && <span className="shrink-0 text-2xs text-fg-subtle">{f.kind}</span>}
-            {f.tier != null && <span className="shrink-0 font-mono text-2xs text-fg-subtle">T{f.tier}</span>}
-          </span>
-        }
-      />
-      {f.option != null ? (
-        // Option stats (cluster passive type) match the exact text; Trade takes no number for them.
-        <span className="w-[7.5rem] shrink-0 text-right text-2xs text-fg-subtle">exact match</span>
-      ) : (
-        <>
-      <Input
-        size="sm"
-        aria-label={`Minimum for ${f.label}`}
-        placeholder="min"
-        inputMode="decimal"
-        value={f.min ?? ""}
-        disabled={!f.enabled}
-        onChange={(e) => onChange({ min: num(e.target.value) })}
-        containerClassName="w-14 shrink-0"
-        className="tabular text-right"
-      />
-      <Input
-        size="sm"
-        aria-label={`Maximum for ${f.label}`}
-        placeholder="max"
-        inputMode="decimal"
-        value={f.max ?? ""}
-        disabled={!f.enabled}
-        onChange={(e) => onChange({ max: num(e.target.value) })}
-        containerClassName="w-14 shrink-0"
-        className="tabular text-right"
-      />
-        </>
-      )}
-    </li>
+  const list = (
+    <Listings
+      listings={listings}
+      total={result ? result.total : null}
+      verdicts={valuation?.verdicts ?? null}
+      matchOf={matchOf}
+      sort={sort}
+      onSort={setSort}
+      config={config}
+      loading={loading}
+      hasMore={result?.hasMore ?? false}
+      onMore={loadMore}
+      onOpenTrade={openTrade}
+      hideOffline={opts.status !== "any"}
+    />
   );
-}
 
-const CONFIDENCE: Record<string, { tone: BadgeTone; label: string }> = {
-  high: { tone: "success", label: "High confidence" },
-  medium: { tone: "warning", label: "Medium confidence" },
-  low: { tone: "danger", label: "Low confidence" },
-};
-
-function EstimatePanel({
-  result,
-  estimate,
-  listingsCount,
-  config,
-  searchedAt,
-  loading,
-}: {
-  result: TradePriceCheck | null;
-  estimate: ReturnType<typeof estimatePrice>;
-  listingsCount: number;
-  config: GameConfig;
-  searchedAt: number | null;
-  loading: boolean;
-}) {
-  const dc = useDisplayCurrency();
-  const money = useMoney();
-  const conv = (v: number) => (dc ? dc.toUnit(v) : v);
-  const unit = dc ? dc.unit.short : config.baseUnit.short;
-  const conf = estimate ? CONFIDENCE[estimate.confidence]! : null;
   return (
-    <div className="panel grid grid-cols-[1.4fr_1fr_1fr_1fr] divide-x divide-line rounded-lg">
-      <div className="px-4 py-3.5">
-        <div className="flex items-center gap-2 text-xs text-fg-muted">
-          Estimated value <Badge tone="accent">Estimate</Badge>
-        </div>
-        <div className="mt-1.5 flex items-baseline gap-1.5">
-          {loading ? (
-            <Spinner size={18} className="text-fg-subtle" />
-          ) : (
-            <>
-              <span className="tabular font-display text-2xl font-semibold text-fg">{estimate ? `~${formatAmount(conv(estimate.estimate))}` : "—"}</span>
-              {estimate && <span className="text-sm text-fg-muted">{unit}</span>}
-            </>
-          )}
-        </div>
-        <div className="mt-1.5 flex flex-wrap items-center gap-2">
-          {conf && (
-            <Badge tone={conf.tone} dot>
-              {conf.label}
-            </Badge>
-          )}
-          {result && !result.ratesAvailable && <span className="text-2xs text-warning">No poe.ninja rates — open Currency Tracker once to enable conversion</span>}
-        </div>
+    <div className={cn("grid items-start gap-3", compact ? "grid-cols-1" : "grid-cols-[minmax(300px,380px)_minmax(0,1fr)] gap-5")}>
+      <div className="flex min-w-0 flex-col gap-3">
+        <ItemSummary item={item} searched={searchedIds} icon={icon} collapsed={compact} />
+        {compact && summary}
+        {filters}
       </div>
-      <Metric label="Lowest comparable" value={estimate ? money(estimate.low, { unit: config.baseUnit }) : "—"} />
-      <Metric label="Median comparable" value={estimate ? money(estimate.median, { unit: config.baseUnit }) : "—"} caption={estimate?.outliers ? `${estimate.outliers} suspiciously cheap ignored` : undefined} />
-      <Metric
-        label="Matching listings"
-        value={result ? result.total.toLocaleString("en-US") : "—"}
-        caption={searchedAt ? `${listingsCount} fetched · ${formatRelative(searchedAt)}` : undefined}
-      />
-    </div>
-  );
-}
-
-function Metric({ label, value, caption }: { label: string; value: ReactNode; caption?: ReactNode }) {
-  return (
-    <div className="px-4 py-3.5">
-      <div className="text-xs text-fg-muted">{label}</div>
-      <div className="tabular mt-2 text-lg font-semibold text-fg">{value}</div>
-      {caption && <div className="mt-0.5 text-2xs text-fg-subtle">{caption}</div>}
-    </div>
-  );
-}
-
-/** Min–max number pair; an empty field means no limit. */
-function RangeInput({ label, value, onChange, max, suffix }: { label: string; value: Range; onChange: (r: Range) => void; max: number; suffix?: string }) {
-  const parse = (v: string) => (v.trim() === "" ? null : Math.max(0, Math.min(max, Math.round(Number(v)) || 0)));
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-fg-muted">{label}</span>
-      <div className="flex items-center gap-1.5">
-        <Input size="sm" type="number" min={0} max={max} placeholder="min" aria-label={`${label} min`} value={value.min ?? ""} onChange={(e) => onChange({ ...value, min: parse(e.target.value) })} suffix={suffix} containerClassName="w-20" />
-        <span className="text-fg-subtle">–</span>
-        <Input size="sm" type="number" min={0} max={max} placeholder="max" aria-label={`${label} max`} value={value.max ?? ""} onChange={(e) => onChange({ ...value, max: parse(e.target.value) })} suffix={suffix} containerClassName="w-20" />
+      <div className="flex min-w-0 flex-col gap-3">
+        {!compact && summary}
+        {errorBox}
+        {list}
       </div>
     </div>
-  );
-}
-
-const STATUS: Record<TradeListing["status"], { tone: BadgeTone; label: string }> = {
-  online: { tone: "success", label: "Online" },
-  afk: { tone: "warning", label: "AFK" },
-  offline: { tone: "neutral", label: "Offline" },
-};
-
-function ListingRow({ listing: l, match, config, compact }: { listing: TradeListing; match: number | null; config: GameConfig; compact?: boolean }) {
-  const dc = useDisplayCurrency();
-  const money = useMoney();
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const status = l.instantBuyout ? { tone: "info" as BadgeTone, label: "Instant buyout" } : STATUS[l.status];
-  const copy = () => {
-    if (!l.whisper) return;
-    navigator.clipboard
-      .writeText(l.whisper)
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      })
-      .catch(() => {});
-  };
-  return (
-    <li>
-      <div className={cn("grid items-center gap-3 px-4 py-2 text-sm", compact ? "grid-cols-[90px_1fr_auto]" : "grid-cols-[110px_minmax(0,1fr)_80px_90px_80px_60px_auto]")}>
-        <button type="button" onClick={() => setOpen((o) => !o)} className="text-left" aria-expanded={open} title="Show item modifiers">
-          <span className="tabular font-semibold text-fg">{l.amount != null ? formatAmount(l.amount) : "—"}</span>{" "}
-          <span className="text-xs text-fg-muted">{l.currency ?? ""}</span>
-          {l.amountBase != null && l.currency !== (dc ? dc.unit.id : config.baseUnit.id) && (
-            <span className="tabular block text-2xs text-fg-subtle">≈ {money(l.amountBase, { unit: config.baseUnit })}</span>
-          )}
-        </button>
-        <div className="min-w-0">
-          <div className="truncate text-fg" data-selectable>
-            {l.account}
-          </div>
-          {l.character && <div className="truncate text-xs text-fg-subtle">{l.character}</div>}
-        </div>
-        {!compact && (
-          <>
-            <Badge tone={status.tone} dot={!l.instantBuyout}>
-              {status.label}
-            </Badge>
-            <span className="text-xs text-fg-muted">{l.indexed ? formatRelative(Date.parse(l.indexed)) : "—"}</span>
-            <span className="text-xs text-fg-muted">{l.priceSource === "item" ? "Item note" : l.priceSource === "stash" ? "Stash tab" : "—"}</span>
-            <span className="tabular text-right text-xs text-fg-muted">{match != null ? `${Math.round(match * 100)}%` : "—"}</span>
-          </>
-        )}
-        <div className="flex items-center gap-1">
-          {compact && (
-            <span
-              className={cn("size-2 rounded-full", l.instantBuyout ? "bg-info" : l.status === "online" ? "bg-success" : l.status === "afk" ? "bg-warning" : "bg-fg-subtle")}
-              title={status.label}
-            />
-          )}
-          <IconButton
-            icon={copied ? "check" : "copy"}
-            size="sm"
-            label={l.whisper ? (copied ? "Whisper copied" : "Copy whisper") : "No whisper available"}
-            disabled={!l.whisper}
-            onClick={copy}
-          />
-        </div>
-      </div>
-      {open && (
-        <div className="border-t border-line bg-bg-2 px-4 py-2 text-xs" data-selectable>
-          <div className="mb-1 text-fg">
-            {l.item.name} {l.item.typeLine}
-            {l.item.ilvl != null && <span className="text-fg-subtle"> · iLvl {l.item.ilvl}</span>}
-            {l.item.corrupted && <span className="text-mod-corrupted"> · Corrupted</span>}
-          </div>
-          <ul className="space-y-0.5 text-mod-explicit">
-            {l.item.mods.map((m, i) => (
-              <li key={i}>{m}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </li>
   );
 }
 

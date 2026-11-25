@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseClusterForTest, parseCorpseForTest, parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
-import { estimatePrice } from "./estimate";
-import { buildFilters, buildQuery, defaultOptions, splitOptionId, suggestedMin, tradeSiteSearchUrl } from "./query";
+import { parseClusterForTest, parseCorpseForTest, parseRealBootsForTest, parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
+import { applyMode, applyRange, buildFilters, buildQuery, defaultOptions, rangeFor, searchBasis, splitOptionId, suggestedMin, tradeSiteSearchUrl } from "./query";
 import { buildStatIndex, matchMod, templateKey, type TradeStat } from "./stats";
 
 // Real entries from /api/trade/data/stats (PoE 1) and /api/trade2/data/stats (PoE 2), Nov 2026.
@@ -103,20 +102,6 @@ describe("filters and query", () => {
     expect(suggestedMin(0.4)).toBe(0.4);
     expect(suggestedMin(null)).toBeNull();
     for (const v of [1.2, 3.3, 9.9, 10.5, 47.25, 120.5]) expect(Number.isInteger(suggestedMin(v))).toBe(true);
-  });
-});
-
-describe("estimate", () => {
-  it("returns null without convertible prices", () => {
-    expect(estimatePrice([{ amountBase: null }])).toBeNull();
-  });
-  it("ignores bait listings and grades confidence", () => {
-    const e = estimatePrice([1, 40, 41, 42, 42, 43, 44, 45, 46, 60].map((amountBase) => ({ amountBase })))!;
-    expect(e.outliers).toBe(1);
-    expect(e.low).toBe(40);
-    expect(e.estimate).toBe(42);
-    expect(e.confidence).toBe("high");
-    expect(estimatePrice([{ amountBase: 10 }, { amountBase: 90 }])!.confidence).toBe("low");
   });
 });
 
@@ -279,5 +264,89 @@ describe("user report: HTTP 405 (Trade refusing automated searches)", () => {
     expect(url.startsWith("https://www.pathofexile.com/trade/search/Covens?q=")).toBe(true);
     expect(JSON.parse(decodeURIComponent(url.split("?q=")[1]!))).toEqual(q);
     expect(tradeSiteSearchUrl("poe2", "Runes of Aldur", q)).toMatch(/^https:\/\/www\.pathofexile\.com\/trade2\/search\/poe2\/Runes%20of%20Aldur\?q=/);
+  });
+});
+
+describe("rework: roll ranges, search basis, modes, pseudo sums", () => {
+  it("suggests whole-number ranges around the roll (+83 life)", () => {
+    expect(rangeFor(83, "min10")).toEqual({ min: 74, max: null });
+    expect(rangeFor(83, "pm10")).toEqual({ min: 74, max: 92 });
+    expect(rangeFor(83, "pm20")).toEqual({ min: 66, max: 100 });
+    expect(rangeFor(83, "exact")).toEqual({ min: 83, max: 83 });
+    expect(rangeFor(-30, "pm10")).toEqual({ min: -33, max: -27 });
+    expect(rangeFor(null, "pm10")).toEqual({ min: null, max: null });
+  });
+
+  it("a rare with no enabled modifier is a base-type-only search; a currency is exact", () => {
+    const rare = parseRareForTest("+80 to maximum Life\n+40% to Fire Resistance");
+    const { stats } = buildFilters(rare, buildStatIndex(POE1_STATS));
+    expect(searchBasis(rare, stats)).toBe("stats");
+    expect(searchBasis(rare, applyMode(stats, stats, "base"))).toBe("base");
+    expect(searchBasis(parseCorpseForTest(), [])).toBe("exact");
+  });
+
+  it("leaving base-type mode restores the default selection", () => {
+    const rare = parseRareForTest("+80 to maximum Life\n+40% to Fire Resistance");
+    const { stats } = buildFilters(rare, buildStatIndex(POE1_STATS));
+    const back = applyMode(applyMode(stats, stats, "base"), stats, "quick");
+    expect(back.map((s) => s.enabled)).toEqual(stats.map((s) => s.enabled));
+  });
+
+  it("applies a range to numeric filters but keeps exact cluster enchants and options", () => {
+    const item = parseClusterForTest();
+    const index = buildStatIndex([
+      { id: "enchant.stat_3086156145", text: "Adds # Passive Skills", type: "enchant" },
+      { id: "enchant.stat_3948993189|42", text: "Added Small Passive Skills grant: 15% increased Armour", type: "enchant" },
+      { id: "explicit.stat_3819827377", text: "Added Small Passive Skills also grant: +# to Maximum Life", type: "explicit" },
+    ]);
+    const out = applyRange(buildFilters(item, index).stats, "pm20");
+    expect(out.find((s) => s.statId === "enchant.stat_3086156145")).toMatchObject({ min: 2, max: 2 });
+    expect(out.find((s) => s.statId === "enchant.stat_3948993189")).toMatchObject({ option: 42, min: null });
+    expect(out.find((s) => s.statId === "explicit.stat_3819827377")).toMatchObject({ min: 8, max: 12 });
+  });
+
+  it("sums attributes from several lines into one pseudo total and shows its sources", () => {
+    const item = parseRareForTest("+20 to Strength\n+15 to Strength and Dexterity\n+10 to all Attributes\n+30 to maximum Mana");
+    const index = buildStatIndex([
+      { id: "pseudo.pseudo_total_strength", text: "+# total to Strength", type: "pseudo" },
+      { id: "pseudo.pseudo_total_dexterity", text: "+# total to Dexterity", type: "pseudo" },
+      { id: "pseudo.pseudo_total_mana", text: "+# total maximum Mana", type: "pseudo" },
+      { id: "explicit.stat_4080418644", text: "+# to Strength", type: "explicit" },
+      { id: "explicit.stat_538848803", text: "+# to Strength and Dexterity", type: "explicit" },
+      { id: "explicit.stat_1379411836", text: "+# to all Attributes", type: "explicit" },
+      { id: "explicit.stat_1050105434", text: "+# to maximum Mana", type: "explicit" },
+    ]);
+    const { stats } = buildFilters(item, index);
+    const str = stats.find((s) => s.statId === "pseudo.pseudo_total_strength")!;
+    expect(str).toMatchObject({ value: 45, enabled: true, sources: ["+20 to Strength", "+15 to Strength and Dexterity", "+10 to all Attributes"] });
+    expect(stats.find((s) => s.statId === "pseudo.pseudo_total_dexterity")).toMatchObject({ value: 25 });
+    // One mana line is its own filter — no pseudo for a single source.
+    expect(stats.find((s) => s.statId === "pseudo.pseudo_total_mana")).toBeUndefined();
+    // Lines inside an enabled total start disabled (no double counting).
+    expect(stats.find((s) => s.label === "+20 to Strength")?.enabled).toBe(false);
+  });
+});
+
+describe("live finding: local stats on armour (a rare boot's own search found 0 listings)", () => {
+  // Real ids from /api/trade/data/stats (PoE 1, 2026-11-25).
+  const index = buildStatIndex([
+    { id: "explicit.stat_2106365538", text: "#% increased Evasion Rating", type: "explicit" },
+    { id: "explicit.stat_124859000", text: "#% increased Evasion Rating (Local)", type: "explicit" },
+    { id: "explicit.stat_809229260", text: "+# to Armour", type: "explicit" },
+    { id: "explicit.stat_3484657501", text: "+# to Armour (Local)", type: "explicit" },
+    { id: "explicit.stat_3261801346", text: "+# to Dexterity", type: "explicit" },
+  ]);
+
+  it("searches the local variant on items with their own defences", () => {
+    const boots = parseRealBootsForTest();
+    const { stats } = buildFilters(boots, index);
+    expect(stats.find((s) => s.label === "39% increased Evasion Rating")?.statId).toBe("explicit.stat_124859000");
+    // Non-local lines are unaffected.
+    expect(stats.find((s) => s.label === "+40 to Dexterity")?.statId).toBe("explicit.stat_3261801346");
+  });
+
+  it("jewellery keeps the global stat", () => {
+    const ring = parseRareForTest("+120 to Armour");
+    expect(buildFilters(ring, index).stats.find((s) => s.label === "+120 to Armour")?.statId).toBe("explicit.stat_809229260");
   });
 });

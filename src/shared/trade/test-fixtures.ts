@@ -170,3 +170,30 @@ Creates Aura of Chaos when hitting Poisoned enemies
 Right click this item to create this corpse.
 `;
 export const parseCorpseForTest = () => parse("poe1", CORPSE_TEXT);
+
+/** Rare boots — real item text from the PoE 1 Trade API (Covens, 2026-11-25). Its "39% increased Evasion Rating" is local. */
+export const REAL_BOOTS_TEXT = `Item Class: Boots
+Rarity: Rare
+Glyph Track
+Shagreen Boots
+--------
+Evasion Rating: 272 (augmented)
+--------
+Requirements:
+Level: 62
+Dex: 97
+--------
+Sockets: W-W-W-W
+--------
+Item Level: 79
+--------
++40 to Dexterity
+39% increased Evasion Rating
++96 to maximum Life
++42% to Lightning Resistance
+30% increased Movement Speed
+17% increased Stun and Block Recovery
+--------
+Note: ~b/o 1 alch
+`;
+export const parseRealBootsForTest = () => parse("poe1", REAL_BOOTS_TEXT);

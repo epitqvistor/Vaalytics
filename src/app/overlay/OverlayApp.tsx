@@ -12,8 +12,6 @@ import { useGameSetting } from "@/core/settings/useGameSetting";
 import { IconButton, Spinner } from "@/shared/components";
 import { transition } from "@/shared/design/motion";
 import { Icon } from "@/shared/icons/Icon";
-import { ItemCard } from "@/shared/item-renderer/ItemCard";
-import { toDisplayItem } from "@/shared/item-renderer/adapt";
 import { cn } from "@/shared/utilities/cn";
 import { matchesShortcut } from "@/shared/utilities/shortcut";
 import { LeagueSelect } from "@/shared/views/market-ui";
@@ -28,6 +26,7 @@ interface CaptureEvent {
 }
 
 const isOpacity = (v: unknown): v is number => typeof v === "number" && v >= 0.5 && v <= 1;
+const isBool = (v: unknown): v is boolean => typeof v === "boolean";
 const isShortcut = (v: unknown): v is string => typeof v === "string" && v.length > 0 && v.length <= 32;
 
 /** Root of the always-on-top price-check overlay window. */
@@ -88,9 +87,13 @@ function OverlayFrame({ capture }: { capture: CaptureEvent }) {
   const { league } = useLeague();
   const [opacity] = useGameSetting<number>(capture.game, "overlay.opacity", 0.95, isOpacity);
   const [clickThrough, setClickThrough] = useState(false);
-  const [showItem, setShowItem] = useState(false);
   const parsed = useMemo(() => (capture.text ? mod.parse(capture.text) : null), [capture.text, mod]);
   const [hotkey] = useGameSetting<string>(capture.game, "priceCheck.hotkey", "Ctrl+D", isShortcut);
+  // Locked: stays open until closed. Quick: closes as soon as focus goes back to the game.
+  const [locked, setLocked] = useGameSetting<boolean>(capture.game, "priceCheck.overlayLocked", true, isBool);
+
+  // Quick mode is enforced by the host: it hides the overlay when the game window returns to the
+  // foreground (the webview's own focus events are unreliable while the window is being shown).
 
   // Pressing the price-check hotkey again closes the overlay. While the overlay has focus the game
   // isn't in the foreground, so the global hotkey is unregistered and the key arrives here.
@@ -121,10 +124,18 @@ function OverlayFrame({ capture }: { capture: CaptureEvent }) {
       <header data-tauri-drag-region className="flex h-10 shrink-0 items-center gap-2 border-b border-line pr-1.5 pl-3">
         <img src="/vaalytics.svg" alt="" className="pointer-events-none size-4" />
         <span data-tauri-drag-region className="min-w-0 flex-1 truncate text-xs font-medium text-fg-muted">
-          Price check · {GAMES[capture.game].shortTitle}
-          {parsed?.ok && <span className="text-fg"> · {parsed.item.name ?? parsed.item.baseType}</span>}
+          Price check · <span className="text-fg">{GAMES[capture.game].shortTitle}</span>
+          {parsed?.ok && <span className="text-fg-subtle"> · {parsed.item.itemClass}</span>}
         </span>
         {league && <LeagueSelect compact />}
+        <IconButton
+          icon="pin"
+          size="sm"
+          label={locked ? "Locked — stays open (click for Quick: closes when you click back into the game)" : "Quick — closes when you click back into the game (click to lock)"}
+          aria-pressed={locked}
+          onClick={() => setLocked(!locked)}
+          className={locked ? "text-accent!" : undefined}
+        />
         <IconButton
           icon="cursor"
           size="sm"
@@ -143,19 +154,7 @@ function OverlayFrame({ capture }: { capture: CaptureEvent }) {
         ) : parsed && !parsed.ok ? (
           <Notice icon="error" title="Unrecognised item text" body={parsed.error} />
         ) : parsed?.ok && league ? (
-          <div className="flex flex-col gap-3">
-            <button
-              type="button"
-              onClick={() => setShowItem((s) => !s)}
-              className="flex items-center gap-1.5 self-start text-xs text-fg-muted hover:text-fg"
-              aria-expanded={showItem}
-            >
-              <Icon name={showItem ? "chevronDown" : "chevronRight"} size={12} />
-              {showItem ? "Hide item" : "Show item"}
-            </button>
-            {showItem && <ItemCard item={toDisplayItem(parsed.item)} />}
-            <PriceCheckSession item={parsed.item} league={league} config={mod.config} compact />
-          </div>
+          <PriceCheckSession item={parsed.item} league={league} config={mod.config} compact />
         ) : (
           <div className={cn("flex h-full items-center justify-center text-fg-subtle")}>
             <Spinner />

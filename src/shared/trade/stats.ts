@@ -84,9 +84,25 @@ function valueOf(mod: ParsedMod, template: string): number | null {
   return mod.values[0]!;
 }
 
-export function matchMod(mod: ParsedMod, index: StatIndex): StatMatch | null {
+/** Properties of items whose flat defences / damage / speed mods are "local" (apply to the item itself). */
+const LOCAL_PROPS = /^(Armour|Evasion Rating|Evasion|Energy Shield|Ward|Physical Damage|Elemental Damage|Attacks per Second|Chance to Block|Block chance|Critical Strike Chance|Critical Hit Chance)$/;
+
+/**
+ * Weapons and armour: Trade lists their local mods separately ("+# to Evasion Rating (Local)").
+ * Searching the global stat for a local line finds nothing (seen live: a rare boot's own search
+ * returned 0 results), so these items prefer the local variant when one exists.
+ */
+export function hasLocalStats(item: ParsedItem): boolean {
+  return item.properties.some((p) => LOCAL_PROPS.test(p.name));
+}
+
+export function matchMod(mod: ParsedMod, index: StatIndex, local = false): StatMatch | null {
   const key = templateKey(mod.text);
   for (const group of groupsFor(mod.kind)) {
+    if (local) {
+      const own = index.byKey.get(`${group}|${key} (Local)`)?.[0];
+      if (own) return { stat: own, value: valueOf(mod, key) };
+    }
     const direct = index.byKey.get(`${group}|${key}`)?.[0];
     if (direct) return { stat: direct, value: valueOf(mod, key) };
     for (const [from, to] of INVERSIONS) {
@@ -133,6 +149,47 @@ export function mergeMultiline(mods: readonly ParsedMod[], index: StatIndex): Pa
 }
 
 // ---------- pseudo totals ----------
+
+interface SumRule {
+  id: string;
+  label: (v: number) => string;
+  /** `templateKey` of every line that contributes its first number. */
+  lines: string[];
+  game?: "poe1" | "poe2";
+}
+
+const ATTRS = ["Strength", "Dexterity", "Intelligence"];
+/** Lines adding to one attribute; hybrids use the game's order (Strength, Dexterity, Intelligence). */
+const attr = (a: string) => [
+  `# to ${a}`,
+  `# to all Attributes`,
+  ...ATTRS.filter((b) => b !== a).map((b) => (ATTRS.indexOf(a) < ATTRS.indexOf(b) ? `# to ${a} and ${b}` : `# to ${b} and ${a}`)),
+];
+
+/** Pseudo sums the Trade site computes the same way (ids exist in both games' stat data unless noted). */
+export const SUM_PSEUDO_IDS: ReadonlySet<string> = new Set([
+  "pseudo.pseudo_total_strength",
+  "pseudo.pseudo_total_dexterity",
+  "pseudo.pseudo_total_intelligence",
+  "pseudo.pseudo_total_mana",
+  "pseudo.pseudo_total_energy_shield",
+  "pseudo.pseudo_total_cast_speed",
+  "pseudo.pseudo_increased_movement_speed",
+  "pseudo.pseudo_global_critical_strike_multiplier",
+  "pseudo.pseudo_increased_spell_damage",
+]);
+
+const SUM_RULES: SumRule[] = [
+  { id: "pseudo.pseudo_total_strength", label: (v) => `+${v} total to Strength`, lines: attr("Strength") },
+  { id: "pseudo.pseudo_total_dexterity", label: (v) => `+${v} total to Dexterity`, lines: attr("Dexterity") },
+  { id: "pseudo.pseudo_total_intelligence", label: (v) => `+${v} total to Intelligence`, lines: attr("Intelligence") },
+  { id: "pseudo.pseudo_total_mana", label: (v) => `+${v} total maximum Mana`, lines: ["# to maximum Mana"] },
+  { id: "pseudo.pseudo_total_energy_shield", label: (v) => `+${v} total maximum Energy Shield`, lines: ["# to maximum Energy Shield"] },
+  { id: "pseudo.pseudo_total_cast_speed", label: (v) => `+${v}% total Cast Speed`, lines: ["#% increased Cast Speed"] },
+  { id: "pseudo.pseudo_increased_movement_speed", label: (v) => `${v}% increased Movement Speed`, lines: ["#% increased Movement Speed"] },
+  { id: "pseudo.pseudo_global_critical_strike_multiplier", label: (v) => `+${v}% Global Critical Strike Multiplier`, lines: ["#% to Global Critical Strike Multiplier"], game: "poe1" },
+  { id: "pseudo.pseudo_increased_spell_damage", label: (v) => `${v}% increased Spell Damage`, lines: ["#% increased Spell Damage"] },
+];
 
 const ELEMENTS = ["fire", "cold", "lightning", "chaos"] as const;
 type Element = (typeof ELEMENTS)[number];
@@ -220,6 +277,24 @@ export function pseudoTotals(item: ParsedItem, index: StatIndex): PseudoTotal[] 
         ...specific.chaos.from,
       ]);
     }
+  }
+  // Further sums (attributes, mana, ES, speeds, crit, spell damage) — offered only when two or more
+  // lines add up, since a single line is already its own filter. Local weapon/armour stats are not
+  // included (they are part of the item's own numbers, not of a pseudo total).
+  for (const rule of SUM_RULES) {
+    if (rule.game && rule.game !== item.game) continue;
+    // Flat ES on armour is local (part of the item's own Energy Shield), not a pseudo total.
+    if (rule.id === "pseudo.pseudo_total_energy_shield" && hasLocalStats(item)) continue;
+    let v = 0;
+    const from: string[] = [];
+    for (const mod of item.mods) {
+      const key = templateKey(mod.text);
+      if (rule.lines.includes(key) && mod.values.length) {
+        v += mod.values[0]!;
+        from.push(mod.id);
+      }
+    }
+    if (from.length >= 2) push(rule.id, rule.label(v), v, from);
   }
   push("pseudo.pseudo_total_chaos_resistance", `+${specific.chaos.v}% total Chaos Resistance`, specific.chaos.v, specific.chaos.from);
   push("pseudo.pseudo_total_life", `+${life.v} total maximum Life`, life.v, life.from);
