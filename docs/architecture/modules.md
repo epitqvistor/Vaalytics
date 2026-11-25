@@ -51,7 +51,7 @@ Current groups:
 |---|---|---|
 | Overview | Dashboard | Dashboard |
 | Economy | Price Checker, Currency Tracker, Trade, Market Intelligence | Price Checker, Currency Tracker, Trade, Market Intelligence |
-| Endgame | Map Lab, Farming Lab, Loot Intelligence, *Atlas Planner, Thread Planner, Fate Planner* | — |
+| Endgame | Map Lab, Farming Lab, Loot Intelligence, Ultimatum Checker, *Atlas Planner, Thread Planner, Fate Planner* | — |
 | Character | Location Atlas, Builds, Path of Building & Tools | Campaign Intelligence, Builds, Path of Building & Tools |
 | Tools | Crafting, REGEX, Browser | *Crafting*, Session Intelligence, Loot Journal, Browser |
 

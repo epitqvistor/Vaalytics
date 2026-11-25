@@ -25,6 +25,7 @@ export type ModuleId =
   | "map-lab"
   | "farming-lab"
   | "loot-intelligence"
+  | "ultimatum-checker"
   // Character
   | "campaign-intelligence"
   | "location-atlas"
@@ -140,6 +141,14 @@ export const MODULES: readonly ModuleMeta[] = [
     icon: "gem",
     group: "endgame",
     summary: "Which drops are worth picking up in this league, from live prices, with a matching loot-filter block.",
+    availability: { poe1: "ready" },
+  },
+  {
+    id: "ultimatum-checker",
+    label: "Ultimatum Checker",
+    icon: "boss",
+    group: "endgame",
+    summary: "Check an Inscribed Ultimatum with the price-check hotkey: your verdict on its modifiers, what the sacrifice and reward are worth, and a Trade search.",
     availability: { poe1: "ready" },
   },
 

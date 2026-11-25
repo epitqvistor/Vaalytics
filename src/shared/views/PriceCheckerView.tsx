@@ -1,20 +1,23 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import type { GameConfig } from "@/core/game-context/config";
 import type { SectionProps } from "@/core/game-context/sections";
 import { useLeague } from "@/core/market/LeagueContext";
-import { Button, Kbd, PageHeader, Panel } from "@/shared/components";
+import { Button, Kbd, PageHeader, Panel, Spinner } from "@/shared/components";
 import { Icon } from "@/shared/icons/Icon";
 import type { ParsedItem, ParseResult } from "@/shared/item-parser/types";
 import { DisplayCurrencySelect, LeagueSelect } from "./market-ui";
 import { PriceCheckSession } from "./price-check/PriceCheckSession";
+import { specialFor, type SpecialItemView } from "./price-check/special";
 
 export interface PriceCheckerViewProps extends SectionProps {
   config: GameConfig;
   /** Game-specific parser (PoE 1 and PoE 2 formats differ). */
   parse: (text: string) => ParseResult;
+  /** Items checked by a game-specific view instead of Trade (e.g. PoE 1 Inscribed Ultimatum). */
+  special?: SpecialItemView[];
 }
 
-export function PriceCheckerView({ config, parse }: PriceCheckerViewProps) {
+export function PriceCheckerView({ config, parse, special }: PriceCheckerViewProps) {
   const { league } = useLeague();
   const [text, setText] = useState("");
   const [item, setItem] = useState<ParsedItem | null>(null);
@@ -85,10 +88,20 @@ export function PriceCheckerView({ config, parse }: PriceCheckerViewProps) {
           </Panel>
           <HowItWorks />
         </div>
+      ) : league && specialFor(special, item) ? (
+        <SpecialCheck view={specialFor(special, item)!} item={item} league={league} />
       ) : league ? (
         <PriceCheckSession item={item} league={league} config={config} />
       ) : null}
     </div>
+  );
+}
+
+function SpecialCheck({ view, item, league }: { view: SpecialItemView; item: ParsedItem; league: string }) {
+  return (
+    <Suspense fallback={<Spinner />}>
+      <view.Component item={item} league={league} />
+    </Suspense>
   );
 }
 

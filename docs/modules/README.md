@@ -15,6 +15,7 @@ owns (tables, settings keys), and known limitations.
 | Loot Intelligence (PoE 1) | `src/games/poe1/loot-intelligence` | [loot-intelligence.md](loot-intelligence.md) |
 | Farming Lab (PoE 1) | `src/games/poe1/farming-lab`, `src-tauri/src/farming.rs` | [farming-lab.md](farming-lab.md) |
 | Map Lab (PoE 1) | `src/games/poe1/map-lab` | [map-lab.md](map-lab.md) |
+| Ultimatum Checker (PoE 1) | `src/games/poe1/ultimatum` | [ultimatum-checker.md](ultimatum-checker.md) |
 | REGEX (PoE 1) | `src/games/poe1/regex`, `src-tauri/src/regex_library.rs` | [regex.md](regex.md) |
 | Session Intelligence (PoE 2) | `src/games/poe2/session-intelligence`, `src-tauri/src/session/` | [session-intelligence.md](session-intelligence.md) |
 | Loot Journal (PoE 2) | `src/games/poe2/loot-journal`, `src-tauri/src/loot/` | [loot-journal.md](loot-journal.md) |

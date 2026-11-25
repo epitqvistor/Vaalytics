@@ -30,7 +30,7 @@ describe("module registry", () => {
     expect(ids(off)).not.toContain("thread-planner");
     expect(ids(on)).toContain("thread-planner");
     expect(off.groups.map((g) => g.id)).toEqual(["overview", "economy", "endgame", "character", "tools"]);
-    expect(off.groups.find((g) => g.id === "endgame")!.items.map((m) => m.id)).toEqual(["map-lab", "farming-lab", "loot-intelligence"]);
+    expect(off.groups.find((g) => g.id === "endgame")!.items.map((m) => m.id)).toEqual(["map-lab", "farming-lab", "loot-intelligence", "ultimatum-checker"]);
     expect(on.groups.map((g) => g.id)).toEqual(["overview", "economy", "endgame", "character", "tools"]);
     expect(off.footer.map((m) => m.id)).toEqual(["settings"]);
     expect(off.groups.find((g) => g.id === "overview")!.items.map((m) => m.id)).toEqual(["dashboard"]);

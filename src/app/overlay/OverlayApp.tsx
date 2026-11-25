@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { MotionConfig, motion } from "motion/react";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { GAMES, type GameId } from "@/core/game-context/games";
 import { setAppSetting } from "@/core/ipc/commands";
 import { DisplayCurrencyProvider } from "@/core/market/DisplayCurrency";
@@ -16,6 +16,7 @@ import { cn } from "@/shared/utilities/cn";
 import { matchesShortcut } from "@/shared/utilities/shortcut";
 import { LeagueSelect } from "@/shared/views/market-ui";
 import { PriceCheckSession } from "@/shared/views/price-check/PriceCheckSession";
+import { specialFor } from "@/shared/views/price-check/special";
 import { GAME_MODULES } from "../gameModules";
 
 interface CaptureEvent {
@@ -88,6 +89,7 @@ function OverlayFrame({ capture }: { capture: CaptureEvent }) {
   const [opacity] = useGameSetting<number>(capture.game, "overlay.opacity", 0.95, isOpacity);
   const [clickThrough, setClickThrough] = useState(false);
   const parsed = useMemo(() => (capture.text ? mod.parse(capture.text) : null), [capture.text, mod]);
+  const special = parsed?.ok ? specialFor(mod.special, parsed.item) : null;
   const [hotkey] = useGameSetting<string>(capture.game, "priceCheck.hotkey", "Ctrl+D", isShortcut);
   // Locked: stays open until closed. Quick: closes as soon as focus goes back to the game.
   const [locked, setLocked] = useGameSetting<boolean>(capture.game, "priceCheck.overlayLocked", true, isBool);
@@ -153,6 +155,10 @@ function OverlayFrame({ capture }: { capture: CaptureEvent }) {
           <Notice icon="warning" title="Couldn't read the item" body={capture.error} />
         ) : parsed && !parsed.ok ? (
           <Notice icon="error" title="Unrecognised item text" body={parsed.error} />
+        ) : parsed?.ok && league && special ? (
+          <Suspense fallback={<Spinner />}>
+            <special.Component item={parsed.item} league={league} compact />
+          </Suspense>
         ) : parsed?.ok && league ? (
           <PriceCheckSession item={parsed.item} league={league} config={mod.config} compact />
         ) : (

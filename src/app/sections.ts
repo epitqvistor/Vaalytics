@@ -35,6 +35,7 @@ const READY: Record<GameId, Partial<Record<SectionId, SectionComponent>>> = {
     "location-atlas": lazy(() => import("@/games/poe1/location-atlas")),
     "act-tracker": lazy(() => import("@/games/poe1/act-tracker")),
     regex: lazy(() => import("@/games/poe1/regex")),
+    "ultimatum-checker": lazy(() => import("@/games/poe1/ultimatum")),
   },
   poe2: {
     dashboard: lazy(() => import("@/games/poe2/dashboard")),
