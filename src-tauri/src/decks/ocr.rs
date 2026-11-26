@@ -55,8 +55,35 @@ pub struct Line {
     pub words: Vec<Word>,
 }
 
+/// How a screenshot is turned into grey for OCR. Loot filters style card labels differently, and no
+/// single conversion gives every style good contrast, so both are read and the results merged:
+/// - `MaxInverted`: 255 − brightest channel. Light text on dark boxes (default labels) and dark text on
+///   saturated boxes (e.g. dark text on blue) become dark-on-light.
+/// - `Luma`: perceived brightness. Coloured text on a white box (e.g. blue on white) stays dark-on-light —
+///   with the brightest channel, blue text and the white box would both be bright.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Variant {
+    MaxInverted,
+    Luma,
+}
+
+pub const VARIANTS: [Variant; 2] = [Variant::MaxInverted, Variant::Luma];
+
+#[inline]
+fn grey(variant: Variant, r: u8, g: u8, b: u8) -> u8 {
+    match variant {
+        Variant::MaxInverted => 255 - r.max(g).max(b),
+        Variant::Luma => ((299 * r as u32 + 587 * g as u32 + 114 * b as u32) / 1000) as u8,
+    }
+}
+
 /// Grey, dark-on-light version of `img` (max channel, inverted), as BGRA8.
 pub fn prepare(img: &Rgba, scale: f64) -> (usize, usize, Vec<u8>) {
+    prepare_as(img, scale, Variant::MaxInverted)
+}
+
+/// Grey version of `img` for one `Variant`, scaled, as BGRA8.
+pub fn prepare_as(img: &Rgba, scale: f64, variant: Variant) -> (usize, usize, Vec<u8>) {
     let w = ((img.w as f64 * scale).round() as usize).max(1);
     let h = ((img.h as f64 * scale).round() as usize).max(1);
     let mut out = vec![0u8; w * h * 4];
@@ -66,7 +93,7 @@ pub fn prepare(img: &Rgba, scale: f64) -> (usize, usize, Vec<u8>) {
         for x in 0..w {
             let sx = (((x as f64 + 0.5) / scale) as usize).min(img.w - 1);
             let [r, g, b, _] = img.get(sx, sy);
-            let v = 255 - r.max(g).max(b);
+            let v = grey(variant, r, g, b);
             let i = (y * w + x) * 4;
             out[i] = v;
             out[i + 1] = v;
@@ -104,22 +131,25 @@ pub fn recognize(img: &Rgba) -> Result<Vec<Line>, String> {
         .ok_or("Windows text recognition (OCR) isn't available. Install an English language pack with OCR in Windows Settings → Time & language.")?;
     let max_dim = OcrEngine::MaxImageDimension().unwrap_or(2600);
     let scale = scale_for(img.w, img.h, max_dim);
-    let (w, h, bgra) = prepare(img, scale);
-    let writer = DataWriter::new().map_err(|e| err("OCR buffer", e))?;
-    writer.WriteBytes(&bgra).map_err(|e| err("OCR buffer", e))?;
-    let buffer = writer.DetachBuffer().map_err(|e| err("OCR buffer", e))?;
-    let bitmap = SoftwareBitmap::CreateCopyFromBuffer(&buffer, BitmapPixelFormat::Bgra8, w as i32, h as i32).map_err(|e| err("OCR bitmap", e))?;
-    let result = engine.RecognizeAsync(&bitmap).map_err(|e| err("OCR", e))?.join().map_err(|e| err("OCR", e))?;
     let mut lines = Vec::new();
-    for line in result.Lines().map_err(|e| err("OCR result", e))? {
-        let mut words = Vec::new();
-        for word in line.Words().map_err(|e| err("OCR result", e))? {
-            let text = word.Text().map(|t| t.to_string_lossy()).unwrap_or_default();
-            let r = word.BoundingRect().map_err(|e| err("OCR result", e))?;
-            words.push(Word { text, rect: Rect { x: r.X as f64 / scale, y: r.Y as f64 / scale, w: r.Width as f64 / scale, h: r.Height as f64 / scale } });
-        }
-        if !words.is_empty() {
-            lines.push(Line { words });
+    // One pass per grey conversion; `recognize::recognize` merges reads of the same label.
+    for variant in VARIANTS {
+        let (w, h, bgra) = prepare_as(img, scale, variant);
+        let writer = DataWriter::new().map_err(|e| err("OCR buffer", e))?;
+        writer.WriteBytes(&bgra).map_err(|e| err("OCR buffer", e))?;
+        let buffer = writer.DetachBuffer().map_err(|e| err("OCR buffer", e))?;
+        let bitmap = SoftwareBitmap::CreateCopyFromBuffer(&buffer, BitmapPixelFormat::Bgra8, w as i32, h as i32).map_err(|e| err("OCR bitmap", e))?;
+        let result = engine.RecognizeAsync(&bitmap).map_err(|e| err("OCR", e))?.join().map_err(|e| err("OCR", e))?;
+        for line in result.Lines().map_err(|e| err("OCR result", e))? {
+            let mut words = Vec::new();
+            for word in line.Words().map_err(|e| err("OCR result", e))? {
+                let text = word.Text().map(|t| t.to_string_lossy()).unwrap_or_default();
+                let r = word.BoundingRect().map_err(|e| err("OCR result", e))?;
+                words.push(Word { text, rect: Rect { x: r.X as f64 / scale, y: r.Y as f64 / scale, w: r.Width as f64 / scale, h: r.Height as f64 / scale } });
+            }
+            if !words.is_empty() {
+                lines.push(Line { words });
+            }
         }
     }
     Ok(lines)
@@ -143,6 +173,19 @@ mod tests {
         assert_eq!((w, h), (4, 2));
         assert_eq!(px[0], 0, "bright text becomes dark");
         assert_eq!(px[8], 255, "dark background becomes light");
+    }
+
+    #[test]
+    fn variants_give_contrast_for_both_label_styles() {
+        let mut img = Rgba::new(2, 1);
+        img.put(0, 0, [25, 40, 210, 255]); // blue text
+        img.put(1, 0, [255, 255, 255, 255]); // white box
+        let (_, _, max) = prepare_as(&img, 1.0, Variant::MaxInverted);
+        let (_, _, luma) = prepare_as(&img, 1.0, Variant::Luma);
+        let contrast = |px: &[u8]| (px[0] as i32 - px[4] as i32).abs();
+        assert!(contrast(&max) < 60, "max channel: blue text ≈ white box");
+        assert!(contrast(&luma) > 150, "luma separates blue text from white");
+        assert!(luma[0] < luma[4], "dark text on light");
     }
 
     #[test]

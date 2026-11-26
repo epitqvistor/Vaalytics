@@ -625,44 +625,48 @@ impl DeckService {
             if kept.iter().any(|k| k.bbox.as_ref().and_then(|b| serde_json::from_value::<ocr::Rect>(b.clone()).ok()).is_some_and(|b| b.iou(&rect) > 0.5)) {
                 continue;
             }
-            let suggestion = d.best.as_ref().map(|m| m.card.clone());
-            let confidence = d.best.as_ref().map_or(0.0, |m| m.score);
-            let (mut status, mut reason, card) = match d.verdict {
-                Verdict::Confirmed => ("confirmed", None, suggestion.clone()),
-                Verdict::Review => ("review", Some(review_reason(d)), suggestion.clone()),
-                _ => ("unrecognized", Some("No reliable match — pick the card or remove it".to_string()), None),
-            };
-            if let Some(cardname) = card.as_deref() {
-                let dup = earlier.iter().find(|(e, esize)| {
-                    !used.contains(&e.id)
-                        && e.card.as_deref() == Some(cardname)
-                        && e.bbox.as_ref().and_then(|b| serde_json::from_value::<ocr::Rect>(b.clone()).ok()).is_some_and(|b| recognize::same_spot(&b, *esize, &rect, size, cfg.dedupe_tolerance))
-                });
-                if let Some((e, _)) = dup {
-                    used.insert(e.id);
-                    status = "review";
-                    reason = Some(format!("Possibly the same label as in an earlier screenshot (entry #{})", e.id));
-                } else if cfg.log_tracking && !store::recent_of_card(&tx, s.id, cardname, since, Some("log"))?.is_empty() {
-                    status = "review";
-                    reason = Some("Also recorded from Client.txt — probably the same card".into());
+            let bbox = serde_json::to_string(&rect)?;
+            // A "3x" stack is that many cards; each copy is its own entry (and its own duplicate check).
+            for copy in 0..d.quantity.max(1) {
+                let suggestion = d.best.as_ref().map(|m| m.card.clone());
+                let confidence = d.best.as_ref().map_or(0.0, |m| m.score);
+                let (mut status, mut reason, card) = match d.verdict {
+                    Verdict::Confirmed => ("confirmed", None, suggestion.clone()),
+                    Verdict::Review => ("review", Some(review_reason(d)), suggestion.clone()),
+                    _ => ("unrecognized", Some("No reliable match — pick the card or remove it".to_string()), None),
+                };
+                if let Some(cardname) = card.as_deref() {
+                    let dup = earlier.iter().find(|(e, esize)| {
+                        !used.contains(&e.id)
+                            && e.card.as_deref() == Some(cardname)
+                            && e.bbox.as_ref().and_then(|b| serde_json::from_value::<ocr::Rect>(b.clone()).ok()).is_some_and(|b| recognize::same_spot(&b, *esize, &rect, size, cfg.dedupe_tolerance))
+                    });
+                    if let Some((e, _)) = dup {
+                        used.insert(e.id);
+                        status = "review";
+                        reason = Some(format!("Possibly the same label as in an earlier screenshot (entry #{})", e.id));
+                    } else if cfg.log_tracking && !store::recent_of_card(&tx, s.id, cardname, since, Some("log"))?.is_empty() {
+                        status = "review";
+                        reason = Some("Also recorded from Client.txt — probably the same card".into());
+                    }
                 }
-            }
-            let e = store::NewEvent {
-                session_id: s.id,
-                at: taken,
-                source: "ocr",
-                source_uid: format!("ocr:{capture_id}:{n}:{}", now()),
-                capture_id: Some(capture_id),
-                recognized_text: Some(d.text.chars().take(200).collect()),
-                recognized_card: suggestion,
-                confidence,
-                bbox: Some(serde_json::to_string(&rect)?),
-                card: card.clone(),
-                status,
-                review_reason: reason,
-            };
-            if let Some(id) = store::insert_event(&tx, &e)? {
-                cards.push(DetectedCard { id, unit: Self::unit_of(&prices, card.as_deref()), card, status: status.into() });
+                let e = store::NewEvent {
+                    session_id: s.id,
+                    at: taken,
+                    source: "ocr",
+                    source_uid: format!("ocr:{capture_id}:{n}:{copy}:{}", now()),
+                    capture_id: Some(capture_id),
+                    recognized_text: Some(if d.quantity > 1 { format!("{}x {}", d.quantity, d.text) } else { d.text.clone() }.chars().take(200).collect()),
+                    recognized_card: suggestion.clone(),
+                    confidence,
+                    bbox: Some(bbox.clone()),
+                    card: card.clone(),
+                    status,
+                    review_reason: reason,
+                };
+                if let Some(id) = store::insert_event(&tx, &e)? {
+                    cards.push(DetectedCard { id, unit: Self::unit_of(&prices, card.as_deref()), card, status: status.into() });
+                }
             }
         }
         store::finish_capture(&tx, capture_id, rec.ocr_lines, rec.ignored, None)?;

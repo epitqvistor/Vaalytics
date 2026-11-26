@@ -14,7 +14,8 @@ use super::ocr::{Line, Rect};
 use serde::Serialize;
 
 /// Bump when recognition output changes (stored on every capture).
-pub const RECOGNIZER_VERSION: i64 = 1;
+/// 2: two grey conversions per screenshot (white label boxes), "3x" stack prefixes.
+pub const RECOGNIZER_VERSION: i64 = 2;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -25,6 +26,24 @@ pub struct Detection {
     pub best: Option<Match>,
     pub verdict: Verdict,
     pub rect: Rect,
+    /// Cards on this label: a "3x Divine Beauty" label is a stack of 3.
+    pub quantity: u32,
+}
+
+/// Item labels on the ground use a small-caps font, which OCR returns in capitals ("THE LOVER"); UI
+/// text, NPC names and the area panel are mixed case ("Milan (EU) Realm"). Mixed-case text that only
+/// vaguely resembles a card is UI text, not an unreadable label (checked on two real screenshots).
+pub fn mostly_lowercase(text: &str) -> bool {
+    let (lower, letters) = text.chars().filter(|c| c.is_alphabetic()).fold((0, 0), |(l, n), c| (l + usize::from(c.is_lowercase()), n + 1));
+    letters >= 3 && lower * 10 > letters * 3
+}
+
+/// "3x" / "3X" / "3×" before a card name (a stack on the ground) → 3. Only 2–99 (1x isn't shown).
+pub fn stack_prefix(word: &str) -> Option<u32> {
+    let w = word.trim();
+    let digits = w.strip_suffix(['x', 'X', '×'])?;
+    let n: u32 = digits.parse().ok()?;
+    (2..=99).contains(&n).then_some(n)
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
@@ -71,14 +90,26 @@ fn rect_of(line: &Line, idx: &[usize]) -> Rect {
 pub fn recognize(lines: &[Line], matcher: &Matcher, t: Thresholds) -> Recognition {
     let t = t.sanitized();
     let mut out = Recognition { ocr_lines: lines.len(), ..Default::default() };
+    let mut ignored: Vec<Rect> = Vec::new();
     for line in lines {
-        for group in split_line(line, 1.6) {
+        for mut group in split_line(line, 1.6) {
+            // A stack prefix belongs to the label that follows it.
+            let mut quantity = 1;
+            if group.len() > 1 {
+                if let Some(n) = stack_prefix(&line.words[group[0]].text) {
+                    quantity = n;
+                }
+            }
+            let full_rect = rect_of(line, &group);
+            if quantity > 1 {
+                group.remove(0);
+            }
             let words: Vec<String> = group.iter().map(|&i| line.words[i].text.clone()).collect();
             let text = words.join(" ");
             let whole = matcher.best(&text);
             let verdict = whole.as_ref().map_or(Verdict::Ignore, |m| t.verdict(m));
             if matches!(verdict, Verdict::Confirmed) {
-                out.detections.push(Detection { text, best: whole, verdict, rect: rect_of(line, &group) });
+                out.detections.push(Detection { text, best: whole, verdict, rect: full_rect, quantity });
                 continue;
             }
             // Several labels touching each other?
@@ -86,28 +117,52 @@ pub fn recognize(lines: &[Line], matcher: &Matcher, t: Thresholds) -> Recognitio
                 for (range, m) in pieces {
                     let idx = &group[range.clone()];
                     let v = t.verdict(&m);
-                    out.detections.push(Detection { text: words[range].join(" "), best: Some(m), verdict: v, rect: rect_of(line, idx) });
+                    let q = if range.start == 0 { quantity } else { 1 };
+                    out.detections.push(Detection { text: words[range].join(" "), best: Some(m), verdict: v, rect: rect_of(line, idx), quantity: q });
                 }
                 continue;
             }
+            let verdict = if verdict == Verdict::Unrecognized && mostly_lowercase(&text) { Verdict::Ignore } else { verdict };
             match verdict {
-                Verdict::Ignore => out.ignored += 1,
-                v => out.detections.push(Detection { text, best: whole, verdict: v, rect: rect_of(line, &group) }),
+                Verdict::Ignore => ignored.push(full_rect),
+                v => out.detections.push(Detection { text, best: whole, verdict: v, rect: full_rect, quantity }),
             }
         }
     }
-    // The same label read twice: same card, overlapping boxes → keep the better reading.
+    // The same label read twice (overlapping OCR boxes, or the two grey passes): overlapping boxes →
+    // keep the better reading, whatever card each read found. Copies at other spots don't overlap.
+    let rank = |d: &Detection| {
+        let v = match d.verdict {
+            Verdict::Confirmed => 3.0,
+            Verdict::Review => 2.0,
+            Verdict::Unrecognized => 1.0,
+            Verdict::Ignore => 0.0,
+        };
+        v + d.best.as_ref().map_or(0.0, |m| m.score)
+    };
     let mut kept: Vec<Detection> = Vec::new();
     for d in out.detections.drain(..) {
-        let card = d.best.as_ref().map(|m| m.card.clone());
-        if let Some(k) = kept.iter_mut().find(|k| k.best.as_ref().map(|m| &m.card) == card.as_ref() && k.rect.iou(&d.rect) > 0.5) {
-            if d.best.as_ref().map_or(0.0, |m| m.score) > k.best.as_ref().map_or(0.0, |m| m.score) {
+        if let Some(k) = kept.iter_mut().find(|k| k.rect.iou(&d.rect) > 0.5) {
+            if rank(&d) > rank(k) {
+                let q = k.quantity.max(d.quantity);
                 *k = d;
+                k.quantity = q;
+            } else {
+                k.quantity = k.quantity.max(d.quantity);
             }
             continue;
         }
         kept.push(d);
     }
+    // Other text, counted once per spot and not where a card was found.
+    let mut seen: Vec<Rect> = Vec::new();
+    for r in ignored {
+        if kept.iter().any(|k| k.rect.iou(&r) > 0.3) || seen.iter().any(|s| s.iou(&r) > 0.5) {
+            continue;
+        }
+        seen.push(r);
+    }
+    out.ignored = seen.len();
     // Top to bottom, left to right — the order the user reads the screen in.
     kept.sort_by(|a, b| (a.rect.y / 8.0).floor().total_cmp(&(b.rect.y / 8.0).floor()).then(a.rect.x.total_cmp(&b.rect.x)));
     out.detections = kept;
@@ -180,7 +235,7 @@ mod tests {
     #[test]
     fn unrelated_items_and_noise() {
         let r = recognize(
-            &[line(&["Chaos", "Orb"], 100.0, &[]), line(&["Scroll", "of", "Wisdom"], 130.0, &[]), line(&["The", "Survivalisf"], 160.0, &[]), line(&["Thc", "Doclar"], 190.0, &[])],
+            &[line(&["CHAOS", "ORB"], 100.0, &[]), line(&["SCROLL", "OF", "WISDOM"], 130.0, &[]), line(&["THE", "SURVIVALISF"], 160.0, &[]), line(&["THC", "DOCLAR"], 190.0, &[])],
             &matcher(),
             Thresholds::default(),
         );
@@ -191,6 +246,49 @@ mod tests {
         // Heavily garbled: plausible but not confirmed.
         assert_eq!(r.detections[1].best.as_ref().unwrap().card, "The Doctor");
         assert_ne!(r.detections[1].verdict, Verdict::Confirmed);
+    }
+
+    #[test]
+    fn mixed_case_ui_text_is_not_an_unreadable_label() {
+        assert!(mostly_lowercase("Milan (EU) Realm"));
+        assert!(!mostly_lowercase("THE LOVER"));
+        assert!(!mostly_lowercase("3X"));
+        let m = Matcher::new(["The Realm", "The Lover"].map(String::from));
+        // UI text that vaguely resembles a card: ignored.
+        let r = recognize(&[line(&["EL)),", "Realm"], 100.0, &[])], &m, Thresholds::default());
+        assert!(r.detections.is_empty());
+        assert_eq!(r.ignored, 1);
+        // A clean mixed-case read of a card still counts.
+        let r = recognize(&[line(&["The", "Lover"], 100.0, &[])], &m, Thresholds::default());
+        assert_eq!(r.detections[0].verdict, Verdict::Confirmed);
+    }
+
+    #[test]
+    fn stack_prefixes() {
+        assert_eq!(stack_prefix("3x"), Some(3));
+        assert_eq!(stack_prefix("3X"), Some(3));
+        assert_eq!(stack_prefix("12×"), Some(12));
+        assert_eq!(stack_prefix("1x"), None);
+        assert_eq!(stack_prefix("x"), None);
+        assert_eq!(stack_prefix("The"), None);
+        let m = Matcher::new(["Divine Beauty", "Lonely Warrior"].map(String::from));
+        let r = recognize(&[line(&["3X", "DIVINE", "BEAUTY"], 100.0, &[]), line(&["LONELY", "WARRIOR"], 140.0, &[])], &m, Thresholds::default());
+        let got: Vec<_> = r.detections.iter().map(|d| (d.best.as_ref().unwrap().card.as_str(), d.quantity, d.verdict)).collect();
+        assert_eq!(got, [("Divine Beauty", 3, Verdict::Confirmed), ("Lonely Warrior", 1, Verdict::Confirmed)]);
+    }
+
+    #[test]
+    fn two_passes_over_one_label_keep_the_better_read() {
+        // Pass 1 garbled, pass 2 clean, same box.
+        let bad = line(&["LONEI.Y", "V,/ARRIOR"], 100.0, &[]);
+        let good = line(&["LONELY", "WARRIOR"], 100.0, &[]);
+        let m = Matcher::new(["Lonely Warrior", "Divine Beauty"].map(String::from));
+        let r = recognize(&[bad, good], &m, Thresholds::default());
+        assert_eq!(r.detections.len(), 1);
+        assert_eq!(r.detections[0].verdict, Verdict::Confirmed);
+        // The same UI text read twice is counted once.
+        let ui = recognize(&[line(&["WAYPOINT"], 300.0, &[]), line(&["WAYPOINT"], 300.0, &[])], &m, Thresholds::default());
+        assert_eq!(ui.ignored, 1);
     }
 
     #[test]
@@ -239,7 +337,7 @@ mod tests {
         }
         let r = recognize(&lines, &m, Thresholds::default());
         for d in &r.detections {
-            println!("{:?} {:>5.2} {:<32} <- {:?}", d.verdict, d.best.as_ref().map_or(0.0, |b| b.score), d.best.as_ref().map_or("", |b| b.card.as_str()), d.text);
+            println!("{:?} {:>5.2} {:<32} x{} <- {:?}", d.verdict, d.best.as_ref().map_or(0.0, |b| b.score), d.best.as_ref().map_or("", |b| b.card.as_str()), d.quantity, d.text);
         }
         println!("ocr {ocr_ms} ms, {} lines, {} detections, {} ignored", r.ocr_lines, r.detections.len(), r.ignored);
     }

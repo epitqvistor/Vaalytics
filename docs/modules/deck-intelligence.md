@@ -45,15 +45,20 @@ need the screenshot path, and with both on there is no overlap for ground drops.
    desktop), then the configured region (fractions of the window: whole window, centre, without HUD, custom).
    No memory reading, injection or input. Exclusive fullscreen comes back black and is reported.
 3. OCR: **Windows.Media.Ocr** (built into Windows 10/11, local; English engine if installed, else the profile
-   language). The image is converted to dark-on-light grey (inverted brightest channel — label colours from loot
-   filters don't matter), upscaled ×2 for small regions, kept within the engine's max dimension.
+   language). Loot filters style card labels very differently, so the image is read **twice** with two grey
+   conversions (recogniser v2): inverted brightest channel (light text on dark boxes, dark text on blue boxes) and
+   luminance (coloured text on white boxes — e.g. blue on white, where the brightest channel makes text and box
+   equally bright). Upscaled ×2 for small regions, kept within the engine's max dimension. Reads of the same label from
+   both passes are merged (overlapping boxes → the better read). ~1.1 s per screenshot (2000×1070).
+   A **stack prefix** ("3x Divine Beauty") becomes that many entries of the card, each with its own duplicate check.
 4. Recognition (`recognize.rs`, `matching.rs`): OCR lines are split at wide gaps (labels side by side), each piece
    matched against the card names (RePoE list + poe.ninja names for the league): normalised text (case, apostrophes,
    punctuation), Levenshtein similarity, short names penalised; runs of touching labels are segmented into
    consecutive names. Overlapping reads of the same label are merged; copies at other spots are kept.
 5. **Confidence** = similarity 0–1. With the user's thresholds (defaults): ≥ 90 % and unambiguous (runner-up card
    ≥ 8 points lower) → **Confirmed**; ≥ 70 % → **Needs review**; ≥ 60 % → **Unrecognized** (shown with a suggestion, no
-   card); lower → other ground text, ignored and only counted. (The unrecognized default was 50 %; on the real
+   card); lower → other ground text, ignored and only counted. Item labels use a small-caps font that OCR returns in
+   capitals; mixed-case text that would only be "unrecognized" (UI, NPC names, the area panel) is ignored instead. (The unrecognized default was 50 %; on the real
    screenshot below, three UI texts scored exactly 0.50 against card names, so it was raised to 60 %.)
 6. **Duplicates** (never dropped silently): within the duplicate window (default 90 s), a card at the same spot
    (centre within 2 % of the capture size, same capture size) as an entry of an earlier screenshot → Needs review
@@ -76,6 +81,11 @@ false entry**; 23 confirmed, 2 to review with the right suggestion ("SCHOLAR OF 
 One screenshot is not a benchmark: other filters (light text on dark), 4K / UI scaling, dense overlapping piles
 and labels hidden behind others are untested; labels that aren't visible can't be read — every uncertain read
 goes to review. A synthetic image (serif font, light text on dark) also read perfectly.
+
+Second real screenshot (`ground-2000x1070-filter-white.webp`, a filter with blue text on white boxes for valuable
+cards): recogniser v1 found 1 of 2 labels (the white boxes had no contrast); v2: "Lonely Warrior" confirmed, "3x Divine
+Beauty" → Divine Beauty ×3 to review (the mouse pointer covers the end of the label). The first screenshot still gives
+25/25 with v2 (24 confirmed, 1 review, no false entries; "The Fortunate" now confirmed by the luminance pass).
 
 ## Sessions
 - One unfinished session at a time: running ⇄ paused → finished (read-only). Saved as you go; survives restarts.
