@@ -270,24 +270,6 @@ export const browserOpenExternal = (tab: string) => invoke<void>("browser_open_e
 /** Typed as `unknown` here; the PoE 1 crafting module owns the data shape. */
 export const craftingData = (game: GameId, force = false) => invoke<unknown>("crafting_data", { game, force });
 
-// ---------- farming lab (src-tauri/src/farming.rs) ----------
-
-/** Shape owned by the PoE 1 Farming Lab module; the host validates and stores it. */
-export interface FarmingSessionRecord {
-  id: string;
-  league: string;
-  strategy: string;
-  startedAt: number;
-  durationSecs: number;
-  maps: number;
-  data: JsonValue;
-  savedAt: number;
-}
-
-export const farmingSessions = (game: GameId, league: string) => invoke<FarmingSessionRecord[]>("farming_sessions", { game, league });
-export const farmingSaveSession = (game: GameId, session: FarmingSessionRecord) => invoke<void>("farming_save_session", { game, session });
-export const farmingDeleteSession = (game: GameId, id: string) => invoke<void>("farming_delete_session", { game, id });
-
 // ---------- regex (src-tauri/src/regex_library.rs) ----------
 
 export type RegexEntry = {

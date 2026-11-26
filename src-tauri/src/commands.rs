@@ -276,23 +276,6 @@ pub async fn crafting_data(state: State<'_, AppState>, game: GameId, force: bool
     state.crafting.get(game, force).await
 }
 
-// ---------- farming lab ----------
-
-#[tauri::command]
-pub fn farming_sessions(state: State<'_, AppState>, game: GameId, league: String) -> AppResult<Vec<crate::farming::FarmingSession>> {
-    crate::farming::list(&state.db, game, &league)
-}
-
-#[tauri::command]
-pub fn farming_save_session(state: State<'_, AppState>, game: GameId, session: crate::farming::FarmingSession) -> AppResult<()> {
-    crate::farming::save(&state.db, game, &session, crate::market::http::unix_now())
-}
-
-#[tauri::command]
-pub fn farming_delete_session(state: State<'_, AppState>, game: GameId, id: String) -> AppResult<()> {
-    crate::farming::delete(&state.db, game, &id)
-}
-
 // ---------- regex (src-tauri/src/regex_library.rs) ----------
 
 #[tauri::command]

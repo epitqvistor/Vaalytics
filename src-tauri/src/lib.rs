@@ -9,7 +9,6 @@ mod crafting;
 mod decks;
 mod db;
 mod diagnostics;
-mod farming;
 mod regex_library;
 mod error;
 mod game;
@@ -119,9 +118,6 @@ pub fn run() {
             commands::market_history,
             commands::market_stats,
             commands::trade_stats,
-            commands::farming_sessions,
-            commands::farming_save_session,
-            commands::farming_delete_session,
             commands::regex_list,
             commands::regex_save,
             commands::regex_set_favorite,

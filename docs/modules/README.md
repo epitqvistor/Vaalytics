@@ -13,8 +13,6 @@ owns (tables, settings keys), and known limitations.
 | Crafting (PoE 1) | `src/games/poe1/crafting`, `src-tauri/src/crafting.rs` | [crafting.md](crafting.md) |
 | Market Intelligence | `src/shared/market-intel` | [market-intelligence.md](market-intelligence.md) |
 | Loot Intelligence (PoE 1) | `src/games/poe1/loot-intelligence` | [loot-intelligence.md](loot-intelligence.md) |
-| Farming Lab (PoE 1) | `src/games/poe1/farming-lab`, `src-tauri/src/farming.rs` | [farming-lab.md](farming-lab.md) |
-| Map Lab (PoE 1) | `src/games/poe1/map-lab` | [map-lab.md](map-lab.md) |
 | Ultimatum Checker (PoE 1) | `src/games/poe1/ultimatum` | [ultimatum-checker.md](ultimatum-checker.md) |
 | Deck Intelligence (PoE 1) | `src/games/poe1/deck-intelligence`, `src-tauri/src/decks/` | [deck-intelligence.md](deck-intelligence.md) |
 | Update Center (both games) | `src/shared/views/update-center`, `src/core/updates`, `src-tauri/src/updates/` | [update-center.md](update-center.md) |

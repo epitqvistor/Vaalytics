@@ -23,8 +23,6 @@ export type ModuleId =
   | "atlas-planner"
   | "thread-planner"
   | "fate-planner"
-  | "map-lab"
-  | "farming-lab"
   | "loot-intelligence"
   | "ultimatum-checker"
   // Character
@@ -128,22 +126,6 @@ export const MODULES: readonly ModuleMeta[] = [
       scope: ["Fate choices and what they empower", "Viscera collected and Wickerman progress (user-tracked)"],
       data: ["Covens mechanic definitions for 3.30 (versioned game data)", "User-provided progress"],
     },
-  },
-  {
-    id: "map-lab",
-    label: "Map Lab",
-    icon: "map",
-    group: "endgame",
-    summary: "Paste a map to see its modifiers grouped by your own risk rules and its rewards; compare pasted maps.",
-    availability: { poe1: "ready" },
-  },
-  {
-    id: "farming-lab",
-    label: "Farming Lab",
-    icon: "flask",
-    group: "endgame",
-    summary: "Record your farming sessions and compare strategies by your own results.",
-    availability: { poe1: "ready" },
   },
   {
     id: "loot-intelligence",

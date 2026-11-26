@@ -77,7 +77,6 @@ export const MODULE_LABEL: Record<string, string> = {
   trade: "Trade",
   crafting: "Crafting",
   regex: "REGEX",
-  "farming-lab": "Farming Lab",
   "loot-intelligence": "Loot Intelligence",
   "ultimatum-checker": "Ultimatum Checker",
   "location-atlas": "Location Atlas",

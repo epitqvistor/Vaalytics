@@ -301,7 +301,6 @@ pub const MODULES: &[ModuleRegistration] = &[
     reg("trade", GameId::Poe2, &["poe2.leagues"], &[], true, ""),
     reg("crafting", GameId::Poe1, &["poe1.crafting-data", "poe1.market-prices"], &[], true, "Crafting service keeps its own RePoE cache; the Update Center can refresh it."),
     reg("regex", GameId::Poe1, &["poe1.crafting-data"], &[], true, ""),
-    reg("farming-lab", GameId::Poe1, &[], &["poe1.market-prices"], true, ""),
     reg("loot-intelligence", GameId::Poe1, &["poe1.market-prices"], &[], true, ""),
     reg("ultimatum-checker", GameId::Poe1, &["poe1.ultimatum-modifiers"], &["poe1.market-prices"], false, "Modifier list is bundled; new or removed modifiers need an app update."),
     reg("location-atlas", GameId::Poe1, &["poe1.campaign"], &[], false, "Campaign data is bundled; changes need an app update."),
