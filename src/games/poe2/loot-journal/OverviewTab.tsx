@@ -97,7 +97,7 @@ export function OverviewTab({ items: allItems, status, onOpen }: { items: LootIt
             <ul className="divide-y divide-line">
               {items.slice(0, 10).map((i) => (
                 <li key={i.id}>
-                  <button type="button" onClick={() => onOpen(i.id)} className="grid w-full grid-cols-[32px_minmax(0,1fr)_auto_84px] items-center gap-3 px-4 py-2 text-left transition-colors duration-150 hover:bg-white/[0.025]">
+                  <button type="button" onClick={() => onOpen(i.id)} className="grid w-full grid-cols-[32px_minmax(0,1fr)_auto_84px] items-center gap-3 px-4 py-2 text-left transition-colors duration-150 hover:bg-glass">
                     <ItemIcon item={i} />
                     <span className="min-w-0">
                       <span className="block truncate text-sm text-fg">
@@ -128,7 +128,7 @@ export function OverviewTab({ items: allItems, status, onOpen }: { items: LootIt
             <ul className="divide-y divide-line">
               {top.map((i, k) => (
                 <li key={i.id}>
-                  <button type="button" onClick={() => onOpen(i.id)} className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150 hover:bg-white/[0.025]">
+                  <button type="button" onClick={() => onOpen(i.id)} className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150 hover:bg-glass">
                     <span className="tabular w-4 text-2xs text-fg-subtle">{k + 1}</span>
                     <ItemIcon item={i} size={40} />
                     <span className="min-w-0 flex-1">
@@ -205,7 +205,7 @@ function CaptureStrip({ status, open }: { status: LootCaptureStatus | null; open
   return (
     <div className="panel flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg px-4 py-2.5 text-xs">
       <span className="text-fg-muted">
-        Hover an item in game and press <kbd className="rounded-xs border border-line bg-well px-1 font-mono text-[11px] text-fg">Ctrl+C</kbd> — saved here automatically.
+        Hover an item in game and press <kbd className="rounded-xs border border-line bg-well px-1 font-mono text-2xs text-fg">Ctrl+C</kbd> — saved here automatically.
       </span>
       <span className="text-fg-subtle">
         Last capture: <span className="text-fg-muted">{status?.lastCaptureAt ? `${status.lastItemName ?? "item"} · ${fmtWhen(status.lastCaptureAt)}` : "none in this run"}</span>

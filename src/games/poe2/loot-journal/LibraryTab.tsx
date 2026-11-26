@@ -202,7 +202,7 @@ export function LibraryTab({ onOpen }: { onOpen: (id: number) => void }) {
                     key={i.id}
                     role="row"
                     className={cn(
-                      "absolute inset-x-0 grid grid-cols-[28px_36px_minmax(0,1.7fr)_minmax(0,0.8fr)_130px_minmax(0,1fr)] items-center gap-3 border-b border-line px-4 transition-colors duration-150 hover:bg-white/[0.025]",
+                      "absolute inset-x-0 grid grid-cols-[28px_36px_minmax(0,1.7fr)_minmax(0,0.8fr)_130px_minmax(0,1fr)] items-center gap-3 border-b border-line px-4 transition-colors duration-150 hover:bg-glass",
                       selected.has(i.id) && "bg-accent-soft/40",
                     )}
                     style={{ top: (first + k) * ROW, height: ROW }}

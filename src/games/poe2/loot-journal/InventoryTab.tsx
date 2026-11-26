@@ -148,7 +148,7 @@ export function InventoryTab({ config, setConfig }: { config: LootConfig | null;
                   <button
                     type="button"
                     onClick={() => setSelected(s.id)}
-                    className={cn("flex w-full flex-col gap-0.5 px-4 py-2.5 text-left transition-colors duration-150 hover:bg-white/[0.025]", selected === s.id && "bg-accent-soft/50")}
+                    className={cn("flex w-full flex-col gap-0.5 px-4 py-2.5 text-left transition-colors duration-150 hover:bg-glass", selected === s.id && "bg-accent-soft")}
                   >
                     <span className="flex items-center gap-2 text-sm text-fg">
                       {fmtDateTime(s.takenAt)}
@@ -447,7 +447,7 @@ function EntryRow({ e, focused, onFocus, onEdit }: { e: InventoryEntry; focused:
           containerClassName="w-full"
         />
         {e.corrected && (
-          <span className="truncate text-[10.5px] text-fg-subtle">
+          <span className="truncate text-2xs text-fg-subtle">
             recognised: {e.recognizedName ?? "nothing"}
             {e.recognizedQuantity !== null && ` ×${e.recognizedQuantity}`}
             <button type="button" className="ml-1.5 text-fg-muted underline-offset-2 hover:underline" onClick={() => onEdit({ reset: true })}>
@@ -463,7 +463,7 @@ function EntryRow({ e, focused, onFocus, onEdit }: { e: InventoryEntry; focused:
                 type="button"
                 title={o}
                 onClick={() => (setName(o), onEdit({ name: o }))}
-                className={cn("max-w-[150px] shrink-0 truncate rounded-xs border px-1.5 text-[10.5px] leading-4", o === e.name ? "border-accent/50 text-accent-2" : "border-line text-fg-subtle hover:text-fg")}
+                className={cn("max-w-[150px] shrink-0 truncate rounded-xs border px-1.5 text-2xs leading-4", o === e.name ? "border-accent/50 text-accent-2" : "border-line text-fg-subtle hover:text-fg")}
               >
                 {o}
               </button>
@@ -489,7 +489,7 @@ function EntryRow({ e, focused, onFocus, onEdit }: { e: InventoryEntry; focused:
         <span title={`Icon match ${e.iconScore.toFixed(2)} · digits ${e.quantityConfidence.toFixed(2)}`}>
           {e.corrected ? <Badge tone="info">Corrected</Badge> : <Badge tone={CONF_TONE[e.confidence]}>{e.confidence}</Badge>}
         </span>
-        {e.recognizedQuantity === null && !e.corrected && <span className="text-[10.5px] text-fg-subtle">qty unread</span>}
+        {e.recognizedQuantity === null && !e.corrected && <span className="text-2xs text-fg-subtle">qty unread</span>}
       </span>
       <span className="flex justify-end">
         <Checkbox label={<span className="sr-only">Count this cell</span>} checked={!e.excluded} onChange={(on) => onEdit({ excluded: !on })} />

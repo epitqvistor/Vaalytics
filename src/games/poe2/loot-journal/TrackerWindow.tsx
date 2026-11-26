@@ -140,8 +140,8 @@ function Overlay() {
   if (!cfg) return null;
   return (
     <div
-      className="flex h-screen flex-col overflow-hidden rounded-lg border border-line-strong text-[13px] text-fg"
-      style={{ backgroundColor: `rgb(15 16 19 / ${cfg.overlayOpacity})` }}
+      className="flex h-screen flex-col overflow-hidden rounded-lg border border-line-strong text-sm text-fg"
+      style={{ backgroundColor: `rgb(16 17 19 / ${cfg.overlayOpacity})` }}
     >
       {/* Unmounted while hidden: nothing is read in the background. */}
       {win && !win.visible ? null : (
@@ -234,8 +234,8 @@ function Body({ cfg, clickThrough, onCollapse, onMode }: { cfg: LootConfig; clic
 
   const header = (
     <header data-tauri-drag-region className="flex h-10 shrink-0 items-center gap-2 border-b border-line pl-3 pr-1">
-      <span data-tauri-drag-region className="text-[10px] font-bold tracking-[0.18em] text-accent-2">VAALYTICS</span>
-      <span data-tauri-drag-region className="rounded-xs border border-line px-1 text-[9.5px] leading-4 font-semibold tracking-wider text-fg-muted">
+      <span data-tauri-drag-region className="text-xs font-semibold text-fg-muted">Vaalytics</span>
+      <span data-tauri-drag-region className="rounded-xs border border-line px-1 text-2xs leading-4 font-semibold text-fg-muted">
         POE2
       </span>
       <span
@@ -245,7 +245,7 @@ function Body({ cfg, clickThrough, onCollapse, onMode }: { cfg: LootConfig; clic
       <span data-tauri-drag-region className="min-w-0 flex-1 truncate text-xs text-fg-muted">
         {cfg.overlayCollapsed && map ? (
           <>
-            <span className="tabular text-fg normal-case">{fmtClock(mapSecs ?? 0)}</span> · <span className="tabular text-fg normal-case">{fmt(map.value)}</span>
+            <span className="tabular text-fg">{fmtClock(mapSecs ?? 0)}</span> · <span className="tabular text-fg">{fmt(map.value)}</span>
           </>
         ) : (
           (s.data?.areaName ?? (s.data?.sessionId ? "In game" : "No session"))
@@ -279,17 +279,17 @@ function Body({ cfg, clickThrough, onCollapse, onMode }: { cfg: LootConfig; clic
       {/* Map timer */}
       <section className="flex shrink-0 items-center gap-3 border-b border-line px-3 py-2">
         <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.12em] text-fg-subtle uppercase">
+          <p className="flex items-center gap-1.5 text-2xs font-medium text-fg-subtle">
             {map ? `Map #${String(map.ordinal).padStart(3, "0")}` : "No map open"}
             {map && <SourceDot source={map.source} />}
             {map?.status === "paused" && <span className="text-warning">paused</span>}
           </p>
           <p className="truncate text-xs text-fg-muted">{map ? mapName(map) : s.data?.lastMap ? `Last: ${mapName(s.data.lastMap)}` : "Enter a map, or start one yourself"}</p>
         </div>
-        <span className="tabular font-display text-[20px] leading-6 font-semibold text-fg">{mapSecs !== null ? fmtClock(mapSecs) : "--:--"}</span>
+        <span className="tabular font-display text-xl leading-6 font-semibold text-fg">{mapSecs !== null ? fmtClock(mapSecs) : "--:--"}</span>
         <MapControls map={map} busy={busy} onControl={control} />
       </section>
-      <section className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-3 py-1 text-[10.5px] tracking-wide text-fg-subtle uppercase">
+      <section className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-3 py-1 text-2xs text-fg-subtle">
         <span title={s.data?.resetAt ? "Counting since your reset" : "Counting since the game session started"}>
           Session <span className="tabular text-fg-muted">{sessionSecs !== null ? fmtClock(sessionSecs) : "—"}</span>
         </span>
@@ -305,9 +305,9 @@ function Body({ cfg, clickThrough, onCollapse, onMode }: { cfg: LootConfig; clic
       )}
       {/* Loot summary for the open (or last) map */}
       <section className="shrink-0 border-b border-line px-3 py-2">
-        <p className="text-[10px] font-semibold tracking-[0.12em] text-fg-subtle uppercase">{map ? "Map loot value" : shownMap ? "Last map loot value" : "Session loot value"}</p>
+        <p className="text-2xs font-medium text-fg-subtle">{map ? "Map loot value" : shownMap ? "Last map loot value" : "Session loot value"}</p>
         <div className="flex items-baseline justify-between gap-2">
-          <span className="tabular font-display text-[18px] leading-6 font-semibold text-accent-2">{fmt(shownMap ? shownMap.value : (s.data?.sessionTotals.value ?? 0))}</span>
+          <span className="tabular font-display text-xl leading-6 font-semibold text-accent-2">{fmt(shownMap ? shownMap.value : (s.data?.sessionTotals.value ?? 0))}</span>
           <span className="truncate text-2xs text-fg-muted">
             {(() => {
               const t = shownMap ?? s.data?.sessionTotals;
@@ -321,7 +321,7 @@ function Body({ cfg, clickThrough, onCollapse, onMode }: { cfg: LootConfig; clic
       {/* Inventory snapshot (shortcut) and recent captures share one scroll area. */}
       <section className="min-h-0 flex-1 overflow-y-auto">
         {s.data?.inventory && <InventoryBlock inv={s.data.inventory} fmt={fmt} rows={expanded ? 40 : cfg.overlayRows} />}
-        {s.data?.inventory && <p className="px-3 pt-2 pb-1 text-[10px] font-semibold tracking-[0.12em] text-fg-subtle uppercase">Recent captures</p>}
+        {s.data?.inventory && <p className="px-3 pt-2 pb-1 text-2xs font-medium text-fg-subtle">Recent captures</p>}
         {!s.data ? null : s.data.recent.length === 0 ? (
           <p className="px-3 py-4 text-center text-xs text-fg-subtle">Copy items in game with Ctrl+C — they appear here.</p>
         ) : (
@@ -334,12 +334,12 @@ function Body({ cfg, clickThrough, onCollapse, onMode }: { cfg: LootConfig; clic
       </section>
 
       {toast && <p className={cn("shrink-0 border-t border-line px-3 py-1 text-2xs", toast.ok ? "text-success" : "text-warning")}>{toast.message}</p>}
-      <footer className="flex shrink-0 items-center justify-between gap-2 border-t border-line px-3 py-1.5 text-[10.5px] tracking-wide text-fg-subtle uppercase">
+      <footer className="flex shrink-0 items-center justify-between gap-2 border-t border-line px-3 py-1.5 text-2xs text-fg-subtle">
         <span className="truncate">
-          Map: <span className="tabular text-fg normal-case">{shownMap ? fmt(shownMap.value) : "—"}</span>
+          Map: <span className="tabular text-fg">{shownMap ? fmt(shownMap.value) : "—"}</span>
         </span>
         <span className="truncate">
-          Session: <span className="tabular text-fg normal-case">{s.data?.sessionId ? fmt(s.data.sessionTotals.value) : "—"}</span>
+          Session: <span className="tabular text-fg">{s.data?.sessionId ? fmt(s.data.sessionTotals.value) : "—"}</span>
         </span>
       </footer>
     </>
@@ -357,11 +357,11 @@ function MapCompleted({ m, inventory, fmt, onConfirm }: { m: LootMapRun; invento
   const confidence = m.unpriced > 0 || (inventory !== null && inventory[2] > 0) ? "check" : "good";
   return (
     <section className="shrink-0 border-b border-accent/30 bg-accent-soft/30 px-3 py-2">
-      <p className="flex items-center justify-between text-[10px] font-semibold tracking-[0.12em] text-accent-2 uppercase">
+      <p className="flex items-center justify-between text-2xs font-semibold text-accent-2">
         Map completed · {mapName(m)}
-        <span className={cn("normal-case tracking-normal", confidence === "good" ? "text-success" : "text-warning")}>{confidence === "good" ? "data complete" : "some data to check"}</span>
+        <span className={cn("", confidence === "good" ? "text-success" : "text-warning")}>{confidence === "good" ? "data complete" : "some data to check"}</span>
       </p>
-      <dl className="mt-1 grid grid-cols-[64px_minmax(0,1fr)] gap-x-2 text-[11px]">
+      <dl className="mt-1 grid grid-cols-[64px_minmax(0,1fr)] gap-x-2 text-2xs">
         {rows.map(([k, v]) => (
           <div key={k} className="contents">
             <dt className="text-fg-subtle">{k}</dt>
@@ -370,7 +370,7 @@ function MapCompleted({ m, inventory, fmt, onConfirm }: { m: LootMapRun; invento
         ))}
       </dl>
       <div className="mt-1.5 flex justify-end">
-        <button type="button" onClick={onConfirm} className="rounded-xs border border-accent/40 px-2 text-[11px] leading-5 text-accent-2 hover:bg-accent-soft">
+        <button type="button" onClick={onConfirm} className="rounded-xs border border-accent/40 px-2 text-2xs leading-5 text-accent-2 hover:bg-accent-soft">
           Confirm map
         </button>
       </div>
@@ -391,7 +391,7 @@ function ResetButton({ onReset }: { onReset: () => void }) {
       type="button"
       title="Reset session: time, value, captures and maps count from now. Nothing is deleted."
       onClick={() => (armed ? (setArmed(false), onReset()) : setArmed(true))}
-      className={cn("rounded-xs border px-1.5 text-[10px] leading-4 tracking-wide uppercase", armed ? "border-warning/50 text-warning" : "border-line text-fg-subtle hover:text-fg")}
+      className={cn("rounded-xs border px-1.5 text-2xs leading-4", armed ? "border-warning/50 text-warning" : "border-line text-fg-subtle hover:text-fg")}
     >
       {armed ? "Sure?" : "Reset"}
     </button>
@@ -403,19 +403,19 @@ function InventoryBlock({ inv, fmt, rows }: { inv: NonNullable<LootTrackerSummar
   return (
     <div className="border-b border-line">
       <div className="flex items-center justify-between px-3 pt-2">
-        <p className="text-[10px] font-semibold tracking-[0.12em] text-fg-subtle uppercase">
+        <p className="text-2xs font-medium text-fg-subtle">
           Inventory · {new Date(inv.takenAt * 1000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
         </p>
         {inv.toReview > 0 ? (
-          <span className="text-[10.5px] text-warning" title="Uncertain cells — check them in Loot Journal → Inventory">
+          <span className="text-2xs text-warning" title="Uncertain cells — check them in Loot Journal → Inventory">
             {inv.toReview} to check
           </span>
         ) : (
-          inv.status === "confirmed" && <span className="text-[10.5px] text-success">confirmed</span>
+          inv.status === "confirmed" && <span className="text-2xs text-success">confirmed</span>
         )}
       </div>
       <div className="flex items-baseline justify-between gap-2 px-3 pb-1.5">
-        <span className="tabular font-display text-[18px] leading-6 font-semibold text-accent-2" title="Known value of the recognised items">
+        <span className="tabular font-display text-xl leading-6 font-semibold text-accent-2" title="Known value of the recognised items">
           {fmt(inv.value)}
         </span>
         <span className="truncate text-2xs text-fg-muted">
@@ -437,7 +437,7 @@ function InventoryBlock({ inv, fmt, rows }: { inv: NonNullable<LootTrackerSummar
             </span>
           </li>
         ))}
-        {inv.items.length > rows && <li className="px-3 pb-1.5 text-[10.5px] text-fg-subtle">+{inv.items.length - rows} more in Loot Journal → Inventory</li>}
+        {inv.items.length > rows && <li className="px-3 pb-1.5 text-2xs text-fg-subtle">+{inv.items.length - rows} more in Loot Journal → Inventory</li>}
       </ul>
     </div>
   );
@@ -445,7 +445,7 @@ function InventoryBlock({ inv, fmt, rows }: { inv: NonNullable<LootTrackerSummar
 
 function SourceDot({ source }: { source: "auto" | "manual" }) {
   return (
-    <span className={cn("rounded-xs border px-1 text-[9px] leading-3.5", source === "auto" ? "border-line text-fg-subtle" : "border-accent/40 text-accent-2")} title={source === "auto" ? "Detected from the game log (Session Intelligence)" : "Started by you"}>
+    <span className={cn("rounded-xs border px-1 text-2xs leading-3.5", source === "auto" ? "border-line text-fg-subtle" : "border-accent/40 text-accent-2")} title={source === "auto" ? "Detected from the game log (Session Intelligence)" : "Started by you"}>
       {source}
     </span>
   );
@@ -477,7 +477,7 @@ function LootRow({ item, fmt, expanded }: { item: LootItem; fmt: (v: number) => 
           {displayName(item)}
           {quantityOf(item) > 1 && <span className="tabular text-fg-muted"> ×{quantityOf(item)}</span>}
         </span>
-        {expanded && item.captureAreaName && <span className="block truncate text-[10.5px] text-fg-subtle">{item.captureAreaName}</span>}
+        {expanded && item.captureAreaName && <span className="block truncate text-2xs text-fg-subtle">{item.captureAreaName}</span>}
       </span>
       <span className={cn("tabular shrink-0 text-xs", priced ? (warn ? "text-warning/90" : "text-fg") : "text-fg-subtle")} title={item.valueNote ?? undefined}>
         {priced ? `${isRangeEstimate(item) ? "≥ " : ""}${fmt(item.valueTotal!)}` : item.valueStatus === "pending" ? "pricing…" : "no price"}

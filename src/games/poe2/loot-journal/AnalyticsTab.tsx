@@ -118,7 +118,7 @@ export function AnalyticsTab({ items, onOpen }: { items: LootItem[]; onOpen: (id
             {cats.map((c) => (
               <li key={c.category} className="grid grid-cols-[130px_minmax(0,1fr)_44px_96px] items-center gap-3 text-xs">
                 <span className="truncate text-fg-muted">{categoryLabel(c.category)}</span>
-                <span className="h-1.5 overflow-hidden rounded-full bg-white/[0.04]">
+                <span className="h-1.5 overflow-hidden rounded-xs bg-glass-strong">
                   <span className="block h-full rounded-full bg-accent/70" style={{ width: `${Math.max(2, (c.count / maxCat) * 100)}%` }} />
                 </span>
                 <span className="tabular text-right text-fg">{c.count}</span>
@@ -139,7 +139,7 @@ export function AnalyticsTab({ items, onOpen }: { items: LootItem[]; onOpen: (id
                 <li key={c.name} className="grid grid-cols-[28px_minmax(0,1fr)_minmax(0,0.8fr)_64px_96px] items-center gap-3 px-4 py-2 text-xs">
                   <ItemIcon item={{ icon: c.icon, category: "currency", rarity: "Currency" }} size={28} />
                   <span className="truncate text-sm text-fg">{c.name}</span>
-                  <span className="h-1.5 overflow-hidden rounded-full bg-white/[0.04]">
+                  <span className="h-1.5 overflow-hidden rounded-xs bg-glass-strong">
                     <span className="block h-full rounded-full bg-accent/70" style={{ width: `${Math.max(c.value > 0 ? 2 : 0, (c.value / maxCur) * 100)}%` }} />
                   </span>
                   <span className="tabular text-right text-fg-muted">×{c.quantity.toLocaleString("en-GB")}</span>
@@ -156,7 +156,7 @@ export function AnalyticsTab({ items, onOpen }: { items: LootItem[]; onOpen: (id
             <ul className="divide-y divide-line">
               {top.map((i) => (
                 <li key={i.id}>
-                  <button type="button" onClick={() => onOpen(i.id)} className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm transition-colors duration-150 hover:bg-white/[0.025]">
+                  <button type="button" onClick={() => onOpen(i.id)} className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm transition-colors duration-150 hover:bg-glass">
                     <ItemIcon item={i} size={28} />
                     <span className="min-w-0 flex-1 truncate text-fg">
                       {displayName(i)}

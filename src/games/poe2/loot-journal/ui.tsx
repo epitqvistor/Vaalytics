@@ -137,8 +137,8 @@ export function PriceSource({ item, className }: { item: Pick<LootItem, "valueSt
 export function Metric({ label, value, caption, className }: { label: string; value: ReactNode; caption?: ReactNode; className?: string }) {
   return (
     <div className={cn("min-w-0 border-r border-b border-line px-4 py-3", className)}>
-      <p className="truncate text-[10.5px] font-semibold tracking-[0.08em] text-fg-subtle uppercase">{label}</p>
-      <div className="mt-1 truncate font-display text-[19px] leading-6 font-semibold tracking-[-0.01em] text-fg">{value}</div>
+      <p className="truncate text-2xs font-medium text-fg-subtle">{label}</p>
+      <div className="mt-1 truncate font-display text-xl leading-6 font-semibold tracking-[-0.01em] text-fg">{value}</div>
       {caption && <div className="mt-0.5 truncate text-2xs text-fg-subtle">{caption}</div>}
     </div>
   );
@@ -170,7 +170,7 @@ export function CaptureBadge({ listening, enabled }: { listening: boolean; enabl
 export function MapSourceTag({ source }: { source: "auto" | "manual" }) {
   return (
     <span
-      className={cn("rounded-xs border px-1 text-[10px] leading-4 font-medium tracking-wide uppercase", source === "auto" ? "border-line text-fg-subtle" : "border-accent/35 text-accent-2/90")}
+      className={cn("rounded-xs border px-1 text-2xs leading-4 font-medium", source === "auto" ? "border-line text-fg-subtle" : "border-accent/35 text-accent-2/90")}
       title={source === "auto" ? "Detected by Session Intelligence from the game log" : "Started and finished by you"}
     >
       {source}
