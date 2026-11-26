@@ -66,7 +66,7 @@ export function DashboardView({ config, onNavigate }: DashboardViewProps) {
         values: history.map((p) => p.value),
         labels: history.map((p) => dateFmt.format(p.ts * 1000)),
         source: "Recorded by Vaalytics",
-        period: `${history.length} snapshots`,
+        period: `since ${dateFmt.format(history[0]!.ts * 1000)}`,
       };
     }
     const t = divine ? trendValues(divine) : [];
@@ -74,7 +74,7 @@ export function DashboardView({ config, onNavigate }: DashboardViewProps) {
       values: t.map((p) => p.value),
       labels: t.map((p) => (p.daysAgo === 0 ? "Now" : `${p.daysAgo}d ago`)),
       source: "poe.ninja 7-day trend",
-      period: "7 days",
+      period: "over 7 days",
     };
   }, [history, divine]);
   const range = useMemo(() => {
@@ -159,7 +159,7 @@ export function DashboardView({ config, onNavigate }: DashboardViewProps) {
                   {range && (
                     <dl className="mb-3 flex flex-wrap items-baseline gap-x-6 gap-y-1 text-xs">
                       <div className="flex items-baseline gap-1.5">
-                        <dt className="text-fg-subtle">Change · {chart.period}</dt>
+                        <dt className="text-fg-subtle">Change {chart.period}</dt>
                         <dd>{range.change != null ? <ChangeText change={range.change} /> : "—"}</dd>
                       </div>
                       <div className="flex items-baseline gap-1.5">
@@ -217,7 +217,7 @@ export function DashboardView({ config, onNavigate }: DashboardViewProps) {
                   <tbody>
                     {watch.map(({ item, category }) => (
                       <Tr key={`${category}:${item.itemId}`}>
-                        <Td className="max-w-0 w-full">
+                        <Td className="w-full max-w-0" title={item.name}>
                           <ItemCell icon={<ItemIcon src={item.icon} name={item.name} size={22} />} sub={catLabel(category)}>
                             {item.name}
                           </ItemCell>
@@ -267,7 +267,7 @@ function MoversTable({ title, rows, loading, baseUnit }: { title: string; rows: 
           <tbody>
             {rows.map((m) => (
               <Tr key={m.itemId}>
-                <Td className="max-w-0">
+                <Td className="w-full max-w-0" title={m.name}>
                   <ItemCell icon={<ItemIcon src={m.icon} name={m.name} size={20} />}>{m.name}</ItemCell>
                 </Td>
                 <Td numeric>

@@ -75,7 +75,8 @@ export function AreaChart({ values, labels, formatValue, formatTick = formatValu
 
   const pt = active != null ? points[active] : undefined;
   const last = points[points.length - 1];
-  const xIdx = xLabelIndices(values.length, innerW);
+  // Several points can share a date label (hourly snapshots): show each label once.
+  const xIdx = xLabelIndices(values.length, innerW).filter((i, k, all) => k === 0 || labels[i] !== labels[all[k - 1]!]);
   const TIP_W = 132;
 
   return (
