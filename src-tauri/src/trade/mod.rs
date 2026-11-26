@@ -66,6 +66,17 @@ pub struct MoreListings {
     pub has_more: bool,
 }
 
+/// Raw search result (see `TradeService::search_raw`).
+pub struct RawSearch {
+    pub search_id: String,
+    pub total: u64,
+    pub complexity: Option<u64>,
+    pub trade_url: String,
+    pub results: Vec<serde_json::Value>,
+    /// Currency → base unit rates (poe.ninja) used for conversion; contains only the base unit when unavailable.
+    pub rates: HashMap<String, f64>,
+}
+
 struct SearchRecord {
     id: String,
     game: GameId,
@@ -200,6 +211,11 @@ impl TradeService {
             .ok()
             .flatten()
             .and_then(|v| v.as_str().and_then(validate_contact))
+    }
+
+    /// Whether a valid contact is configured (live searches need it).
+    pub fn has_contact(&self) -> bool {
+        self.contact().is_some()
     }
 
     fn user_agent(&self) -> AppResult<String> {
@@ -423,6 +439,53 @@ impl TradeService {
             has_more,
             base_unit: crate::market::catalog::base_unit(game),
             rates_available,
+        })
+    }
+
+    /// Search + fetch that returns the raw fetch results, for modules that read item fields the
+    /// normalized `Listing` doesn't keep (Mercenary Intelligence reads `mercenarySkills`). Same
+    /// limiter, User-Agent requirement and query checks as `price_check`; the caller validates
+    /// the result shape.
+    pub async fn search_raw(&self, game: GameId, league: &str, query: serde_json::Value, count: usize) -> AppResult<RawSearch> {
+        if !query.is_object() || serde_json::to_vec(&query)?.len() > MAX_QUERY_BYTES {
+            return Err(AppError::InvalidInput("invalid trade query".into()));
+        }
+        let ua = self.user_agent()?;
+        let url = format!("{BASE}/{}/search/{}{}", api(game), realm_path(game), encode_path(league));
+        let resp = self.send(SEARCH_POLICY, self.http.post(&url).header(header::USER_AGENT, &ua).json(&query)).await?;
+        #[derive(Deserialize)]
+        struct SearchResp {
+            id: String,
+            #[serde(default)]
+            result: Vec<String>,
+            #[serde(default)]
+            total: u64,
+            complexity: Option<u64>,
+        }
+        let search: SearchResp = resp.json().await.map_err(|e| AppError::InvalidInput(format!("Unexpected Trade response ({e}).")))?;
+        let take = count.clamp(1, MAX_LISTINGS_PER_CALL).min(search.result.len());
+        let mut results = Vec::with_capacity(take);
+        for chunk in search.result[..take].chunks(FETCH_CHUNK) {
+            if chunk.iter().any(|id| id.is_empty() || !id.chars().all(|c| c.is_ascii_alphanumeric())) {
+                return Err(AppError::InvalidInput("unexpected listing id".into()));
+            }
+            let realm = if game == GameId::Poe2 { "&realm=poe2" } else { "" };
+            let url = format!("{BASE}/{}/fetch/{}?query={}{realm}", api(game), chunk.join(","), encode_path(&search.id));
+            let resp = self.send(FETCH_POLICY, self.http.get(&url).header(header::USER_AGENT, &ua)).await?;
+            #[derive(Deserialize)]
+            struct RawFetch {
+                result: Vec<Option<serde_json::Value>>,
+            }
+            let body: RawFetch = resp.json().await.map_err(|e| AppError::InvalidInput(format!("Unexpected Trade listing data ({e}).")))?;
+            results.extend(body.result.into_iter().flatten());
+        }
+        Ok(RawSearch {
+            trade_url: trade_site_url(game, league, &search.id),
+            search_id: search.id,
+            total: search.total,
+            complexity: search.complexity,
+            results,
+            rates: self.rates(game, league),
         })
     }
 

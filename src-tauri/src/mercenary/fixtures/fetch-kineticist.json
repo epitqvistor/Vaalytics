@@ -1,0 +1,394 @@
+{
+ "note": "Two real Covens fetch results (2026-11-26), account names replaced, icons/notes/whispers removed.",
+ "result": [
+  {
+   "id": "3f5d81fe33cb3bd9649fcad47223679b0910ecc73ea17352682e3cfded8a8638",
+   "listing": {
+    "method": "psapi",
+    "indexed": "2026-11-26T10:48:56Z",
+    "price": {
+     "type": "~b/o",
+     "amount": 100,
+     "currency": "chaos"
+    },
+    "fee": 1228,
+    "account": {
+     "name": "sample_seller_01#0000"
+    }
+   },
+   "item": {
+    "league": "Covens",
+    "id": "3f5d81fe33cb3bd9649fcad47223679b0910ecc73ea17352682e3cfded8a8638",
+    "name": "",
+    "typeLine": "Mercenary Warrant",
+    "baseType": "Mercenary Warrant",
+    "ilvl": 0,
+    "identified": true,
+    "properties": [
+     {
+      "name": "",
+      "values": [
+       [
+        "Tavielle, the Exquisite",
+        0
+       ]
+      ],
+      "displayMode": 0
+     },
+     {
+      "name": "",
+      "values": [],
+      "displayMode": 4
+     },
+     {
+      "name": "Build",
+      "values": [
+       [
+        "Kineticist",
+        0
+       ]
+      ],
+      "displayMode": 0
+     },
+     {
+      "name": "Mercenary Level",
+      "values": [
+       [
+        "83",
+        0
+       ]
+      ],
+      "displayMode": 0,
+      "type": 78
+     }
+    ],
+    "mercenarySkills": [
+     {
+      "hash": 5689,
+      "name": "Elemental Weakness",
+      "supports": [
+       {
+        "hash": 3263,
+        "name": "Greater Curse Effect",
+        "tier": 3
+       },
+       {
+        "hash": 65120,
+        "name": "Lesser Spell Cascade",
+        "tier": 1
+       }
+      ]
+     },
+     {
+      "hash": 57450,
+      "name": "Flame Wall",
+      "supports": [
+       {
+        "hash": 19113,
+        "name": "Greater Area of Effect",
+        "tier": 3
+       },
+       {
+        "hash": 26568,
+        "name": "Greater More Duration",
+        "tier": 3
+       },
+       {
+        "hash": 37388,
+        "name": "Elemental Focus",
+        "tier": 2
+       }
+      ]
+     },
+     {
+      "hash": 12583,
+      "name": "Kinetic Bolt",
+      "supports": [
+       {
+        "hash": 61471,
+        "name": "Critical Chance",
+        "tier": 2
+       },
+       {
+        "hash": 64283,
+        "name": "Added Lightning",
+        "tier": 2
+       },
+       {
+        "hash": 52758,
+        "name": "Added Cold",
+        "tier": 2
+       },
+       {
+        "hash": 44886,
+        "name": "Elemental Damage with Attacks",
+        "tier": 2
+       },
+       {
+        "hash": 32189,
+        "name": "Critical Damage",
+        "tier": 2
+       }
+      ]
+     },
+     {
+      "hash": 16356,
+      "name": "Kinetic Blast of Clustering",
+      "supports": [
+       {
+        "hash": 49419,
+        "name": "Greater Multiple Projectiles",
+        "tier": 3
+       },
+       {
+        "hash": 5293,
+        "name": "Return",
+        "tier": 3
+       },
+       {
+        "hash": 52758,
+        "name": "Added Cold",
+        "tier": 2
+       },
+       {
+        "hash": 31052,
+        "name": "Chain",
+        "tier": 2
+       },
+       {
+        "hash": 61471,
+        "name": "Critical Chance",
+        "tier": 2
+       }
+      ]
+     },
+     {
+      "hash": 40470,
+      "name": "Frostblink",
+      "supports": [
+       {
+        "hash": 53342,
+        "name": "Increased Area of Effect",
+        "tier": 2
+       },
+       {
+        "hash": 10608,
+        "name": "Greater Cooldown Recovery",
+        "tier": 3
+       }
+      ]
+     },
+     {
+      "hash": 65473,
+      "name": "Inspiring Cry",
+      "supports": [
+       {
+        "hash": 26568,
+        "name": "Greater More Duration",
+        "tier": 3
+       },
+       {
+        "hash": 53342,
+        "name": "Increased Area of Effect",
+        "tier": 2
+       }
+      ]
+     }
+    ],
+    "frameType": 0
+   }
+  },
+  {
+   "id": "523853b5ce01e484fd0dc5ce85a32b9eb442604f17e8b95e4fab154154d51b01",
+   "listing": {
+    "method": "psapi",
+    "indexed": "2026-11-26T15:10:30Z",
+    "price": {
+     "type": "~b/o",
+     "amount": 120,
+     "currency": "chaos"
+    },
+    "fee": 1228,
+    "account": {
+     "name": "sample_seller_01#0000"
+    }
+   },
+   "item": {
+    "league": "Covens",
+    "id": "523853b5ce01e484fd0dc5ce85a32b9eb442604f17e8b95e4fab154154d51b01",
+    "name": "",
+    "typeLine": "Mercenary Warrant",
+    "baseType": "Mercenary Warrant",
+    "ilvl": 0,
+    "identified": true,
+    "properties": [
+     {
+      "name": "",
+      "values": [
+       [
+        "Danalla, the Pure",
+        0
+       ]
+      ],
+      "displayMode": 0
+     },
+     {
+      "name": "",
+      "values": [],
+      "displayMode": 4
+     },
+     {
+      "name": "Build",
+      "values": [
+       [
+        "Kineticist",
+        0
+       ]
+      ],
+      "displayMode": 0
+     },
+     {
+      "name": "Mercenary Level",
+      "values": [
+       [
+        "83",
+        0
+       ]
+      ],
+      "displayMode": 0,
+      "type": 78
+     }
+    ],
+    "mercenarySkills": [
+     {
+      "hash": 5689,
+      "name": "Elemental Weakness",
+      "supports": [
+       {
+        "hash": 3263,
+        "name": "Greater Curse Effect",
+        "tier": 3
+       },
+       {
+        "hash": 65120,
+        "name": "Lesser Spell Cascade",
+        "tier": 1
+       }
+      ]
+     },
+     {
+      "hash": 57450,
+      "name": "Flame Wall",
+      "supports": [
+       {
+        "hash": 19113,
+        "name": "Greater Area of Effect",
+        "tier": 3
+       },
+       {
+        "hash": 31600,
+        "name": "Greater Elemental Focus",
+        "tier": 3
+       },
+       {
+        "hash": 26568,
+        "name": "Greater More Duration",
+        "tier": 3
+       }
+      ]
+     },
+     {
+      "hash": 16356,
+      "name": "Kinetic Blast of Clustering",
+      "supports": [
+       {
+        "hash": 60094,
+        "name": "Greater Added Cold",
+        "tier": 3
+       },
+       {
+        "hash": 49419,
+        "name": "Greater Multiple Projectiles",
+        "tier": 3
+       },
+       {
+        "hash": 31052,
+        "name": "Chain",
+        "tier": 2
+       },
+       {
+        "hash": 5293,
+        "name": "Return",
+        "tier": 3
+       }
+      ]
+     },
+     {
+      "hash": 12583,
+      "name": "Kinetic Bolt",
+      "supports": [
+       {
+        "hash": 44886,
+        "name": "Elemental Damage with Attacks",
+        "tier": 2
+       },
+       {
+        "hash": 61471,
+        "name": "Critical Chance",
+        "tier": 2
+       },
+       {
+        "hash": 31052,
+        "name": "Chain",
+        "tier": 2
+       },
+       {
+        "hash": 55659,
+        "name": "Greater Critical Damage",
+        "tier": 3
+       },
+       {
+        "hash": 64283,
+        "name": "Added Lightning",
+        "tier": 2
+       }
+      ]
+     },
+     {
+      "hash": 40470,
+      "name": "Frostblink",
+      "supports": [
+       {
+        "hash": 12387,
+        "name": "Greater Freeze Chance",
+        "tier": 3
+       },
+       {
+        "hash": 19113,
+        "name": "Greater Area of Effect",
+        "tier": 3
+       }
+      ]
+     },
+     {
+      "hash": 65473,
+      "name": "Inspiring Cry",
+      "supports": [
+       {
+        "hash": 53342,
+        "name": "Increased Area of Effect",
+        "tier": 2
+       },
+       {
+        "hash": 48875,
+        "name": "Cooldown Recovery",
+        "tier": 2
+       }
+      ]
+     }
+    ],
+    "frameType": 0
+   }
+  }
+ ]
+}

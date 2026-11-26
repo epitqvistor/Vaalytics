@@ -19,6 +19,7 @@ export type ModuleId =
   | "trade"
   | "market-intelligence"
   | "deck-intelligence"
+  | "mercenary-intelligence"
   // Endgame (PoE 1 3.30)
   | "atlas-planner"
   | "thread-planner"
@@ -89,6 +90,14 @@ export const MODULES: readonly ModuleMeta[] = [
     icon: "cards",
     group: "economy",
     summary: "Track your Stacked Deck openings from Client.txt and ground screenshots, with a permanent history, valuations and statistics.",
+    availability: { poe1: "ready" },
+  },
+  {
+    id: "mercenary-intelligence",
+    label: "Mercenary Intelligence",
+    icon: "journal",
+    group: "economy",
+    summary: "Value a Mercenary Warrant for sale: family, skills and bound supports read from Ctrl+C, comparable listings from the official Trade site, an asking range with its confidence and the evidence behind it.",
     availability: { poe1: "ready" },
   },
   {

@@ -73,6 +73,7 @@ Registry in `src-tauri/src/updates/registry.rs`. Affected modules are always der
 | `poe1/poe2.market-prices` | managed (Market engine) | Currency, Market Intelligence, Dashboard, Price Checker, Deck Intelligence, Farming/Loot Intelligence, Ultimatum, Crafting, Loot Journal |
 | `poe1.crafting-data` | managed (Crafting service, RePoE) | Crafting, REGEX |
 | `poe1.ultimatum-modifiers` | bundled (poedb; RePoE doesn't export it) | Ultimatum Checker |
+| `poe1.mercenary-catalog` | bundled (PoEDB + official Trade stats, `scripts/poe1-mercenary-catalog.mjs`) | Mercenary Intelligence |
 | `poe1.campaign`, `poe2.campaign` | bundled (hand-verified) | Location Atlas, Act Tracker / Campaign Intelligence |
 
 - *Managed*: the owning engine keeps its cache; the Update Center shows state and can ask it to refresh

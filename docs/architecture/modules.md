@@ -51,7 +51,7 @@ Current groups:
 | Group | PoE 1 | PoE 2 |
 |---|---|---|
 | Overview | Dashboard | Dashboard |
-| Economy | Price Checker, Currency Tracker, Trade, Market Intelligence | Price Checker, Currency Tracker, Trade, Market Intelligence |
+| Economy | Price Checker, Currency Tracker, Trade, Market Intelligence, Deck Intelligence, Mercenary Intelligence | Price Checker, Currency Tracker, Trade, Market Intelligence |
 | Endgame | Loot Intelligence, Ultimatum Checker, *Atlas Planner, Thread Planner, Fate Planner* | — |
 | Character | Location Atlas, Builds, Path of Building & Tools | Campaign Intelligence, Builds, Path of Building & Tools |
 | Tools | Crafting, REGEX, Browser | *Crafting*, Session Intelligence, Loot Journal, Browser |

@@ -206,6 +206,137 @@ export function tradeFetchMore(game: GameId, searchId: string, offset: number, c
 
 export const TRADE_CONTACT_KEY = "trade.contact";
 
+// ---------- Mercenary Intelligence, PoE 1 (src-tauri/src/mercenary) ----------
+
+export interface MercListingSupport {
+  stat: string;
+  name: string;
+  tier: number;
+}
+export interface MercListingSkill {
+  stat: string;
+  name: string;
+  supports: MercListingSupport[];
+}
+export interface MercListing {
+  id: string;
+  amount: number | null;
+  currency: string | null;
+  priceType: string | null;
+  /** Converted with the snapshot's rates (poe.ninja); null without a rate. */
+  amountChaos: number | null;
+  indexed: string | null;
+  instantBuyout: boolean;
+  build: string | null;
+  level: number | null;
+  skills: MercListingSkill[];
+}
+export interface MercSearchRequest {
+  query: Record<string, unknown>;
+  /** 1 exact warrant · 2 exact value package · 3 similar configuration · 4 family baseline */
+  level: 1 | 2 | 3 | 4;
+  label: string;
+  count: number;
+  gameVersion: string;
+  catalogVersion: string;
+  force?: boolean;
+}
+export interface MercSearchOutcome {
+  snapshotId: number | null;
+  status: "ok" | "error";
+  error: string | null;
+  league: string;
+  queryHash: string;
+  level: 1 | 2 | 3 | 4;
+  label: string;
+  searchId: string | null;
+  total: number | null;
+  complexity: number | null;
+  tradeUrl: string | null;
+  /** Unix seconds of the snapshot shown (an older one when `stale`). */
+  fetchedAt: number;
+  cached: boolean;
+  /** The refresh failed and these listings are the last good snapshot. */
+  stale: boolean;
+  skippedListings: number;
+  ratesAvailable: boolean;
+  rates: Record<string, number>;
+  listings: MercListing[];
+  gameVersion: string;
+  catalogVersion: string;
+}
+export interface MercSourceHealth {
+  source: string;
+  lastOk: number | null;
+  lastError: { at: number; message: string } | null;
+  ok: number;
+  failed: number;
+  contactConfigured: boolean;
+}
+export interface MercSnapshotSummary {
+  id: number;
+  league: string;
+  level: number;
+  label: string;
+  status: "ok" | "error";
+  error: string | null;
+  total: number | null;
+  fetched: number;
+  tradeUrl: string | null;
+  createdAt: number;
+  catalogVersion: string;
+  gameVersion: string;
+}
+export interface MercValuationRecord {
+  gameVersion: string;
+  catalogVersion: string;
+  rulesVersion: string;
+  fingerprint: string;
+  family: string;
+  title: string;
+  category: string;
+  confidence: string;
+  level: number | null;
+  count: number;
+  p25Chaos: number | null;
+  medianChaos: number | null;
+  p75Chaos: number | null;
+  divineRate: number | null;
+  summary: JsonValue;
+}
+export interface MercValuationRow extends MercValuationRecord {
+  id: number;
+  league: string;
+  createdAt: number;
+}
+export interface MercRuleCandidate {
+  gameVersion: string;
+  catalogVersion: string;
+  ruleKey: string;
+  family: string;
+  title: string;
+  evidence: JsonValue;
+  withCount: number;
+  withoutCount: number;
+}
+export interface MercRuleCandidateRow extends MercRuleCandidate {
+  id: number;
+  league: string;
+  status: "staged" | "validated" | "promoted" | "rejected";
+  createdAt: number;
+  reviewedAt: number | null;
+}
+
+export const mercSearch = (league: string, request: MercSearchRequest) => invoke<MercSearchOutcome>("merc_search", { league, request });
+export const mercHealth = (league: string) => invoke<MercSourceHealth>("merc_health", { league });
+export const mercSnapshots = (league: string, limit = 100) => invoke<MercSnapshotSummary[]>("merc_snapshots", { league, limit });
+export const mercSaveValuation = (league: string, record: MercValuationRecord) => invoke<number>("merc_save_valuation", { league, record });
+export const mercValuations = (league: string, fingerprint: string | null, limit = 50) => invoke<MercValuationRow[]>("merc_valuations", { league, fingerprint, limit });
+export const mercDeleteValuation = (id: number) => invoke<void>("merc_delete_valuation", { id });
+export const mercStageRule = (league: string, candidate: MercRuleCandidate) => invoke<number>("merc_stage_rule", { league, candidate });
+export const mercReviewRule = (id: number, status: MercRuleCandidateRow["status"]) => invoke<void>("merc_review_rule", { id, status });
+export const mercRuleCandidates = (league: string) => invoke<MercRuleCandidateRow[]>("merc_rule_candidates", { league });
+
 // ---------- Path of Building (src-tauri/src/pob.rs) ----------
 
 export interface PobInstall {

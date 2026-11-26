@@ -14,6 +14,7 @@ owns (tables, settings keys), and known limitations.
 | Market Intelligence | `src/shared/market-intel` | [market-intelligence.md](market-intelligence.md) |
 | Loot Intelligence (PoE 1) | `src/games/poe1/loot-intelligence` | [loot-intelligence.md](loot-intelligence.md) |
 | Ultimatum Checker (PoE 1) | `src/games/poe1/ultimatum` | [ultimatum-checker.md](ultimatum-checker.md) |
+| Mercenary Intelligence (PoE 1) | `src/games/poe1/mercenary`, `src-tauri/src/mercenary/` | [mercenary-intelligence.md](mercenary-intelligence.md) · research in [../mercenary-intelligence/](../mercenary-intelligence/) |
 | Deck Intelligence (PoE 1) | `src/games/poe1/deck-intelligence`, `src-tauri/src/decks/` | [deck-intelligence.md](deck-intelligence.md) |
 | Update Center (both games) | `src/shared/views/update-center`, `src/core/updates`, `src-tauri/src/updates/` | [update-center.md](update-center.md) |
 | REGEX (PoE 1) | `src/games/poe1/regex`, `src-tauri/src/regex_library.rs` | [regex.md](regex.md) |

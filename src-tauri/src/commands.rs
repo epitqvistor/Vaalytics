@@ -133,6 +133,61 @@ pub async fn trade_fetch_more(
     state.trade.fetch_more(game, &search_id, offset, count).await
 }
 
+// ---------- mercenary intelligence (PoE 1) ----------
+
+use crate::mercenary::{model as merc, store as merc_store, validate_league};
+
+#[tauri::command]
+pub async fn merc_search(state: State<'_, AppState>, league: String, request: merc::SearchRequest) -> AppResult<merc::SearchOutcome> {
+    state.mercenary.search(&league, request).await
+}
+
+#[tauri::command]
+pub fn merc_health(state: State<'_, AppState>, league: String) -> AppResult<merc::SourceHealth> {
+    validate_league(&league)?;
+    Ok(state.mercenary.health(&league))
+}
+
+#[tauri::command]
+pub fn merc_snapshots(state: State<'_, AppState>, league: String, limit: usize) -> AppResult<Vec<merc::SnapshotSummary>> {
+    validate_league(&league)?;
+    merc_store::snapshots(state.mercenary.db(), &league, limit)
+}
+
+#[tauri::command]
+pub fn merc_save_valuation(state: State<'_, AppState>, league: String, record: merc::ValuationRecord) -> AppResult<i64> {
+    validate_league(&league)?;
+    merc_store::save_valuation(state.mercenary.db(), &league, &record, crate::market::http::unix_now())
+}
+
+#[tauri::command]
+pub fn merc_valuations(state: State<'_, AppState>, league: String, fingerprint: Option<String>, limit: usize) -> AppResult<Vec<merc::ValuationRow>> {
+    validate_league(&league)?;
+    merc_store::valuations(state.mercenary.db(), &league, fingerprint.as_deref(), limit)
+}
+
+#[tauri::command]
+pub fn merc_delete_valuation(state: State<'_, AppState>, id: i64) -> AppResult<()> {
+    merc_store::delete_valuation(state.mercenary.db(), id)
+}
+
+#[tauri::command]
+pub fn merc_stage_rule(state: State<'_, AppState>, league: String, candidate: merc::RuleCandidate) -> AppResult<i64> {
+    validate_league(&league)?;
+    merc_store::stage_candidate(state.mercenary.db(), &league, &candidate, crate::market::http::unix_now())
+}
+
+#[tauri::command]
+pub fn merc_review_rule(state: State<'_, AppState>, id: i64, status: String) -> AppResult<()> {
+    merc_store::review_candidate(state.mercenary.db(), id, &status, crate::market::http::unix_now())
+}
+
+#[tauri::command]
+pub fn merc_rule_candidates(state: State<'_, AppState>, league: String) -> AppResult<Vec<merc::RuleCandidateRow>> {
+    validate_league(&league)?;
+    merc_store::candidates(state.mercenary.db(), &league)
+}
+
 // ---------- overlay ----------
 
 use crate::overlay::{CaptureEvent, OverlayState, OverlayStatus};

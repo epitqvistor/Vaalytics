@@ -15,6 +15,7 @@ mod game;
 mod loot;
 mod main_window;
 mod market;
+mod mercenary;
 mod overlay;
 mod pob;
 mod session;
@@ -36,6 +37,7 @@ pub struct AppState {
     pub loot: loot::LootService,
     pub decks: std::sync::Arc<decks::DeckService>,
     pub updates: Arc<updates::UpdateService>,
+    pub mercenary: Arc<mercenary::MercenaryService>,
 }
 
 pub fn run() {
@@ -95,7 +97,8 @@ pub fn run() {
                 });
             }
             updates.start(app.handle().clone());
-            app.manage(AppState { db, diagnostics: diagnostics::Diagnostics::new(), market, trade, pob: pob::PobService::new(), crafting: crafting::CraftingService::new(data_dir.clone()), sessions, loot, decks, updates });
+            let mercenary = Arc::new(mercenary::MercenaryService::new(Arc::clone(&db), Arc::clone(&trade)));
+            app.manage(AppState { db, diagnostics: diagnostics::Diagnostics::new(), market, trade, pob: pob::PobService::new(), crafting: crafting::CraftingService::new(data_dir.clone()), sessions, loot, decks, updates, mercenary });
             app.manage(overlay::OverlayState::default());
             app.manage(main_window::MainWindowState::default());
             overlay::init(app)?;
@@ -136,6 +139,15 @@ pub fn run() {
             commands::trade_gem_variants,
             commands::trade_price_check,
             commands::trade_fetch_more,
+            commands::merc_search,
+            commands::merc_health,
+            commands::merc_snapshots,
+            commands::merc_save_valuation,
+            commands::merc_valuations,
+            commands::merc_delete_valuation,
+            commands::merc_stage_rule,
+            commands::merc_review_rule,
+            commands::merc_rule_candidates,
             commands::overlay_status,
             commands::overlay_take_pending,
             commands::overlay_preview,

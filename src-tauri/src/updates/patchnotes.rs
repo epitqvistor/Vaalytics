@@ -285,6 +285,7 @@ const RULES: &[Rule] = &[
     Rule { category: "bugfix", any: &["fixed a bug", "fixed an issue", "fixed "], specific: true },
     Rule { category: "divination", any: &["divination card"], specific: true },
     Rule { category: "ultimatum", any: &["ultimatum", "trialmaster"], specific: true },
+    Rule { category: "mercenaries", any: &["mercenar", "warrant", "proving grounds"], specific: true },
     Rule { category: "quests", any: &["quest"], specific: false },
     Rule { category: "rewards", any: &["passive skill point", "reward", "ascendancy point", "permanent bonus"], specific: false },
     Rule { category: "campaign", any: &["campaign", "waypoint", "checkpoint", " act 1", " act 2", " act 3", " act 4", " act 5", " act 6", " act 7", " act 8", " act 9", " act 10", "interlude"], specific: false },
@@ -326,6 +327,7 @@ fn impact_of(game: Option<GameId>, category: &str) -> (Vec<&'static str>, &'stat
         (Some(Poe1), "divination") => (vec!["poe1.divination-cards"], "data", "Run Check for Updates once RePoE has exported the new game files; Deck Intelligence follows the installed card list."),
         (Some(g), "currency") => (vec![if g == Poe1 { "poe1.market-prices" } else { "poe2.market-prices" }], "data", "Prices follow automatically from poe.ninja; new currencies appear when poe.ninja lists them."),
         (Some(Poe1), "crafting") => (vec!["poe1.crafting-data"], "developer", "Modifier data refreshes from RePoE, but changed crafting rules need a Crafting engine update (developer)."),
+        (Some(Poe1), "mercenaries") => (vec!["poe1.mercenary-catalog"], "developer", "The mercenary catalog ships with the app; new skills, supports or families need a regenerated catalog (developer)."),
         (Some(Poe1), "ultimatum") => (vec!["poe1.ultimatum-modifiers"], "developer", "The Ultimatum modifier list ships with the app; new or removed modifiers need an app update (developer)."),
         (Some(Poe1), "quests" | "campaign" | "rewards") => (vec!["poe1.campaign"], "developer", "PoE 1 campaign data ships with the app; route or reward changes need an app update (developer)."),
         (Some(Poe2), "quests" | "campaign" | "rewards" | "bosses") => (vec!["poe2.campaign"], "developer", "PoE 2 campaign data ships with the app; route or reward changes need an app update (developer)."),
@@ -490,5 +492,15 @@ mod tests {
         assert_eq!(patch_version("Covens of Umbra Launches Soon"), None);
         assert_eq!(parse_forum_date("Nov 23, 2026, 12:10:00 PM"), Some(days_from_civil(2026, 11, 23) * 86400 + 12 * 3600 + 600));
         assert_eq!(parse_rfc2822("Wed, 18 Nov 2026 05:11:12 +0200"), Some(days_from_civil(2026, 11, 18) * 86400 + 3 * 3600 + 11 * 60 + 12));
+    }
+
+    #[test]
+    fn mercenary_lines_flag_the_mercenary_catalog() {
+        // Real 3.30.0 patch-note wording (shortened).
+        assert!(categorize("Hired Mercenaries now have lower Attack Damage scaling at high levels.").contains(&"mercenaries"));
+        assert!(categorize("Mercenary Warrants now open portals to the Proving Grounds.").contains(&"mercenaries"));
+        let (datasets, who, _) = impact_of(Some(GameId::Poe1), "mercenaries");
+        assert_eq!(datasets, vec!["poe1.mercenary-catalog"]);
+        assert_eq!(who, "developer");
     }
 }

@@ -15,6 +15,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: "0.25.0",
+    date: "2026-11-26",
+    title: "Mercenary Intelligence: value a Mercenary Warrant for sale",
+    changes: [
+      "New PoE 1 module (Economy → Mercenary Intelligence): paste a warrant (or press the Price Checker hotkey on it) to read its family, skills and the supports bound to each skill, with a status on every field you can correct.",
+      "Asking range, suggested list price and quick-sale target from comparable listings on the official Trade site, with the comparison level, number of asks, freshness and confidence — or an honest \"insufficient data\".",
+      "Every factor links to its evidence; a Research tab shows all 37 families, their skill pools and supports, the rules and controlled with/without comparisons.",
+    ],
+  },
+  {
     version: "0.24.0",
     date: "2026-11-26",
     title: "Show Vaalytics over the game with Insert",

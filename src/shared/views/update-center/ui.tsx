@@ -79,6 +79,7 @@ export const MODULE_LABEL: Record<string, string> = {
   regex: "REGEX",
   "loot-intelligence": "Loot Intelligence",
   "ultimatum-checker": "Ultimatum Checker",
+  "mercenary-intelligence": "Mercenary Intelligence",
   "location-atlas": "Location Atlas",
   "act-tracker": "Act Tracker",
   "campaign-intelligence": "Campaign Intelligence",

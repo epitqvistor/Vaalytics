@@ -57,6 +57,7 @@ const READY: Record<GameId, Partial<Record<SectionId, SectionView>>> = {
     regex: view(() => import("@/games/poe1/regex")),
     "ultimatum-checker": view(() => import("@/games/poe1/ultimatum")),
     "deck-intelligence": view(() => import("@/games/poe1/deck-intelligence")),
+    "mercenary-intelligence": view(() => import("@/games/poe1/mercenary")),
   },
   poe2: {
     dashboard: view(() => import("@/games/poe2/dashboard")),

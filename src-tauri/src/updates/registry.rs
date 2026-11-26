@@ -253,6 +253,7 @@ pub const DATASETS: &[DatasetDef] = &[
     other("poe2.market-prices", GameId::Poe2, "Market prices", "market-prices", "poe-ninja", DatasetKind::Managed, Group::Market, "Live prices per league and category, refreshed by the Market engine while a view needs them."),
     other("poe1.crafting-data", GameId::Poe1, "Crafting data", "crafting-data", "repoe-poe1", DatasetKind::Managed, Group::GameData, "Modifiers, bases, fossils, essences and bench crafts (RePoE), kept by the Crafting service."),
     other("poe1.ultimatum-modifiers", GameId::Poe1, "Ultimatum modifiers", "ultimatum-modifiers", "bundled", DatasetKind::Bundled, Group::Bundled, "Names and tiers of the UltimatumModifiers table (poedb, game files). RePoE doesn't export it, so it ships with the app."),
+    other("poe1.mercenary-catalog", GameId::Poe1, "Mercenary catalog (3.30)", "mercenary-catalog", "bundled", DatasetKind::Bundled, Group::Bundled, "37 mercenary families: houses, weapons, skill pools, supports and tiers per skill (PoEDB game data), with official Trade stat ids verified live. Ships with the app; regenerate with scripts/poe1-mercenary-catalog.mjs."),
     other("poe1.campaign", GameId::Poe1, "Campaign (Acts 1–10)", "campaign", "bundled", DatasetKind::Bundled, Group::Bundled, "Areas, connections, waypoints and quest rewards, verified by hand and shipped with the app."),
     other("poe2.campaign", GameId::Poe2, "Campaign (0.5.5)", "campaign", "bundled", DatasetKind::Bundled, Group::Bundled, "Areas, objectives and permanent rewards for 0.5.5, verified by hand and shipped with the app."),
 ];
@@ -303,6 +304,7 @@ pub const MODULES: &[ModuleRegistration] = &[
     reg("regex", GameId::Poe1, &["poe1.crafting-data"], &[], true, ""),
     reg("loot-intelligence", GameId::Poe1, &["poe1.market-prices"], &[], true, ""),
     reg("ultimatum-checker", GameId::Poe1, &["poe1.ultimatum-modifiers"], &["poe1.market-prices"], false, "Modifier list is bundled; new or removed modifiers need an app update."),
+    reg("mercenary-intelligence", GameId::Poe1, &["poe1.mercenary-catalog"], &["poe1.market-prices"], false, "Catalog is bundled (changes need an app update); listings come from the official Trade API, currency rates from the Market engine."),
     reg("location-atlas", GameId::Poe1, &["poe1.campaign"], &[], false, "Campaign data is bundled; changes need an app update."),
     reg("act-tracker", GameId::Poe1, &["poe1.campaign"], &[], false, "Campaign data is bundled; changes need an app update."),
     reg("campaign-intelligence", GameId::Poe2, &["poe2.campaign"], &[], false, "Campaign data is bundled; changes need an app update."),
