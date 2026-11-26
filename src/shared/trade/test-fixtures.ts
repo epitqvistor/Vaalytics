@@ -251,3 +251,16 @@ Corrupted
 A long time ago, in a cave far away.
 `;
 export const parseDivCardForTest = (game: "poe1" | "poe2" = "poe1") => parse(game, DIV_CARD_TEXT);
+
+/** Tattoo in the in-game copy layout (constructed from the user's screenshot; effect text not checked). */
+export const TATTOO_TEXT = `Item Class: Stackable Currency
+Rarity: Currency
+Tattoo of the Arohongui Warrior
+--------
+Stack Size: 1/10
+--------
+Replaces a Small Attribute Passive Skill
+--------
+Place into an allocated Small Attribute Passive Skill to replace it.
+`;
+export const parseTattooForTest = () => parse("poe1", TATTOO_TEXT);

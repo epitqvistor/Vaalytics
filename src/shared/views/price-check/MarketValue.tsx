@@ -17,7 +17,8 @@ function Price({ p, big }: { p: PriceParts; big?: boolean }) {
 
 /**
  * Bulk-market price (poe.ninja via Market Data) for items that are not priced from Trade listings —
- * PoE 1 divination cards. No Trade request is made unless the user asks for one.
+ * bulk goods on the Currency Exchange (currency, tattoos, essences, cards …). No Trade request is made
+ * unless the user asks for one.
  */
 export function MarketValue({
   row,
@@ -25,6 +26,8 @@ export function MarketValue({
   league,
   loading,
   error,
+  unit,
+  isPremium,
   stack,
   config,
   onSearchTrade,
@@ -34,11 +37,15 @@ export function MarketValue({
   league: string;
   loading: boolean;
   error: string | null;
+  unit: "card" | "unit";
+  /** The premium currency itself (Divine Orb) is shown in the base unit — "1 div" says nothing. */
+  isPremium: boolean;
   stack?: { current: number; max?: number };
   config: GameConfig;
   onSearchTrade: () => void;
 }) {
-  const { value } = usePriceFormat(config);
+  const fmt = usePriceFormat(config);
+  const value = (v: number) => fmt.value(v, { baseUnit: isPremium });
   const full = stack?.max && stack.max > 1 ? stack.max : null;
   const owned = stack && stack.current > 1 && stack.current !== full ? stack.current : null;
 
@@ -49,13 +56,13 @@ export function MarketValue({
         <div className="flex min-h-8 items-center">
           {row ? <Price p={value(row.value)} big /> : loading ? <Spinner size={16} className="text-fg-subtle" /> : <span className="font-display text-2xl text-fg-subtle">—</span>}
         </div>
-        {row && <span className="text-2xs text-fg-subtle">per card</span>}
+        {row && <span className="text-2xs text-fg-subtle">{unit === "card" ? "per card" : "per unit · Currency Exchange"}</span>}
         <ProvenanceTag provenance={{ kind: "market", source: "poe.ninja", at: fetchedAt, league }} className="ml-auto" />
       </div>
 
       {row && (
         <dl className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-          {full && <Stat label={`Full set (${full})`} value={<Price p={value(row.value * full)} />} />}
+          {full && <Stat label={unit === "card" ? `Full set (${full})` : `Full stack (${full})`}value={<Price p={value(row.value * full)} />} />}
           {owned && <Stat label={`Your stack (${owned})`} value={<Price p={value(row.value * owned)} />} />}
           {row.change7d != null && (
             <Stat
@@ -74,12 +81,16 @@ export function MarketValue({
       {!row && !loading && (
         <p className="mt-1 flex items-start gap-1.5 text-xs text-fg-muted">
           <Icon name="info" size={12} className="mt-0.5 shrink-0" />
-          {error ? `poe.ninja is unavailable: ${error}` : "poe.ninja has no price for this card in this league."}
+          {error ? `poe.ninja is unavailable: ${error}` : `poe.ninja has no price for this ${unit === "card" ? "card" : "item"} in this league.`}
         </p>
       )}
 
       <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-line pt-2">
-        <p className="min-w-0 flex-1 text-2xs text-fg-subtle">Cards are rarely listed one by one on Trade, so the bulk market price is used instead of listings.</p>
+        <p className="min-w-0 flex-1 text-2xs text-fg-subtle">
+          {unit === "card"
+            ? "Cards are rarely listed one by one on Trade, so the bulk market price is used instead of listings."
+            : "Traded in bulk on the Currency Exchange — single Trade listings are often stale, so the exchange rate is used instead."}
+        </p>
         <Button size="sm" variant="secondary" icon="search" onClick={onSearchTrade}>
           Search Trade
         </Button>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseClusterForTest, parseCorpseForTest, parseDivCardForTest, parseNebulisForTest, parseRealBootsForTest, parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
-import { applyMode, applyRange, buildFilters, buildQuery, defaultOptions, marketPricedCategory, rangeFor, searchBasis, splitOptionId, suggestedMin, tradeSiteSearchUrl } from "./query";
+import { parseClusterForTest, parseCorpseForTest, parseDivCardForTest, parseTattooForTest, parseNebulisForTest, parseRealBootsForTest, parsePoe1ItemForTest, parsePoe2ItemForTest, parseRareForTest, parseTamingForTest, parseTransfiguredGemForTest } from "./test-fixtures";
+import { applyMode, applyRange, buildFilters, buildQuery, defaultOptions, marketLookupCategories, rangeFor, searchBasis, splitOptionId, suggestedMin, tradeSiteSearchUrl } from "./query";
 import { buildStatIndex, matchMod, templateKey, type TradeStat } from "./stats";
 
 // Real entries from /api/trade/data/stats (PoE 1) and /api/trade2/data/stats (PoE 2), Nov 2026.
@@ -374,16 +374,25 @@ describe("user report: synthesised unique (Unknown item base type)", () => {
   });
 });
 
-describe("user report: divination cards are priced from poe.ninja", () => {
-  it("PoE 1 cards use the Market Data divination category", () => {
+describe("user reports: bulk goods are priced from poe.ninja (Currency Exchange)", () => {
+  const POE1_EXCHANGE = ["currency", "fragments", "essences", "fossils", "resonators", "oils", "delirium-orbs", "divination", "tattoos", "omens", "artifacts"];
+  it("PoE 1 cards look only in the divination category", () => {
     const card = parseDivCardForTest();
     expect(card).toMatchObject({ itemClass: "Divination Cards", rarity: "Divination Card", stackSize: { current: 1, max: 11 } });
     expect(card.baseType ?? card.name).toBe("The Dragon's Heart");
-    expect(marketPricedCategory(card)).toBe("divination");
+    expect(marketLookupCategories(card, POE1_EXCHANGE)).toEqual(["divination"]);
   });
-  it("everything else stays on Trade (and PoE 2 has no cards)", () => {
-    expect(marketPricedCategory(parsePoe1ItemForTest())).toBeNull();
-    expect(marketPricedCategory(parseCorpseForTest())).toBeNull();
-    expect(marketPricedCategory({ ...parseDivCardForTest(), game: "poe2" })).toBeNull();
+  it("stackable currency (tattoo: Trade said ~15 c, exchange 87:1) looks in every exchange category but cards", () => {
+    const tattoo = parseTattooForTest();
+    expect(tattoo).toMatchObject({ itemClass: "Stackable Currency", rarity: "Currency", baseType: "Tattoo of the Arohongui Warrior" });
+    const cats = marketLookupCategories(tattoo, POE1_EXCHANGE);
+    expect(cats).toContain("tattoos");
+    expect(cats).toContain("currency");
+    expect(cats).not.toContain("divination");
+  });
+  it("rares, uniques and corpses stay on Trade; a game without cards gets no card lookup", () => {
+    expect(marketLookupCategories(parsePoe1ItemForTest(), POE1_EXCHANGE)).toEqual([]);
+    expect(marketLookupCategories(parseCorpseForTest(), POE1_EXCHANGE)).toEqual([]);
+    expect(marketLookupCategories({ ...parseDivCardForTest(), game: "poe2" }, ["currency", "runes"])).toEqual([]);
   });
 });

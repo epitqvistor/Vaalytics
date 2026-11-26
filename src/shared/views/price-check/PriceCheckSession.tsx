@@ -2,7 +2,6 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GameConfig } from "@/core/game-context/config";
 import { tradeFetchMore, tradePriceCheck, type TradeListing, type TradePriceCheck } from "@/core/ipc/commands";
-import { useMarketOverview } from "@/core/market/hooks";
 import { useGameSetting } from "@/core/settings/useGameSetting";
 import { isValidContact, loadGemVariants, useStatIndex, useTradeContact } from "@/core/trade/hooks";
 import { getCachedResult, putCachedResult, resultKey } from "@/core/trade/resultCache";
@@ -15,7 +14,6 @@ import {
   buildFilters,
   buildQuery,
   defaultOptions,
-  marketPricedCategory,
   searchBasis,
   tradeSiteSearchUrl,
   type RangePreset,
@@ -30,6 +28,7 @@ import { FilterEditor } from "./FilterEditor";
 import { ItemSummary } from "./ItemSummary";
 import { isListingSort, Listings, type ListingSort } from "./Listings";
 import { MarketValue } from "./MarketValue";
+import { useExchangePrice } from "./useExchangePrice";
 import { ValueSummary, type ResultState } from "./ValueSummary";
 
 export interface PriceCheckSessionProps {
@@ -68,10 +67,12 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   const [defaultSort] = useGameSetting<ListingSort>(item.game, "priceCheck.defaultSort", "price", isListingSort);
   const [sortOverride, setSort] = useState<ListingSort | null>(null);
   const sort = sortOverride ?? defaultSort;
-  // Divination cards: poe.ninja price only; Trade is searched only when the user asks.
-  const marketCategory = marketPricedCategory(item);
+  // Bulk goods (currency, tattoos, essences, cards …) trade on the Currency Exchange: priced from
+  // poe.ninja only; Trade is searched only when the user asks (or poe.ninja doesn't know the item).
+  const exchange = useExchangePrice(item, league);
+  const isCard = item.rarity === "Divination Card" || item.itemClass === "Divination Cards";
   const [tradeRequested, setTradeRequested] = useState(false);
-  const marketOnly = marketCategory != null && !tradeRequested;
+  const marketOnly = !tradeRequested && exchange.status !== "skip" && (exchange.status !== "none" || isCard);
 
   // New item → fresh filters.
   useEffect(() => {
@@ -146,11 +147,11 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   // before a re-render (e.g. React StrictMode) — every search costs rate limit.
   const autoSearched = useRef<string | null>(null);
   useEffect(() => {
-    if (!index || !contact || filtersFor !== item.raw || marketOnly) return;
+    if (!index || !contact || filtersFor !== item.raw || marketOnly || exchange.status === "loading") return;
     if (autoSearched.current === `${item.raw}\u0000${league}`) return;
     autoSearched.current = `${item.raw}\u0000${league}`;
     void search(stats, opts);
-  }, [index, contact, stats, opts, item, search, filtersFor, league, marketOnly]);
+  }, [index, contact, stats, opts, item, search, filtersFor, league, marketOnly, exchange.status]);
 
   const loadMore = async () => {
     if (!result) return;
@@ -191,17 +192,13 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
     [result, listings, basis, unmatched.length, matchOf],
   );
 
-  // Currency is traded in bulk: the poe.ninja rate (Market Data) is the better reference than the
-  // cheapest single listings. Shown separately and labelled — never mixed into the listing estimate.
-  const isCurrency = item.rarity === "Currency" && item.itemClass !== "Corpses";
-  const { snapshot: currencyMarket } = useMarketOverview(item.game, isCurrency ? league : null, "currency");
-  const { snapshot: cardMarket, error: cardMarketError } = useMarketOverview(item.game, marketCategory ? league : null, marketCategory);
-  const cardName = item.baseType ?? item.name;
-  const cardRow = useMemo(() => cardMarket?.items.find((r) => r.name === cardName && r.variant == null) ?? null, [cardMarket, cardName]);
-  const market = useMemo(() => {
-    const row = currencyMarket?.items.find((r) => r.name === item.baseType && r.variant == null);
-    return row && currencyMarket ? { value: row.value, at: currencyMarket.fetchedAt, league, isPremium: item.baseType === config.premiumUnit.name } : null;
-  }, [currencyMarket, item.baseType, league, config.premiumUnit.name]);
+  // After "Search Trade" on a bulk item the poe.ninja rate stays as a labelled reference —
+  // never mixed into the listing estimate.
+  const isPremium = item.baseType === config.premiumUnit.name;
+  const market = useMemo(
+    () => (exchange.row ? { value: exchange.row.value, at: exchange.fetchedAt, league, isPremium } : null),
+    [exchange.row, exchange.fetchedAt, league, isPremium],
+  );
 
   const state: ResultState = error ? "failed" : loading && result ? "refreshing" : result ? (fromCache ? "cached" : "live") : "idle";
   const searchedIds = useMemo(() => {
@@ -233,13 +230,15 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   if (marketOnly) {
     return (
       <div className={cn("grid items-start gap-3", compact ? "grid-cols-1" : "grid-cols-[minmax(300px,380px)_minmax(0,1fr)] gap-4")}>
-        <ItemSummary item={item} searched={NOTHING_SEARCHED} icon={cardRow?.icon ?? null} collapsed={compact} />
+        <ItemSummary item={item} searched={NOTHING_SEARCHED} icon={exchange.row?.icon ?? null} collapsed={compact} />
         <MarketValue
-          row={cardRow}
-          fetchedAt={cardMarket?.fetchedAt ?? null}
+          row={exchange.row}
+          fetchedAt={exchange.fetchedAt}
           league={league}
-          loading={!cardMarket && !cardMarketError}
-          error={cardMarketError ?? cardMarket?.lastError ?? null}
+          loading={exchange.status === "loading"}
+          error={exchange.error}
+          unit={isCard ? "card" : "unit"}
+          isPremium={isPremium}
           stack={item.stackSize}
           config={config}
           onSearchTrade={() => setTradeRequested(true)}

@@ -330,11 +330,17 @@ export function applyMode(stats: readonly StatFilter[], defaults: readonly StatF
 }
 
 /**
- * Items priced from the bulk market (poe.ninja) instead of Trade listings. PoE 1 divination cards
- * are hardly ever listed individually, so the cheapest few listings are noise (1 c next to 130 div).
- * Returns the Market Data category, or null for items checked on Trade.
+ * Market Data categories to look an item up in before searching Trade. Bulk goods (currency, tattoos,
+ * essences, omens, cards …) trade on the in-game Currency Exchange, which poe.ninja reports; the
+ * cheapest single Trade listings are noise for them (user reports: The Dragon's Heart 1 c–50 div,
+ * Tattoo of the Arohongui Warrior ~15 c while the exchange ratio was 87:1).
+ * Divination cards only look in `divination`; other currency-rarity items in every exchange category.
  */
-export function marketPricedCategory(item: Pick<ParsedItem, "game" | "rarity" | "itemClass">): "divination" | null {
-  if (item.game === "poe1" && (item.rarity === "Divination Card" || item.itemClass === "Divination Cards")) return "divination";
-  return null;
+export function marketLookupCategories(
+  item: Pick<ParsedItem, "game" | "rarity" | "itemClass">,
+  exchangeCategories: readonly string[],
+): string[] {
+  if (item.rarity === "Divination Card" || item.itemClass === "Divination Cards") return exchangeCategories.includes("divination") ? ["divination"] : [];
+  if (item.rarity === "Currency" && item.itemClass !== "Corpses") return exchangeCategories.filter((c) => c !== "divination");
+  return [];
 }

@@ -78,17 +78,18 @@ unsupported claims: a rare searched by base type only could show "High confidenc
   flat ES is local), cast speed, movement speed, global crit multi (PoE 1) and spell damage when **two or more** lines
   add up; the total replaces its lines by default and lists them ("= +20 to Strength + +15 to Strength and Dexterity …").
 
-- **Currency: market reference.** Currency is traded in bulk, so the cheapest single Trade listings are a poor guide
-  (seen live: PoE 2 Divine Orbs listed at "99 waystone-3", which can't be converted → Unpriced). For currency the
-  summary also shows the poe.ninja rate from Market Data ("Market rate 428 ex · market · poe.ninja"), labelled with
-  `ProvenanceTag` and never mixed into the listing estimate. The premium currency itself is shown in the base unit.
-
-- **Divination cards (PoE 1): poe.ninja only.** Cards are almost never listed one by one, so the cheapest listings are
-  noise (user report: The Dragon's Heart, listings from 1 c to 50 div, "~130 c Low confidence"). `marketPricedCategory`
-  routes them to the Market Data `divination` category: the check shows the poe.ninja price per card, the full set
-  (× stack size), the copied stack, 7-day change and listing count (`MarketValue.tsx`). **No Trade request is made** —
-  "Search Trade" runs the normal search only on the user's click. A card poe.ninja doesn't know says so honestly
-  (no fallback price). PoE 2 has no divination cards.
+- **Bulk goods: poe.ninja (Currency Exchange) only.** Currency, tattoos, essences, fossils, oils, omens, fragments,
+  divination cards … trade in bulk on the in-game Currency Exchange; the cheapest single Trade listings are stale or
+  bait (user reports: The Dragon's Heart 1 c–50 div → "~130 c Low confidence"; Tattoo of the Arohongui Warrior "~15 c"
+  while the exchange ratio was 87:1 and poe.ninja 88 c; PoE 2 Divine Orbs listed at "99 waystone-3" → Unpriced).
+  `marketLookupCategories` picks the game's poe.ninja *exchange* categories (cards: `divination` only; other
+  currency-rarity items, except corpses: all others) and `useExchangePrice` looks the name up through Market Data
+  (cache-first; a category still being fetched for the first time is awaited via `market:updated`, max 20 s — the first check after install otherwise saw an empty list and fell back to Trade). Found → the check shows the poe.ninja price per unit/card, full stack/set, the copied stack, 7-day
+  change and listing count (`MarketValue.tsx`) and **no Trade request is made**; "Search Trade" runs the normal search
+  only on the user's click, and the poe.ninja rate then stays in the summary as a labelled "Market rate", never mixed
+  into the listing estimate. The automatic Trade search waits until the lookup is done. A currency item poe.ninja
+  doesn't know falls back to the normal Trade search; a card stays on the honest "no price" state. The premium
+  currency itself (Divine Orb) is shown in the base unit.
 
 - **Synthesised items (PoE 1).** The copy shows "Synthesised <base>"; Trade only knows the base ("Unknown item base
   type" otherwise — user report, Synthesised Nebulis). The parser strips the prefix and sets `synthesised`; the query adds
