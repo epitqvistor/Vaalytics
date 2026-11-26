@@ -29,14 +29,14 @@ export function Switch({ checked, onChange, label, description, disabled }: Swit
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cn(
-          "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border p-0.5 transition-colors duration-150",
-          checked ? "justify-end border-accent/50 bg-accent" : "justify-start border-line-strong bg-elevated",
+          "relative inline-flex h-4.5 w-8 shrink-0 items-center rounded-sm border p-0.5 transition-colors duration-120",
+          checked ? "justify-end border-accent bg-accent" : "justify-start border-line-strong bg-well",
         )}
       >
         <motion.span
           layout
           transition={transition.layout}
-          className={cn("size-3.5 rounded-full shadow-sm", checked ? "bg-on-accent" : "bg-fg-muted")}
+          className={cn("size-3 rounded-xs", checked ? "bg-on-accent" : "bg-fg-muted")}
         />
       </button>
     </div>

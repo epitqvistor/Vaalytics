@@ -21,7 +21,7 @@ export function Checkbox({ checked, onChange, label, disabled, className }: Chec
           checked={checked}
           disabled={disabled}
           onChange={(e) => onChange(e.target.checked)}
-          className="peer absolute inset-0 appearance-none rounded-xs border border-line-strong bg-elevated transition-colors checked:border-accent checked:bg-accent group-hover:border-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="peer absolute inset-0 appearance-none rounded-xs border border-line-strong bg-well transition-colors duration-120 checked:border-accent checked:bg-accent group-hover:border-fg-disabled focus-visible:outline-offset-2"
         />
         <Icon name="check" size={12} className="pointer-events-none relative text-on-accent opacity-0 peer-checked:opacity-100" />
       </span>

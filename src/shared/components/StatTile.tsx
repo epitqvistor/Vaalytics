@@ -10,21 +10,29 @@ export interface StatTileProps {
   /** Ratio, e.g. 0.042. Shown with sign + arrow so it never relies on colour alone. */
   change?: number;
   caption?: ReactNode;
+  /** Leading visual (e.g. item icon) next to the label. */
+  icon?: ReactNode;
+  className?: string;
 }
 
-export function StatTile({ label, value, unit, change, caption }: StatTileProps) {
-  const dir = change == null ? null : change > 0.0005 ? "up" : change < -0.0005 ? "down" : "flat";
+/** A headline figure: label, value (+ unit), then change and context, in falling order of weight. */
+export function StatTile({ label, value, unit, change, caption, icon, className }: StatTileProps) {
   return (
-    <div className="panel-raised led-edge group flex flex-col rounded-lg px-4 pt-3.5 pb-3 transition-transform duration-200 ease-out hover:-translate-y-px">
-      <span className="text-[11px] font-medium tracking-[0.06em] text-fg-muted uppercase">{label}</span>
-      <div className="mt-2 flex items-baseline gap-1.5">
-        <span className="tabular font-display text-[26px] leading-8 font-semibold tracking-[-0.02em] text-fg">{value}</span>
-        {unit && <span className="text-sm font-medium text-fg-subtle">{unit}</span>}
+    <div className={cn("panel-raised led-edge flex min-w-0 flex-col rounded-lg px-4 pt-3 pb-3", className)}>
+      <span className="flex min-w-0 items-center gap-2 text-xs text-fg-muted">
+        {icon}
+        <span className="truncate">{label}</span>
+      </span>
+      <div className="mt-1.5 flex items-baseline gap-1.5">
+        <span className="tabular font-display text-2xl font-semibold tracking-[-0.01em] text-fg">{value}</span>
+        {unit && <span className="text-sm text-fg-subtle">{unit}</span>}
       </div>
-      <div className="mt-1 flex items-center gap-2 text-xs">
-        {dir && <ChangeText change={change!} />}
-        {caption && <span className="text-fg-subtle">{caption}</span>}
-      </div>
+      {(change != null || caption) && (
+        <div className="mt-1 flex items-center gap-2 text-xs">
+          {change != null && <ChangeText change={change} />}
+          {caption && <span className="text-fg-subtle">{caption}</span>}
+        </div>
+      )}
     </div>
   );
 }

@@ -26,8 +26,8 @@ export const transition = {
   base: { duration: duration.base, ease: ease.out },
   fast: { duration: duration.fast, ease: ease.out },
   exit: { duration: duration.fast, ease: ease.in },
-  /** Shared-layout indicators (active nav pill, segmented control thumb). */
-  layout: { type: "spring", stiffness: 520, damping: 42, mass: 0.9 },
+  /** Shared-layout indicators (active nav marker, segmented control thumb): a short, firm tween — no spring overshoot. */
+  layout: { type: "tween", duration: 0.18, ease: [0.22, 1, 0.36, 1] },
 } as const satisfies Record<string, Transition>;
 
 export const variants = {
@@ -38,13 +38,13 @@ export const variants = {
   },
   /** Content panes / page sections. */
   rise: {
-    hidden: { opacity: 0, y: 6 },
+    hidden: { opacity: 0, y: 4 },
     visible: { opacity: 1, y: 0, transition: transition.base },
-    exit: { opacity: 0, y: -4, transition: transition.exit },
+    exit: { opacity: 0, transition: transition.exit },
   },
   /** Modals, popovers. */
   pop: {
-    hidden: { opacity: 0, scale: 0.97, y: 4 },
+    hidden: { opacity: 0, scale: 0.985, y: 4 },
     visible: { opacity: 1, scale: 1, y: 0, transition: { duration: duration.slow, ease: ease.out } },
     exit: { opacity: 0, scale: 0.98, transition: transition.exit },
   },

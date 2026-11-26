@@ -31,7 +31,7 @@ export function SegmentedControl<T extends string>({ value, onChange, segments, 
             aria-checked={active}
             onClick={() => onChange(s.value)}
             className={cn(
-              "relative rounded-[5px] font-medium transition-colors duration-150",
+              "relative rounded-sm font-medium transition-colors duration-120",
               size === "sm" ? "h-6 px-2.5 text-xs" : "h-7 px-3 text-sm",
               active ? "text-fg" : "text-fg-muted hover:text-fg",
             )}
@@ -40,7 +40,7 @@ export function SegmentedControl<T extends string>({ value, onChange, segments, 
               <motion.span
                 layoutId={layoutId}
                 transition={transition.layout}
-                className="absolute inset-0 rounded-[5px] border border-white/[0.1] bg-gradient-to-b from-elevated-2 to-elevated shadow-[inset_0_1px_0_rgb(255_255_255/0.06),0_1px_2px_rgb(0_0_0/0.4)]"
+                className="absolute inset-0 rounded-sm border border-line-strong bg-elevated-2"
               />
             )}
             <span className="relative">{s.label}</span>

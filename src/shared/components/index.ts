@@ -16,3 +16,4 @@ export { ToastProvider, useToast, type ToastTone } from "./Toast";
 export { EmptyState, Skeleton } from "./States";
 export { PageContext, usePageContext, type PageContextValue } from "./PageContext";
 export { ProvenanceTag } from "./ProvenanceTag";
+export { Table, Th, Tr, Td, ItemCell, type ThProps } from "./Table";

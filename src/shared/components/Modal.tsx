@@ -80,7 +80,7 @@ function ModalInner({ onClose, title, description, children, footer, size = "md"
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
       <motion.div
-        className="absolute inset-0 bg-black/55"
+        className="absolute inset-0 bg-black/60"
         variants={variants.fade}
         initial="hidden"
         animate="visible"
@@ -103,7 +103,7 @@ function ModalInner({ onClose, title, description, children, footer, size = "md"
       >
         <div className="flex items-start justify-between gap-4 px-5 pt-5">
           <div className="min-w-0">
-            <h2 id={titleId} className="text-lg font-semibold text-fg">
+            <h2 id={titleId} className="font-display text-base font-semibold text-fg">
               {title}
             </h2>
             {description && (
@@ -115,7 +115,7 @@ function ModalInner({ onClose, title, description, children, footer, size = "md"
           <IconButton icon="close" label="Close" size="sm" onClick={() => onCloseRef.current()} className="-mr-1.5 -mt-1" />
         </div>
         {children && <div className="px-5 pt-4">{children}</div>}
-        <div className="mt-5 flex justify-end gap-2 border-t border-line bg-black/10 px-5 py-3.5">{footer}</div>
+        <div className="mt-5 flex justify-end gap-2 border-t border-line bg-bg-2 px-5 py-3">{footer}</div>
       </motion.div>
     </div>
   );

@@ -22,8 +22,8 @@ export function EmptyState({
 }) {
   const tone = icon === "error" ? "text-danger" : icon === "warning" ? "text-warning" : "text-fg-subtle";
   return (
-    <div className={cn("flex flex-1 flex-col items-center justify-center gap-2 px-6 py-14 text-center", className)}>
-      <span className="mb-1 flex size-10 items-center justify-center rounded-full border border-line bg-white/[0.03]">
+    <div className={cn("flex flex-1 flex-col items-center justify-center gap-1.5 px-6 py-12 text-center", className)}>
+      <span className="mb-1 flex size-5 items-center justify-center">
         {loading ? <Spinner size={18} className="text-fg-subtle" /> : <Icon name={icon} size={18} className={tone} />}
       </span>
       <p className="text-sm font-medium text-fg">{title}</p>
@@ -35,5 +35,5 @@ export function EmptyState({
 
 /** Placeholder shimmer-free skeleton block (static; no running animation). */
 export function Skeleton({ className }: { className?: string }) {
-  return <div aria-hidden className={cn("rounded-md bg-white/[0.04]", className)} />;
+  return <div aria-hidden className={cn("rounded-md bg-glass", className)} />;
 }
