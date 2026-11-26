@@ -1019,6 +1019,10 @@ export interface DeckConfig {
   dedupeSecs: number;
   dedupeTolerance: number;
   keepScreenshots: boolean;
+  /** Every session also as a JSON file outside the app data folder (survives uninstalling). */
+  backupEnabled: boolean;
+  /** "" = Documents\\Vaalytics\\Deck Intelligence. */
+  backupDir: string;
 }
 export interface DeckSessionInput {
   name: string;
@@ -1529,3 +1533,21 @@ export const updatesSetSettings = (settings: UpdSettings) => invoke<UpdSettings>
 export const updatesRefreshManaged = (datasetId: string) => invoke<string>("updates_refresh_managed", { datasetId });
 export const updatesAnalytics = () => invoke<UpdAnalytics>("updates_analytics");
 export const updatesAppInfo = () => invoke<UpdAppInfo>("updates_app_info");
+export interface DeckBackupStatus {
+  enabled: boolean;
+  dir: string;
+  lastAt: number | null;
+  lastError: string | null;
+  files: number;
+}
+export interface DeckRestoreSummary {
+  files: number;
+  sessionsAdded: number;
+  sessionsSkipped: number;
+  cardsAdded: number;
+  errors: string[];
+}
+export const decksBackupStatus = (game: GameId) => invoke<DeckBackupStatus>("decks_backup_status", { game });
+export const decksBackupNow = (game: GameId) => invoke<number>("decks_backup_now", { game });
+export const decksRestoreBackups = (game: GameId) => invoke<DeckRestoreSummary>("decks_restore_backups", { game });
+export const decksOpenBackupDir = (game: GameId) => invoke<void>("decks_open_backup_dir", { game });

@@ -6,7 +6,12 @@ import {
   type DeckConfig,
   type DeckImportStatus,
   type DivinationCardDb,
+  type DeckBackupStatus,
+  decksBackupNow,
+  decksBackupStatus,
   decksImportCancel,
+  decksOpenBackupDir,
+  decksRestoreBackups,
   decksImportStart,
   decksImportStatus,
   decksSetPriceOverride,
@@ -242,6 +247,7 @@ export function SettingsTab({ prefs, setPrefs, cardDb, cardDbError, onRefreshCar
       </Panel>
 
       <div className="flex flex-col gap-4">
+        <BackupPanel config={config} save={save} />
         <ImportPanel />
         <Panel title="Divination Card database">
           <div className="flex flex-wrap items-center gap-3 text-xs">
@@ -325,6 +331,99 @@ function PricesPanel({ names, overrides, onChanged }: { names: readonly string[]
           ))}
         </ul>
       )}
+    </Panel>
+  );
+}
+
+function BackupPanel({ config, save }: { config: DeckConfig | null; save: (c: DeckConfig) => Promise<DeckConfig> }) {
+  const notify = useToast();
+  const [st, setSt] = useState<DeckBackupStatus | null>(null);
+  const [dir, setDir] = useState("");
+  const [busy, setBusy] = useState(false);
+  const reload = () =>
+    decksBackupStatus(GAME)
+      .then(setSt)
+      .catch(() => setSt(null));
+  useEffect(() => {
+    reload();
+  }, [config]);
+  useEffect(() => setDir(config?.backupDir ?? ""), [config]);
+  if (!config) return null;
+  const run = async (f: () => Promise<void>) => {
+    setBusy(true);
+    try {
+      await f();
+    } catch (e) {
+      notify("warning", "Backup", errText(e));
+    } finally {
+      setBusy(false);
+      reload();
+    }
+  };
+  return (
+    <Panel title="Backups">
+      <p className="text-xs leading-relaxed text-fg-muted">
+        Every session is also saved as a JSON file after each change, in a folder outside Vaalytics' own data — so uninstalling (even with “delete app data”) or a lost
+        database doesn't lose your opening history. Deleted sessions are moved to <span className="text-fg">deleted\</span>, never removed. Screenshots aren't included.
+      </p>
+      <div className="mt-3 flex flex-col gap-3">
+        <Switch checked={config.backupEnabled} onChange={(backupEnabled) => run(async () => void (await save({ ...config, backupEnabled })))} label="Automatic backups" description="Recommended. Writes one small file per session." />
+        <div className="flex flex-wrap items-end gap-2">
+          <Input size="sm" label="Folder" value={dir} placeholder={st?.dir ?? "Documents\\Vaalytics\\Deck Intelligence"} onChange={(e) => setDir(e.target.value)} containerClassName="min-w-0 flex-1" />
+          <Button size="sm" variant="secondary" disabled={busy || dir === config.backupDir} onClick={() => run(async () => void (await save({ ...config, backupDir: dir })))}>
+            Use folder
+          </Button>
+          {config.backupDir && (
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => run(async () => void (await save({ ...config, backupDir: "" })))}>
+              Default
+            </Button>
+          )}
+        </div>
+        <div className="text-xs">
+          {st ? (
+            <>
+              <span className="text-fg">{st.files} session files</span>
+              <span className="text-fg-subtle"> in {st.dir}</span>
+              {st.lastAt && <span className="text-fg-subtle"> · last backup {formatRelative(st.lastAt * 1000)}</span>}
+              {st.lastError && <div className="mt-1 text-warning">Last backup failed: {st.lastError}</div>}
+            </>
+          ) : (
+            <span className="text-fg-subtle">Backup status unavailable.</span>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="ghost" icon="external" disabled={busy} onClick={() => run(() => decksOpenBackupDir(GAME))}>
+            Open folder
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            icon="download"
+            disabled={busy}
+            onClick={() => run(async () => notify("success", "Backed up", `${await decksBackupNow(GAME)} sessions written`))}
+          >
+            Back up now
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            icon="refresh"
+            disabled={busy}
+            onClick={() =>
+              run(async () => {
+                const r = await decksRestoreBackups(GAME);
+                notify(
+                  r.errors.length ? "warning" : "success",
+                  r.sessionsAdded ? `Restored ${r.sessionsAdded} session${r.sessionsAdded === 1 ? "" : "s"}` : "Nothing to restore",
+                  `${r.cardsAdded} cards · ${r.sessionsSkipped} already here${r.errors.length ? ` · ${r.errors.length} file(s) couldn't be read: ${r.errors[0]}` : ""}`,
+                );
+              })
+            }
+          >
+            Restore from backups
+          </Button>
+        </div>
+      </div>
     </Panel>
   );
 }

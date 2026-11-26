@@ -115,6 +115,23 @@ Beauty" → Divine Beauty ×3 to review (the mouse pointer covers the end of the
 - A session with cards but no price for any of them (e.g. a league poe.ninja doesn't cover) shows "no prices":
   value unknown, no profit, no ROI — never 0 c / −100 %.
 
+## Backups (`decks/backup.rs`, 0.23)
+On 2026-11-26 the user's database was lost (uninstall with "delete app data" removes
+`%APPDATA%pp.vaalytics.desktop`). Since then every session is also a JSON file **outside** the app data folder —
+default `Documents\Vaalytics\Deck Intelligence` (`Settings → Backups`, `decks.config.backupDir`; on by default):
+- `deck-session-<date>-<created_at>-<id>.json` with every column of the session, its card entries (incl.
+  `source_uid`, corrections, OCR text) and its original valuation; rewritten after every change (create, edit, decks
+  opened, pause/resume/finish, each card from Client.txt or a screenshot, review actions, manual cards, imports) via a
+  temporary file + rename. All sessions are written once at startup. Screenshots aren't included.
+- Deleting a session moves its file to `deleted\` (never removed by Vaalytics).
+- **Restore from backups** reads the folder (not `deleted\`): a session counts as already present when creation and
+  start time match AND it shares a card entry (`source_uid`) — or, without cards, the name — so renamed sessions and
+  sessions created in the same second are handled; card ids keep restoring idempotent. A restored unfinished session
+  is paused (finished if another one is open). Unreadable files are listed, never fatal.
+- Dev builds with `VAALYTICS_DATA_DIR` write backups into `<data dir>\deck-backups`, never into Documents.
+- Verified in the app: 6 sessions backed up → a fresh empty database → "Restore from backups" → 6 sessions, 75 cards,
+  original valuations intact; restoring again adds nothing.
+
 ## Import (Client.txt)
 Settings → Import: pick a Client.txt (must look like a PoE 1 log), worker thread with progress events and cancel
 (nothing is written until the file has been read). Cards are grouped into finished sessions named

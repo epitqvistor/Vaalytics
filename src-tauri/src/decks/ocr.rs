@@ -78,6 +78,7 @@ fn grey(variant: Variant, r: u8, g: u8, b: u8) -> u8 {
 }
 
 /// Grey, dark-on-light version of `img` (max channel, inverted), as BGRA8.
+#[cfg(test)]
 pub fn prepare(img: &Rgba, scale: f64) -> (usize, usize, Vec<u8>) {
     prepare_as(img, scale, Variant::MaxInverted)
 }

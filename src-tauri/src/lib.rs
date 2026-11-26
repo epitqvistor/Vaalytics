@@ -75,7 +75,12 @@ pub fn run() {
             let loot = loot::LootService::new(Arc::clone(&db), Some(Arc::clone(&market)), loot::session_context_from(sessions.clone()), market::http::unix_now);
             loot.set_data_dir(data_dir.clone());
             loot.start(app.handle().clone());
-            let decks = decks::DeckService::new(Arc::clone(&db), data_dir.clone());
+            // Deck backups live outside the app data folder so uninstalling (with "delete app data") keeps them.
+            let deck_backups = app.path().document_dir().unwrap_or_else(|_| data_dir.clone()).join("Vaalytics").join("Deck Intelligence");
+            // Dev/QA runs with a throwaway data folder keep their backups there too (never in the user's Documents).
+            #[cfg(debug_assertions)]
+            let deck_backups = if std::env::var_os("VAALYTICS_DATA_DIR").is_some() { data_dir.join("deck-backups") } else { deck_backups };
+            let decks = decks::DeckService::new(Arc::clone(&db), data_dir.clone(), deck_backups);
             decks.start(app.handle().clone());
             // Update Center: game-data synchronisation. Modules are notified when a dataset they read changes.
             let updates = updates::UpdateService::new(Arc::clone(&db), Arc::clone(&market));
@@ -174,6 +179,10 @@ pub fn run() {
             commands::decks_import_status,
             commands::decks_hotkey_status,
             commands::decks_save_export,
+            commands::decks_backup_status,
+            commands::decks_backup_now,
+            commands::decks_restore_backups,
+            commands::decks_open_backup_dir,
             commands::session_status,
             commands::session_diagnostics,
             commands::session_list,

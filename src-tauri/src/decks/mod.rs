@@ -11,6 +11,7 @@
 //!
 //! Read-only towards the game: no memory reading, injection, input or file changes.
 
+pub mod backup;
 pub mod cards;
 pub mod logparse;
 pub mod matching;
@@ -98,6 +99,10 @@ pub struct DeckConfig {
     pub dedupe_tolerance: f64,
     /// Keep the captured region (PNG, local only) so recognition can be retried.
     pub keep_screenshots: bool,
+    /// Write every session as a JSON file outside the app data folder (survives uninstalling).
+    pub backup_enabled: bool,
+    /// Backup folder; "" = Documents\Vaalytics\Deck Intelligence.
+    pub backup_dir: String,
 }
 
 impl Default for DeckConfig {
@@ -111,6 +116,8 @@ impl Default for DeckConfig {
             dedupe_secs: 90,
             dedupe_tolerance: 0.02,
             keep_screenshots: true,
+            backup_enabled: true,
+            backup_dir: String::new(),
         }
     }
 }
@@ -122,6 +129,7 @@ impl DeckConfig {
         self.dedupe_secs = self.dedupe_secs.min(3600);
         self.dedupe_tolerance = if self.dedupe_tolerance.is_finite() { self.dedupe_tolerance.clamp(0.002, 0.2) } else { 0.02 };
         self.hotkey = self.hotkey.trim().to_string();
+        self.backup_dir = self.backup_dir.trim().chars().take(400).collect();
         self
     }
 }
@@ -178,6 +186,16 @@ pub struct ImportStatus {
     pub error: Option<String>,
 }
 
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BackupStatus {
+    pub enabled: bool,
+    pub dir: String,
+    pub last_at: Option<i64>,
+    pub last_error: Option<String>,
+    pub files: usize,
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ImportOptions {
@@ -199,10 +217,13 @@ pub struct DeckService {
     last_press: Mutex<Option<Instant>>,
     import: Mutex<ImportStatus>,
     import_cancel: AtomicBool,
+    /// Default backup folder (Documents\Vaalytics\Deck Intelligence), set at startup.
+    default_backup_dir: PathBuf,
+    backup_status: Mutex<BackupStatus>,
 }
 
 impl DeckService {
-    pub fn new(db: Arc<Database>, data_dir: PathBuf) -> Arc<Self> {
+    pub fn new(db: Arc<Database>, data_dir: PathBuf, default_backup_dir: PathBuf) -> Arc<Self> {
         Arc::new(Self {
             db,
             cards: cards::CardService::new(data_dir.clone()),
@@ -214,7 +235,89 @@ impl DeckService {
             last_press: Mutex::new(None),
             import: Mutex::new(ImportStatus::default()),
             import_cancel: AtomicBool::new(false),
+            default_backup_dir,
+            backup_status: Mutex::new(BackupStatus::default()),
         })
+    }
+
+    // ----- backups (backup.rs) -----
+
+    pub fn backup_dir(&self, cfg: &DeckConfig) -> PathBuf {
+        if cfg.backup_dir.is_empty() {
+            self.default_backup_dir.clone()
+        } else {
+            PathBuf::from(&cfg.backup_dir)
+        }
+    }
+
+    /// Rewrites the session's backup file (never fails the caller; errors are kept in the status).
+    pub fn backup(&self, id: i64) {
+        let cfg = self.config();
+        if !cfg.backup_enabled {
+            return;
+        }
+        let dir = self.backup_dir(&cfg);
+        let r = self.db.conn().map_err(|e| public(&e)).and_then(|c| backup::write_session(&dir, &c, id, now()).map_err(|e| public(&e)));
+        self.set_backup_result(&dir, r.map(|_| ()));
+    }
+
+    fn set_backup_result(&self, dir: &Path, r: Result<(), String>) {
+        if let Err(e) = &r {
+            log::warn!("deck intelligence: backup failed: {e}");
+        }
+        if let Ok(mut st) = self.backup_status.lock() {
+            st.dir = dir.display().to_string();
+            match r {
+                Ok(()) => {
+                    st.last_at = Some(now());
+                    st.last_error = None;
+                }
+                Err(e) => st.last_error = Some(e),
+            }
+        }
+    }
+
+    /// Writes every session's file (at startup, and "Back up now").
+    pub fn backup_all(&self) -> AppResult<usize> {
+        let cfg = self.config();
+        let dir = self.backup_dir(&cfg);
+        let ids: Vec<i64> = {
+            let c = self.db.conn()?;
+            let mut st = c.prepare("SELECT id FROM deck_sessions WHERE game = 'poe1'")?;
+            let ids = st.query_map([], |r| r.get(0))?.collect::<Result<Vec<_>, _>>()?;
+            ids
+        };
+        let mut n = 0;
+        for id in &ids {
+            let r = backup::write_session(&dir, &*self.db.conn()?, *id, now());
+            match r {
+                Ok(_) => n += 1,
+                Err(e) => {
+                    self.set_backup_result(&dir, Err(public(&e)));
+                    return Err(e);
+                }
+            }
+        }
+        self.set_backup_result(&dir, Ok(()));
+        Ok(n)
+    }
+
+    pub fn backup_status(&self) -> BackupStatus {
+        let cfg = self.config();
+        let dir = self.backup_dir(&cfg);
+        let mut st = self.backup_status.lock().map(|s| s.clone()).unwrap_or_default();
+        st.enabled = cfg.backup_enabled;
+        st.dir = dir.display().to_string();
+        st.files = std::fs::read_dir(&dir).map(|d| d.filter_map(Result::ok).filter(|e| e.path().extension().is_some_and(|x| x == "json")).count()).unwrap_or(0);
+        st
+    }
+
+    /// Reads the backup folder back into the database (sessions not there yet).
+    pub fn restore_backups(&self) -> AppResult<backup::RestoreSummary> {
+        let cfg = self.config();
+        let r = backup::restore_dir(&self.db, &self.backup_dir(&cfg))?;
+        self.notify();
+        Ok(r)
     }
 
     pub fn config(&self) -> DeckConfig {
@@ -315,12 +418,26 @@ impl DeckService {
         let pos = if self.config().log_tracking { self.log_position_now() } else { None };
         let id = store::create(&self.db, input, now(), pos)?;
         self.notify();
+        self.backup(id);
         Ok(id)
+    }
+
+    pub fn update(&self, id: i64, input: store::SessionInput) -> AppResult<()> {
+        store::update(&self.db, id, input)?;
+        self.backup(id);
+        Ok(())
+    }
+
+    pub fn set_opened(&self, id: i64, opened: Option<i64>) -> AppResult<()> {
+        store::set_opened(&self.db, id, opened)?;
+        self.backup(id);
+        Ok(())
     }
 
     pub fn pause(&self, id: i64) -> AppResult<()> {
         store::pause(&self.db, id, now())?;
         self.notify();
+        self.backup(id);
         Ok(())
     }
 
@@ -328,6 +445,7 @@ impl DeckService {
         let pos = if self.config().log_tracking { self.log_position_now() } else { None };
         store::resume(&self.db, id, now(), pos)?;
         self.notify();
+        self.backup(id);
         Ok(())
     }
 
@@ -341,10 +459,19 @@ impl DeckService {
         let v = store::build_valuation(&counts, &prices.0, &prices.2, league, prices.1, now());
         store::finish(&self.db, id, now(), &v)?;
         self.notify();
+        self.backup(id);
         Ok(v)
     }
 
     pub fn delete(&self, id: i64) -> AppResult<()> {
+        // Keep the backup file, moved to deleted/ — a deleted session can still be found later.
+        let created: Option<i64> = self.db.conn()?.query_row("SELECT created_at FROM deck_sessions WHERE id = ?1", [id], |r| r.get(0)).ok();
+        if let Some(created) = created {
+            let cfg = self.config();
+            if let Err(e) = backup::archive(&self.backup_dir(&cfg), created, id) {
+                log::warn!("deck intelligence: couldn't archive the backup of session {id}: {e}");
+            }
+        }
         for f in store::delete(&self.db, id)? {
             let _ = std::fs::remove_file(self.captures_dir().join(f));
         }
@@ -361,6 +488,16 @@ impl DeckService {
     /// Background thread: reads new Client.txt lines every 2 s while a session is running with log
     /// tracking on; otherwise waits until woken (session start/resume, settings change).
     pub fn start(self: &Arc<Self>, app: AppHandle) {
+        // Bring the backup folder up to date once (sessions recorded before backups existed).
+        let first = Arc::clone(self);
+        std::thread::spawn(move || {
+            if first.config().backup_enabled {
+                match first.backup_all() {
+                    Ok(n) => log::info!("deck intelligence: {n} session backups written"),
+                    Err(e) => log::warn!("deck intelligence: startup backup failed: {e}"),
+                }
+            }
+        });
         let me = Arc::clone(self);
         std::thread::Builder::new()
             .name("deck-log".into())
@@ -407,6 +544,7 @@ impl DeckService {
             Ok(added) => {
                 self.set_log_error(Some(&path), None);
                 if !added.is_empty() {
+                    self.backup(s.id);
                     let _ = app.emit(EVENT_UPDATED, s.id);
                     let session_value = self.session_value(s).ok();
                     let _ = app.emit(EVENT_DETECTED, DetectedEvent { session_id: Some(s.id), source: "log", cards: added, ignored: 0, capture_id: None, error: None, session_value, session_cost: s.cost_total });
@@ -672,6 +810,7 @@ impl DeckService {
         store::finish_capture(&tx, capture_id, rec.ocr_lines, rec.ignored, None)?;
         tx.commit()?;
         drop(c);
+        self.backup(s.id);
         let session_value = self.session_value(s).ok();
         Ok(DetectedEvent { session_id: Some(s.id), source: "ocr", cards, ignored: rec.ignored, capture_id: Some(capture_id), error: None, session_value, session_cost: s.cost_total })
     }
@@ -679,39 +818,56 @@ impl DeckService {
     // ----- entries -----
 
     pub fn confirm(&self, id: i64) -> AppResult<()> {
-        let c = self.db.conn()?;
-        let e = store::event(&c, id)?;
-        store::require_open(&c, e.session_id)?;
-        if e.card.is_none() {
-            return Err(AppError::InvalidInput("Pick the card first.".into()));
-        }
-        store::set_event_status(&c, id, "confirmed", None)
-    }
-
-    pub fn remove(&self, id: i64) -> AppResult<()> {
-        let c = self.db.conn()?;
-        let e = store::event(&c, id)?;
-        store::require_open(&c, e.session_id)?;
-        store::set_event_status(&c, id, "removed", None)
-    }
-
-    pub fn restore(&self, id: i64) -> AppResult<()> {
-        let c = self.db.conn()?;
-        let e = store::event(&c, id)?;
-        store::require_open(&c, e.session_id)?;
-        let status = if e.card.is_none() { "unrecognized" } else { "review" };
-        store::set_event_status(&c, id, status, Some("Restored — check it"))
-    }
-
-    pub fn correct(&self, id: i64, card: &str) -> AppResult<()> {
-        let league = {
+        let session = {
             let c = self.db.conn()?;
             let e = store::event(&c, id)?;
             store::require_open(&c, e.session_id)?;
-            store::session(&c, e.session_id, now())?.league
+            if e.card.is_none() {
+                return Err(AppError::InvalidInput("Pick the card first.".into()));
+            }
+            store::set_event_status(&c, id, "confirmed", None)?;
+            e.session_id
+        };
+        self.backup(session);
+        Ok(())
+    }
+
+    pub fn remove(&self, id: i64) -> AppResult<()> {
+        let session = {
+            let c = self.db.conn()?;
+            let e = store::event(&c, id)?;
+            store::require_open(&c, e.session_id)?;
+            store::set_event_status(&c, id, "removed", None)?;
+            e.session_id
+        };
+        self.backup(session);
+        Ok(())
+    }
+
+    pub fn restore(&self, id: i64) -> AppResult<()> {
+        let session = {
+            let c = self.db.conn()?;
+            let e = store::event(&c, id)?;
+            store::require_open(&c, e.session_id)?;
+            let status = if e.card.is_none() { "unrecognized" } else { "review" };
+            store::set_event_status(&c, id, status, Some("Restored — check it"))?;
+            e.session_id
+        };
+        self.backup(session);
+        Ok(())
+    }
+
+    pub fn correct(&self, id: i64, card: &str) -> AppResult<()> {
+        let (league, session) = {
+            let c = self.db.conn()?;
+            let e = store::event(&c, id)?;
+            store::require_open(&c, e.session_id)?;
+            (store::session(&c, e.session_id, now())?.league, e.session_id)
         };
         let canonical = self.matcher(league.as_deref()).canonical(card).map(str::to_owned).ok_or_else(|| AppError::InvalidInput(format!("\"{card}\" isn't a known Divination Card.")))?;
-        store::correct_event(&*self.db.conn()?, id, &canonical, now())
+        store::correct_event(&*self.db.conn()?, id, &canonical, now())?;
+        self.backup(session);
+        Ok(())
     }
 
     pub fn add_manual(&self, session_id: i64, card: &str, qty: u32) -> AppResult<usize> {
@@ -750,6 +906,8 @@ impl DeckService {
             }
         }
         tx.commit()?;
+        drop(c);
+        self.backup(session_id);
         Ok(added)
     }
 
@@ -848,7 +1006,8 @@ impl DeckService {
             let r = store::insert_imported(&self.db, &name, opts.league.as_deref(), &g, now(), |counts| store::build_valuation(counts, &prices.0, &prices.2, league.clone(), prices.1, now()))
                 .map_err(|e| public(&e))?;
             match r {
-                Some((_, n)) => {
+                Some((id, n)) => {
+                    self.backup(id);
                     sessions += 1;
                     added += n;
                     dupes += total - n;
@@ -941,7 +1100,7 @@ mod tests {
     fn service() -> (Arc<DeckService>, tempfile::TempDir) {
         let dir = tempfile::tempdir().unwrap();
         let db = Arc::new(Database::open_in_memory().unwrap());
-        let s = DeckService::new(db, dir.path().to_path_buf());
+        let s = DeckService::new(db, dir.path().to_path_buf(), dir.path().join("backups"));
         *s.matcher.lock().unwrap() = Some(Arc::new(Matcher::new(["The Lover", "Rain of Chaos", "The Doctor"].map(String::from))));
         (s, dir)
     }

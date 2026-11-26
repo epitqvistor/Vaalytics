@@ -1141,7 +1141,7 @@ pub async fn decks_create(app: tauri::AppHandle, state: State<'_, AppState>, gam
 #[tauri::command]
 pub async fn decks_update(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64, input: crate::decks::store::SessionInput) -> AppResult<()> {
     require_decks_game(game)?;
-    let r = crate::decks::store::update(&state.db, id, input);
+    let r = state.decks.update(id, input);
     decks_changed(&app, &r);
     r
 }
@@ -1150,7 +1150,7 @@ pub async fn decks_update(app: tauri::AppHandle, state: State<'_, AppState>, gam
 #[tauri::command]
 pub async fn decks_set_opened(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64, opened: Option<i64>) -> AppResult<()> {
     require_decks_game(game)?;
-    let r = crate::decks::store::set_opened(&state.db, id, opened);
+    let r = state.decks.set_opened(id, opened);
     decks_changed(&app, &r);
     r
 }
@@ -1510,4 +1510,38 @@ pub fn updates_app_info() -> Value {
         "updaterConfigured": false,
         "distribution": "NSIS installer (unsigned)",
     })
+}
+
+// ----- deck backups (decks/backup.rs) -----
+
+#[tauri::command]
+pub fn decks_backup_status(state: State<'_, AppState>, game: GameId) -> AppResult<crate::decks::BackupStatus> {
+    require_decks_game(game)?;
+    Ok(state.decks.backup_status())
+}
+
+/// Writes every session's backup file now; returns how many.
+#[tauri::command]
+pub async fn decks_backup_now(state: State<'_, AppState>, game: GameId) -> AppResult<usize> {
+    require_decks_game(game)?;
+    state.decks.backup_all()
+}
+
+/// Reads the backup folder back (sessions not in the database yet).
+#[tauri::command]
+pub async fn decks_restore_backups(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId) -> AppResult<crate::decks::backup::RestoreSummary> {
+    require_decks_game(game)?;
+    let r = state.decks.restore_backups();
+    decks_changed(&app, &r);
+    r
+}
+
+/// Opens the backup folder in Explorer (creates it first).
+#[tauri::command]
+pub async fn decks_open_backup_dir(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId) -> AppResult<()> {
+    use tauri_plugin_opener::OpenerExt;
+    require_decks_game(game)?;
+    let dir = state.decks.backup_dir(&state.decks.config());
+    std::fs::create_dir_all(&dir)?;
+    app.opener().open_path(dir.to_string_lossy(), None::<&str>).map_err(|e| crate::error::AppError::InvalidInput(format!("Couldn't open the folder: {e}")))
 }
