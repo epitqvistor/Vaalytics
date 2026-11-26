@@ -57,12 +57,12 @@ export function LeaguesTab({ uc }: { uc: UpdateCenter }) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-xs text-fg-subtle">
-                    <th className="px-4 py-2 font-normal">League</th>
-                    <th className="px-2 py-2 font-normal">Status</th>
-                    <th className="px-2 py-2 font-normal">Patch rules</th>
-                    <th className="px-2 py-2 font-normal">First seen</th>
-                    <th className="px-2 py-2 font-normal">Last seen / ended</th>
-                    <th className="px-2 py-2 font-normal">Local price history</th>
+                    <th className="px-4 py-2 font-medium">League</th>
+                    <th className="px-2 py-2 font-medium">Status</th>
+                    <th className="px-2 py-2 font-medium">Patch rules</th>
+                    <th className="px-2 py-2 font-medium">First seen</th>
+                    <th className="px-2 py-2 font-medium">Last seen / ended</th>
+                    <th className="px-2 py-2 font-medium">Local price history</th>
                     <th className="px-4 py-2" />
                   </tr>
                 </thead>

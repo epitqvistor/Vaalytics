@@ -212,7 +212,7 @@ function OverviewTab({
               type="button"
               role="row"
               onClick={() => onOpen(c.id)}
-              className={cn(OV_GRID, "h-11 w-full border-b border-line text-left transition-colors last:border-b-0 hover:bg-white/[0.025]")}
+              className={cn(OV_GRID, "h-10 w-full border-b border-line text-left transition-colors last:border-b-0 hover:bg-glass")}
             >
               <span className="truncate pl-4 text-fg">{c.label}</span>
               {s ? (
@@ -245,7 +245,7 @@ function OverviewCells({ s, now }: { s: CategoryStats; now: number }) {
       </span>
       <span className="text-right">{s.change7d === null ? <span className="text-fg-subtle">—</span> : <ChangeText change={s.change7d} />}</span>
       <span className="flex items-center gap-2 pl-3" title={`${s.risers} up · ${s.fallers} down (±0.5 % counts as flat)`}>
-        <span className="flex h-1.5 w-20 overflow-hidden rounded-full bg-white/[0.06]">
+        <span className="flex h-1.5 w-20 overflow-hidden rounded-xs bg-glass-strong">
           <span className="bg-success/80" style={{ width: `${(s.risers / total) * 100}%` }} />
           <span className="bg-danger/80" style={{ width: `${(s.fallers / total) * 100}%` }} />
         </span>
@@ -401,7 +401,7 @@ function ItemTable({
         const fav = favorites.has(key);
         const s = spark(r.row);
         return (
-          <div key={key} role="row" className={cn(IT_GRID, "h-11 border-b border-line transition-colors last:border-b-0 hover:bg-white/[0.025]")}>
+          <div key={key} role="row" className={cn(IT_GRID, "h-10 border-b border-line transition-colors last:border-b-0 hover:bg-glass")}>
             <span className="pl-2">
               <IconButton
                 icon="star"

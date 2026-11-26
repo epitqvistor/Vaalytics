@@ -26,7 +26,7 @@ export function GameDataTab({ uc }: { uc: UpdateCenter }) {
               .filter((d) => d.def.game === g)
               .map((d) => (
                 <li key={d.def.id}>
-                  <button type="button" className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-white/[0.02]" onClick={() => setOpen(open === d.def.id ? null : d.def.id)} aria-expanded={open === d.def.id}>
+                  <button type="button" className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-glass" onClick={() => setOpen(open === d.def.id ? null : d.def.id)} aria-expanded={open === d.def.id}>
                     <Icon name={open === d.def.id ? "chevronDown" : "chevronRight"} size={14} className="text-fg-subtle" />
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm text-fg">{d.def.label}</span>

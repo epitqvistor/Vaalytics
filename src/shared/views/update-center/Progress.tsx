@@ -20,7 +20,7 @@ export function ProgressStrip({ progress }: { progress: UpdProgress | null }) {
         </span>
       </div>
       {total > 0 && (
-        <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]" aria-hidden>
+        <div className="mt-2 h-1 overflow-hidden rounded-xs bg-glass-strong" aria-hidden>
           {/* Real progress: completed tasks / tasks. */}
           <div className="h-full origin-left bg-accent transition-transform duration-200" style={{ transform: `scaleX(${done / total})` }} />
         </div>

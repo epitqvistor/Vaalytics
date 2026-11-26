@@ -58,11 +58,11 @@ export function HistoryTab({ uc }: { uc: UpdateCenter }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs text-fg-subtle">
-                <th className="px-4 py-2 font-normal">When</th>
-                <th className="px-2 py-2 font-normal">Event</th>
-                <th className="px-2 py-2 font-normal">What happened</th>
-                <th className="px-2 py-2 font-normal">Modules</th>
-                <th className="px-4 py-2 text-right font-normal">Versions</th>
+                <th className="px-4 py-2 font-medium">When</th>
+                <th className="px-2 py-2 font-medium">Event</th>
+                <th className="px-2 py-2 font-medium">What happened</th>
+                <th className="px-2 py-2 font-medium">Modules</th>
+                <th className="px-4 py-2 text-right font-medium">Versions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">

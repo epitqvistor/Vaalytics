@@ -269,9 +269,9 @@ function ChangeRow({
             <table className="w-full max-w-3xl">
               <thead>
                 <tr className="text-left text-fg-subtle">
-                  <th className="w-40 py-1 font-normal">Field</th>
-                  <th className="py-1 font-normal">Previous</th>
-                  <th className="py-1 font-normal">New</th>
+                  <th className="w-40 py-1 font-medium">Field</th>
+                  <th className="py-1 font-medium">Previous</th>
+                  <th className="py-1 font-medium">New</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">

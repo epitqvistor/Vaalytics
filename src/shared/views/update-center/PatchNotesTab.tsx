@@ -163,11 +163,11 @@ function ArticleDetail({ a, onReviewed }: { a: UpdArticle; onReviewed: () => voi
         <table className="w-full text-xs">
           <thead>
             <tr className="text-left text-fg-subtle">
-              <th className="py-1 font-normal">Category</th>
-              <th className="py-1 font-normal">Lines</th>
-              <th className="py-1 font-normal">Affected modules</th>
-              <th className="py-1 font-normal">What it means</th>
-              <th className="py-1 font-normal">Confidence</th>
+              <th className="py-1 font-medium">Category</th>
+              <th className="py-1 font-medium">Lines</th>
+              <th className="py-1 font-medium">Affected modules</th>
+              <th className="py-1 font-medium">What it means</th>
+              <th className="py-1 font-medium">Confidence</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line align-top">
