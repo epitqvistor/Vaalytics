@@ -51,7 +51,7 @@ export function AreaDetail({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
         <div className="min-w-0 flex-1">
-          <p className="text-2xs font-semibold tracking-wide text-fg-subtle uppercase">
+          <p className="text-xs font-medium text-fg-muted">
             Act {area.act} · {area.kind === "town" ? "Town" : "Area"}
           </p>
           <h1 className="mt-0.5 font-display text-xl leading-tight font-semibold text-fg">{area.name}</h1>

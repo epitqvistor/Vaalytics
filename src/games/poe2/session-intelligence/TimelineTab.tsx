@@ -129,7 +129,7 @@ function Strip({ visits, start, end }: { visits: SessionVisit[]; start: number; 
   const [hover, setHover] = useState<SessionVisit | null>(null);
   return (
     <div className="mt-4">
-      <div className="relative h-5 overflow-hidden rounded-md bg-white/[0.03]" onPointerLeave={() => setHover(null)}>
+      <div className="relative h-5 overflow-hidden rounded-sm bg-glass" onPointerLeave={() => setHover(null)}>
         {visits.map((v) => {
           const a = Math.max(0, v.enteredAt - start);
           const b = Math.min(span, (v.exitedAt ?? end) - start);

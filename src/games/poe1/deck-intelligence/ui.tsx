@@ -76,7 +76,7 @@ export const ACQUISITIONS = Object.keys(ACQUISITION_LABEL) as DeckAcquisition[];
 export function Kpi({ label, value, sub, tone }: { label: string; value: ReactNode; sub?: ReactNode; tone?: "accent" }) {
   return (
     <div className={cn("rounded-lg border border-line bg-surface px-4 py-3", tone === "accent" && "border-line-warm")}>
-      <div className="text-2xs font-medium tracking-wide text-fg-subtle uppercase">{label}</div>
+      <div className="text-xs text-fg-muted">{label}</div>
       <div className="mt-1.5 text-xl leading-none font-semibold text-fg">{value}</div>
       {sub && <div className="mt-1.5 truncate text-xs text-fg-muted">{sub}</div>}
     </div>

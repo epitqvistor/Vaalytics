@@ -58,8 +58,8 @@ export function TimeBreakdown({ session }: { session: SessionSummary }) {
       {rows.map((r) => (
         <li key={r.kind} className="grid grid-cols-[110px_minmax(0,1fr)_64px] items-center gap-3 text-xs">
           <span className="text-fg-muted">{KIND_LABEL[r.kind]}</span>
-          <span className="h-2 overflow-hidden rounded-full bg-white/[0.04]">
-            <span className="block h-full rounded-full bg-accent/80" style={{ width: `${Math.max(2, (r.secs / total) * 100)}%` }} />
+          <span className="h-2 overflow-hidden rounded-xs bg-glass-strong">
+            <span className="block h-full rounded-xs bg-accent/80" style={{ width: `${Math.max(2, (r.secs / total) * 100)}%` }} />
           </span>
           <span className="tabular text-right text-fg">{dur(r.secs)}</span>
         </li>

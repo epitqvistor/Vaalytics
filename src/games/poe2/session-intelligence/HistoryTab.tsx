@@ -112,7 +112,7 @@ export function HistoryTab({ openId, onOpen }: { openId: number | null; onOpen: 
               <span className="text-right">Deaths*</span>
             </div>
             {rows.map((s) => (
-              <div key={s.id} role="row" className="grid min-h-10 grid-cols-[32px_minmax(0,1.4fr)_90px_70px_80px_100px_70px] items-center gap-3 border-b border-line px-4 last:border-b-0 hover:bg-white/[0.02]">
+              <div key={s.id} role="row" className="grid min-h-10 grid-cols-[32px_minmax(0,1.4fr)_90px_70px_80px_100px_70px] items-center gap-3 border-b border-line px-4 last:border-b-0 hover:bg-glass">
                 <span>
                   <Checkbox label={<span className="sr-only">Select session {s.id}</span>} checked={selected.has(s.id)} onChange={(on) => toggle(s.id, on)} />
                 </span>

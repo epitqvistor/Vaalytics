@@ -79,7 +79,7 @@ export function JournalTab({
         ) : (
           parts.map((p) => (
             <section key={p.id}>
-              <p className="border-b border-line bg-bg-2 px-4 py-1.5 text-2xs font-semibold tracking-wide text-fg-subtle uppercase">{p.name}</p>
+              <p className="border-b border-line bg-bg-2 px-4 py-1.5 text-xs font-medium text-fg-muted">{p.name}</p>
               <ul className="divide-y divide-line">
                 {shown
                   .filter((o) => o.part === p.id)

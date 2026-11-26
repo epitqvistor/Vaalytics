@@ -168,7 +168,7 @@ export default function BrowserView(_props: SectionProps) {
 
   return (
     <div className="mx-auto flex h-[calc(100vh-var(--spacing-titlebar)-56px)] max-w-page flex-col">
-      <div className="panel flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl">
+      <div className="panel flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg">
         {/* Tabs */}
         <div className="flex h-10 shrink-0 items-end gap-1 overflow-x-auto border-b border-line bg-bg-2/80 px-2" role="tablist" aria-label="Browser tabs">
           <AnimatePresence initial={false}>
@@ -216,7 +216,7 @@ export default function BrowserView(_props: SectionProps) {
           <IconButton icon="refresh" label="Reload" size="sm" disabled={!tab.live} onClick={() => browserAction(tab.id, "reload")} />
           <IconButton icon="dashboard" label="Start page" size="sm" onClick={goHome} />
           <form onSubmit={submit} className="ml-1 flex min-w-0 flex-1">
-            <label className="flex h-7 min-w-0 flex-1 items-center gap-2 rounded-md border border-line bg-elevated/80 px-2.5 text-xs transition-[border-color,box-shadow] focus-within:border-accent/60 focus-within:shadow-[0_0_0_3px_var(--color-accent-soft)]">
+            <label className="flex h-7 min-w-0 flex-1 items-center gap-2 rounded-md border border-line bg-well px-2.5 text-xs transition-colors duration-120 hover:border-line-strong focus-within:border-copper">
               <Icon name={tab.url?.startsWith("https://") ? "check" : "search"} size={13} className="shrink-0 text-fg-subtle" />
               <input
                 value={address}

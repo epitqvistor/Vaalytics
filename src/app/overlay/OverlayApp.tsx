@@ -121,7 +121,7 @@ function OverlayFrame({ capture }: { capture: CaptureEvent }) {
       initial={{ opacity: 0, y: 6, scale: 0.985 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       className="flex h-full flex-col overflow-hidden rounded-xl border border-line-strong shadow-lg"
-      style={{ backgroundColor: `rgb(22 24 28 / ${opacity})` }}
+      style={{ backgroundColor: `rgb(23 25 28 / ${opacity})` }}
     >
       <header data-tauri-drag-region className="flex h-10 shrink-0 items-center gap-2 border-b border-line pr-1.5 pl-3">
         <img src="/vaalytics.svg" alt="" className="pointer-events-none size-4" />

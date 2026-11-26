@@ -224,7 +224,7 @@ export function SessionTab({
       <>
         <Panel>
           <div className="mx-auto flex max-w-2xl flex-col items-center py-8 text-center">
-            <span className="grid size-12 place-items-center rounded-xl border border-line-warm bg-accent-soft text-accent">
+            <span className="grid size-10 place-items-center rounded-lg border border-line-strong bg-elevated text-fg-muted">
               <Icon name="cards" size={22} />
             </span>
             <h2 className="mt-4 text-lg font-semibold text-fg">Start an opening session</h2>

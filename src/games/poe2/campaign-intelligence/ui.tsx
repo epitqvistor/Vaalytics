@@ -62,7 +62,7 @@ export function RewardChip({ reward }: { reward: CampaignReward }) {
 }
 
 export function SectionLabel({ children }: { children: ReactNode }) {
-  return <p className="mb-1.5 text-2xs font-semibold tracking-wide text-fg-subtle uppercase">{children}</p>;
+  return <p className="mb-1.5 text-xs font-medium text-fg-muted">{children}</p>;
 }
 
 /** Compact row for "also here" and alternatives. */

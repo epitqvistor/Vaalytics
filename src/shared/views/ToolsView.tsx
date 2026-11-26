@@ -21,7 +21,7 @@ export default function ToolsView(_props: SectionProps) {
     <div className="mx-auto max-w-page">
       <PageHeader title="Path of Building & Tools" description="Launch Path of Building for each game and open the official trading sites." />
 
-      <h2 className="mb-3 text-xs font-semibold tracking-[0.14em] text-fg-subtle uppercase">Path of Building</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg">Path of Building</h2>
       <div className="flex flex-col gap-3">
         {order.map((g, i) => (
           <motion.div key={g} variants={variants.rise} initial="hidden" animate="visible" transition={{ delay: i * 0.05 }}>
@@ -34,7 +34,7 @@ export default function ToolsView(_props: SectionProps) {
         installation; it does not bundle or modify it, and Path of Building keeps updating itself as usual.
       </p>
 
-      <h2 className="mt-9 mb-3 text-xs font-semibold tracking-[0.14em] text-fg-subtle uppercase">Websites</h2>
+      <h2 className="mt-8 mb-3 text-sm font-semibold text-fg">Websites</h2>
       <div className="grid grid-cols-3 gap-3">
         <LinkTile icon="trade" title="Official Trade" host={game === "poe1" ? "pathofexile.com/trade" : "pathofexile.com/trade2"} url={game === "poe1" ? "https://www.pathofexile.com/trade" : "https://www.pathofexile.com/trade2"} />
         <LinkTile icon="currency" title="poe.ninja" host={game === "poe1" ? "poe.ninja" : "poe.ninja/poe2"} url={game === "poe1" ? "https://poe.ninja/" : "https://poe.ninja/poe2"} />
@@ -97,7 +97,7 @@ function PobCard({ game, current }: { game: GameId; current: boolean }) {
 
   return (
     <div className={cn("panel flex items-center gap-5 rounded-lg px-5 py-4", current && "ring-1 ring-accent/25")}>
-      <span className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-line bg-gradient-to-b from-white/[0.06] to-transparent">
+      <span className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-line bg-elevated">
         <Icon name="builds" size={20} className={install ? "text-accent-2" : "text-fg-subtle"} />
       </span>
 

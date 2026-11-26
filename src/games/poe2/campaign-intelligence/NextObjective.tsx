@@ -53,7 +53,7 @@ export function NextObjective({
         </p>
       )}
 
-      <p className="text-2xs font-semibold tracking-[0.14em] text-accent-2/80 uppercase">{here ? "You are here" : "Go to"}</p>
+      <p className="text-xs font-medium text-accent-2">{here ? "You are here" : "Go to"}</p>
       <h3 className="mt-0.5 text-xl font-semibold tracking-[-0.01em] text-fg">{p.zone.name}</h3>
       <p className="mt-1 text-sm text-fg">{o.title}</p>
       <p className="mt-1 text-xs text-fg-muted">{o.why}</p>
