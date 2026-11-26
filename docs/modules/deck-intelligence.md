@@ -105,6 +105,10 @@ Beauty" → Divine Beauty ×3 to review (the mouse pointer covers the end of the
   value and today's value.
 - Entries: confirm, correct (card picker; only known card names), remove, restore, add manually (× quantity). Not
   possible once finished.
+- **Card quantity** (session report, Qty column, also for finished sessions): the user's count for a card, e.g. after
+  pressing the screenshot key twice. Fewer: the newest confirmed entries become `removed` with "Quantity corrected by
+  you" (kept, `corrected`); more: manual entries. A finished session is revalued with the unit price each card was
+  valued at (cards new to it take today's price); `valued_at` stays. The backup file is rewritten.
 - Delete: permanent, with confirmation; removes the session, its entries and kept screenshots.
 - Export: sessions list → CSV, one session → JSON (save dialog).
 - History shows the **selected league** (the page's league picker) with its totals (sessions, decks, value, cost,

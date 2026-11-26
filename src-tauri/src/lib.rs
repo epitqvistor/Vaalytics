@@ -181,6 +181,7 @@ pub fn run() {
             commands::decks_import_status,
             commands::decks_hotkey_status,
             commands::decks_save_export,
+            commands::decks_set_card_qty,
             commands::decks_backup_status,
             commands::decks_backup_now,
             commands::decks_restore_backups,

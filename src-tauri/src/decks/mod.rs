@@ -870,6 +870,44 @@ impl DeckService {
         Ok(())
     }
 
+    /// The user's quantity for a card in a session (also finished ones; a finished session is revalued
+    /// with the unit prices it was valued at).
+    pub fn set_card_quantity(&self, session_id: i64, card: &str, qty: u32) -> AppResult<()> {
+        if qty > 10_000 {
+            return Err(AppError::InvalidInput("Up to 10,000 of one card.".into()));
+        }
+        let (league, finished, in_session) = {
+            let c = self.db.conn()?;
+            let s = store::session(&c, session_id, now())?;
+            let in_session: bool = c.query_row("SELECT EXISTS (SELECT 1 FROM deck_events WHERE session_id = ?1 AND card = ?2)", rusqlite::params![session_id, card], |r| r.get(0))?;
+            (s.league, s.status == "finished", in_session)
+        };
+        // A card already in the session is taken as is; a new one must be a known card.
+        let card = if in_session {
+            card.to_string()
+        } else {
+            self.matcher(league.as_deref()).canonical(card).map(str::to_owned).ok_or_else(|| AppError::InvalidInput(format!("\"{card}\" isn't a known Divination Card.")))?
+        };
+        let prices = if finished { Some(self.prices(league.as_deref())?) } else { None };
+        static QTY_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let salt = format!("{}-{}", std::process::id(), QTY_SEQ.fetch_add(1, Ordering::Relaxed));
+        {
+            let mut c = self.db.conn()?;
+            let tx = c.transaction()?;
+            store::set_card_quantity(&tx, session_id, &card, qty as i64, now(), &salt)?;
+            if let (true, Some(prices)) = (finished, prices) {
+                if let Some(old) = store::valuation(&tx, session_id)? {
+                    let counts = store::session_card_counts(&tx, session_id)?;
+                    let v = store::revalue_keeping_units(&old, &counts, &prices.0, &prices.2);
+                    store::replace_final_valuation(&tx, session_id, &v)?;
+                }
+            }
+            tx.commit()?;
+        }
+        self.backup(session_id);
+        Ok(())
+    }
+
     pub fn add_manual(&self, session_id: i64, card: &str, qty: u32) -> AppResult<usize> {
         if qty == 0 || qty > 500 {
             return Err(AppError::InvalidInput("Add between 1 and 500 cards at a time.".into()));

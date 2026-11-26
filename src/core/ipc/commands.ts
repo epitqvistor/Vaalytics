@@ -1558,3 +1558,5 @@ export const decksBackupStatus = (game: GameId) => invoke<DeckBackupStatus>("dec
 export const decksBackupNow = (game: GameId) => invoke<number>("decks_backup_now", { game });
 export const decksRestoreBackups = (game: GameId) => invoke<DeckRestoreSummary>("decks_restore_backups", { game });
 export const decksOpenBackupDir = (game: GameId) => invoke<void>("decks_open_backup_dir", { game });
+/** Sets how many of `card` the session has (fewer: newest entries marked removed; more: manual entries). */
+export const decksSetCardQty = (game: GameId, sessionId: number, card: string, qty: number) => invoke<void>("decks_set_card_qty", { game, sessionId, card, qty });

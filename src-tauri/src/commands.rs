@@ -1559,3 +1559,12 @@ pub async fn decks_open_backup_dir(app: tauri::AppHandle, state: State<'_, AppSt
     std::fs::create_dir_all(&dir)?;
     app.opener().open_path(dir.to_string_lossy(), None::<&str>).map_err(|e| crate::error::AppError::InvalidInput(format!("Couldn't open the folder: {e}")))
 }
+
+/// The user's quantity of one card in a session (fixes a double screenshot; finished sessions too).
+#[tauri::command]
+pub async fn decks_set_card_qty(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, session_id: i64, card: String, qty: u32) -> AppResult<()> {
+    require_decks_game(game)?;
+    let r = state.decks.set_card_quantity(session_id, &card, qty);
+    decks_changed(&app, &r);
+    r
+}

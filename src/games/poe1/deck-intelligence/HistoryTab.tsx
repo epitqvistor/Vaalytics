@@ -4,9 +4,9 @@
  */
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState } from "react";
-import { type DeckEvent, decksDelete, decksSaveExport, decksUpdate } from "@/core/ipc/commands";
+import { type DeckEvent, decksDelete, decksSaveExport, decksSetCardQty, decksUpdate } from "@/core/ipc/commands";
 import { useLeague } from "@/core/market/LeagueContext";
-import { Badge, Button, EmptyState, Input, Modal, Panel, ProvenanceTag, SegmentedControl, Select, useToast } from "@/shared/components";
+import { Badge, Button, EmptyState, IconButton, Input, Modal, Panel, ProvenanceTag, SegmentedControl, Select, useToast } from "@/shared/components";
 import { Icon } from "@/shared/icons/Icon";
 import { cn } from "@/shared/utilities/cn";
 import { formatDuration } from "@/shared/utilities/format";
@@ -561,7 +561,7 @@ export function SessionDetail({
             getKey={(l) => `${l.status}:${l.card}`}
             className="max-h-[520px]"
             header={
-              <div className="grid h-8 grid-cols-[minmax(180px,1fr)_50px_90px_100px_110px] items-center gap-3 border-b border-line bg-bg-2/95 px-4 text-2xs text-fg-subtle">
+              <div className="grid h-8 grid-cols-[minmax(180px,1fr)_96px_90px_100px_110px] items-center gap-3 border-b border-line bg-bg-2/95 px-4 text-2xs text-fg-subtle">
                 <span>Card</span>
                 <span className="text-right">Qty</span>
                 <span className="text-right">Unit</span>
@@ -570,7 +570,7 @@ export function SessionDetail({
               </div>
             }
             renderRow={(l) => (
-              <div className={cn("grid h-full grid-cols-[minmax(180px,1fr)_50px_90px_100px_110px] items-center gap-3 border-b border-line px-4 text-sm", l.status !== "confirmed" && "opacity-70")}>
+              <div className={cn("grid h-full grid-cols-[minmax(180px,1fr)_96px_90px_100px_110px] items-center gap-3 border-b border-line px-4 text-sm", l.status !== "confirmed" && "opacity-70")}>
                 <span className="flex min-w-0 items-center gap-2.5">
                   <CardArt name={l.card} size={24} />
                   <span className="min-w-0">
@@ -580,7 +580,7 @@ export function SessionDetail({
                     </span>
                   </span>
                 </span>
-                <span className="tabular text-right">{l.qty}</span>
+                <QtyCell sessionId={s.id} card={l.card} qty={l.qty} editable={l.status === "confirmed"} />
                 <span className="text-right">
                   <Money value={l.unit} unknown="—" />
                 </span>
@@ -682,3 +682,62 @@ export function SessionDetail({
   );
 }
 
+
+/**
+ * Quantity of one card in a session, editable for confirmed cards (e.g. the screenshot key was pressed
+ * twice). Fewer: the newest entries are marked removed (kept, "corrected by you"); more: manual entries.
+ * Finished sessions keep the unit prices they were valued at.
+ */
+function QtyCell({ sessionId, card, qty, editable }: { sessionId: number; card: string; qty: number; editable: boolean }) {
+  const notify = useToast();
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(String(qty));
+  const n = Number(text);
+  const valid = text.trim() !== "" && Number.isInteger(n) && n >= 0 && n <= 10_000;
+  const save = () => {
+    if (!valid) return;
+    if (n === qty) return setEditing(false);
+    decksSetCardQty(GAME, sessionId, card, n)
+      .then(() => {
+        setEditing(false);
+        notify("success", `${card}: ${qty} → ${n}`, n < qty ? "Extra entries marked removed (kept in the session)." : "Added as manual entries.");
+      })
+      .catch((e) => notify("warning", "Couldn't change the quantity", errText(e)));
+  };
+  if (!editable) return <span className="tabular text-right">{qty}</span>;
+  if (!editing)
+    return (
+      <span className="flex items-center justify-end gap-1">
+        <span className="tabular">{qty}</span>
+        <IconButton
+          size="sm"
+          icon="sliders"
+          label={`Change the quantity of ${card}`}
+          onClick={() => {
+            setText(String(qty));
+            setEditing(true);
+          }}
+        />
+      </span>
+    );
+  return (
+    <span className="flex items-center justify-end">
+      <Input
+        size="sm"
+        type="number"
+        min={0}
+        max={10000}
+        autoFocus
+        value={text}
+        aria-label={`Quantity of ${card}`}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={() => setEditing(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") save();
+          if (e.key === "Escape") setEditing(false);
+        }}
+        containerClassName="w-20"
+      />
+    </span>
+  );
+}

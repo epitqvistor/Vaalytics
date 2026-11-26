@@ -311,6 +311,88 @@ pub fn finish(db: &Database, id: i64, now: i64, valuation: &Valuation) -> AppRes
     Ok(())
 }
 
+/// Sets how many `card`s a session has (confirmed entries) — the user's correction, e.g. after pressing the
+/// screenshot key twice. Fewer: the newest confirmed entries are marked removed (kept, "corrected by you");
+/// more: manual entries are added. Works for finished sessions too. Returns (removed, added).
+pub fn set_card_quantity(c: &Connection, session_id: i64, card: &str, qty: i64, at: i64, salt: &str) -> AppResult<(usize, usize)> {
+    let ids: Vec<i64> = {
+        let mut st = c.prepare("SELECT id FROM deck_events WHERE session_id = ?1 AND card = ?2 AND status = 'confirmed' ORDER BY at DESC, id DESC")?;
+        let rows = st.query_map(params![session_id, card], |r| r.get(0))?.collect::<Result<Vec<_>, _>>()?;
+        rows
+    };
+    let current = ids.len() as i64;
+    if qty < current {
+        let n = (current - qty) as usize;
+        for id in &ids[..n] {
+            c.execute(
+                "UPDATE deck_events SET status = 'removed', review_reason = 'Quantity corrected by you', corrected = 1, corrected_at = ?2 WHERE id = ?1",
+                params![id, at],
+            )?;
+        }
+        return Ok((n, 0));
+    }
+    let mut added = 0;
+    for i in 0..(qty - current) {
+        let e = NewEvent {
+            session_id,
+            at,
+            source: "manual",
+            source_uid: format!("man:{session_id}:{at}:{salt}:{card}:q{i}"),
+            capture_id: None,
+            recognized_text: None,
+            recognized_card: None,
+            confidence: 1.0,
+            bbox: None,
+            card: Some(card.to_string()),
+            status: "confirmed",
+            review_reason: Some("Quantity corrected by you".into()),
+        };
+        if insert_event(c, &e)?.is_some() {
+            added += 1;
+        }
+    }
+    Ok((0, added))
+}
+
+/// Replaces the stored final valuation (after a quantity correction in a finished session).
+pub fn replace_final_valuation(c: &Connection, id: i64, v: &Valuation) -> AppResult<()> {
+    c.execute(
+        "UPDATE deck_valuations SET total_value = ?2, priced_cards = ?3, unpriced_cards = ?4, lines = ?5 WHERE session_id = ?1 AND kind = 'final'",
+        params![id, v.total_value, v.priced_cards, v.unpriced_cards, serde_json::to_string(&v.lines)?],
+    )?;
+    Ok(())
+}
+
+/// Revalues a finished session after its counts changed: cards keep the unit price they were valued at;
+/// cards new to the session take today's price (manual first, then market), else stay unpriced.
+pub fn revalue_keeping_units(old: &Valuation, counts: &[(String, i64)], market: &HashMap<String, f64>, manual: &HashMap<String, f64>) -> Valuation {
+    let kept: HashMap<&str, &ValuationLine> = old.lines.iter().map(|l| (l.card.as_str(), l)).collect();
+    let mut total = 0.0;
+    let (mut priced, mut unpriced) = (0, 0);
+    let lines = counts
+        .iter()
+        .map(|(card, qty)| {
+            let (unit, source) = match kept.get(card.as_str()).filter(|l| l.unit.is_some()) {
+                Some(l) => (l.unit, l.source.clone()),
+                None => match (manual.get(card), market.get(card)) {
+                    (Some(v), _) => (Some(*v), Some("manual".to_string())),
+                    (None, Some(v)) => (Some(*v), Some("market".to_string())),
+                    _ => (None, None),
+                },
+            };
+            match unit {
+                Some(u) => {
+                    total += u * *qty as f64;
+                    priced += qty;
+                }
+                None => unpriced += qty,
+            }
+            ValuationLine { card: card.clone(), qty: *qty, unit, source }
+        })
+        .collect();
+    Valuation { valued_at: old.valued_at, league: old.league.clone(), prices_at: old.prices_at, total_value: total, priced_cards: priced, unpriced_cards: unpriced, lines }
+}
+
 pub fn insert_valuation(c: &Connection, id: i64, v: &Valuation) -> AppResult<()> {
     c.execute(
         "INSERT OR IGNORE INTO deck_valuations (session_id, game, kind, valued_at, league, prices_at, total_value, priced_cards, unpriced_cards, lines)
@@ -715,6 +797,40 @@ mod tests {
         assert_eq!(log_position(&db.conn().unwrap(), id2).unwrap(), (Some("k".into()), Some(42)));
         delete(&db, id).unwrap();
         assert_eq!(summaries(&db.conn().unwrap(), 600).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn card_quantity_corrections() {
+        let db = Database::open_in_memory().unwrap();
+        let id = create(&db, input("Q"), 100, None).unwrap();
+        {
+            let c = db.conn().unwrap();
+            for i in 0..2 {
+                insert_event(&c, &ev(id, &format!("ocr:{i}"), "The Doctor", "confirmed")).unwrap();
+            }
+            insert_event(&c, &ev(id, "ocr:x", "The Doctor", "review")).unwrap();
+        }
+        let counts = session_card_counts(&db.conn().unwrap(), id).unwrap();
+        let v = build_valuation(&counts, &HashMap::from([("The Doctor".into(), 4000.0)]), &HashMap::new(), None, None, 200);
+        finish(&db, id, 200, &v).unwrap();
+        // Pressed twice: 2 → 1 (one entry marked removed, kept).
+        assert_eq!(set_card_quantity(&db.conn().unwrap(), id, "The Doctor", 1, 300, "s").unwrap(), (1, 0));
+        let c = db.conn().unwrap();
+        assert_eq!(session_card_counts(&c, id).unwrap(), vec![("The Doctor".to_string(), 1)]);
+        assert_eq!(events(&c, id).unwrap().iter().filter(|e| e.status == "removed" && e.corrected).count(), 1);
+        assert_eq!(events(&c, id).unwrap().iter().filter(|e| e.status == "review").count(), 1, "review entries untouched");
+        // Revalue with the ORIGINAL unit price (4000), not today's (1).
+        let old = valuation(&c, id).unwrap().unwrap();
+        let nv = revalue_keeping_units(&old, &session_card_counts(&c, id).unwrap(), &HashMap::from([("The Doctor".into(), 1.0)]), &HashMap::new());
+        assert_eq!((nv.total_value, nv.priced_cards, nv.valued_at), (4000.0, 1, old.valued_at));
+        replace_final_valuation(&c, id, &nv).unwrap();
+        assert_eq!(valuation(&c, id).unwrap().unwrap().total_value, 4000.0);
+        // More than recorded: manual entries added; a new card takes today's price.
+        assert_eq!(set_card_quantity(&c, id, "The Doctor", 3, 400, "s").unwrap(), (0, 2));
+        assert_eq!(set_card_quantity(&c, id, "Rain of Chaos", 2, 400, "s").unwrap(), (0, 2));
+        let nv = revalue_keeping_units(&nv, &session_card_counts(&c, id).unwrap(), &HashMap::from([("Rain of Chaos".into(), 1.0)]), &HashMap::new());
+        assert_eq!(nv.total_value, 3.0 * 4000.0 + 2.0);
+        assert_eq!(set_card_quantity(&c, id, "Rain of Chaos", 0, 500, "s").unwrap(), (2, 0));
     }
 
     #[test]
