@@ -34,7 +34,7 @@ export function PriceCheckerView({ config, parse, special }: PriceCheckerViewPro
   };
 
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       <PageHeader
         title="Price Checker"
         description={

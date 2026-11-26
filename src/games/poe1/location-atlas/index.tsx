@@ -38,7 +38,7 @@ export default function LocationAtlasPage(_props: SectionProps) {
   };
 
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       <PageHeader
         title="Location Atlas"
         description="The Path of Exile campaign, Acts 1–10, in its own window: real connections between areas, waypoints, community navigation hints and the area you are in."

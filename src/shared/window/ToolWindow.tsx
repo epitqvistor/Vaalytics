@@ -152,7 +152,7 @@ function WindowButton({ icon, label, onClick, danger }: { icon: IconName; label:
       onClick={onClick}
       className={cn(
         "flex h-full w-11 items-center justify-center text-fg-muted transition-colors duration-100",
-        danger ? "hover:bg-[#c42b1c] hover:text-white" : "hover:bg-glass-strong hover:text-fg",
+        danger ? "hover:bg-window-close hover:text-white" : "hover:bg-glass-strong hover:text-fg",
       )}
     >
       <Icon name={icon} size={14} />

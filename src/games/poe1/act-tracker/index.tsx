@@ -87,7 +87,7 @@ export default function ActTrackerPage(_props: SectionProps) {
   const expected = expectedQuestPoints(options.bandit);
 
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       <PageHeader
         title="Act Tracker"
         description="Your Path of Exile campaign guide, Acts 1–10: where you are, the current objective and the next steps — in a small overlay that stays on top of the game."

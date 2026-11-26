@@ -29,7 +29,7 @@ export default function CraftingSection(_props: SectionProps) {
   const { idx, res, error, loading, reload } = useCraftingData();
   if (!idx || !res) {
     return (
-      <div className="mx-auto max-w-[1360px]">
+      <div className="mx-auto max-w-page">
         <PageHeader title="Crafting" />
         <div className="panel rounded-xl">
           {error ? (
@@ -192,7 +192,7 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
   const best = results.find((r) => r.avgCost !== null) ?? results[0];
 
   return (
-    <div className="mx-auto max-w-[1360px] space-y-3.5">
+    <div className="mx-auto max-w-page space-y-3.5">
       <PageHeader
         title="Crafting"
         description="Odds from the game's modifier data (RePoE) · costs from live poe.ninja prices. Every result is an estimate."

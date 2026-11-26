@@ -37,7 +37,7 @@ export default function RegexSection(_props: SectionProps) {
 
   if (!cats || !res) {
     return (
-      <div className="mx-auto max-w-[1360px]">
+      <div className="mx-auto max-w-page">
         <PageHeader title="REGEX" />
         <div className="panel rounded-xl">
           {error ? (
@@ -122,7 +122,7 @@ function Workspace({ cats, checkedAt, staleError }: { cats: Category[]; checkedA
   const loaded = lib.entries.find((e) => e.id === m.loadedId) ?? null;
 
   return (
-    <div className="mx-auto grid max-w-[1360px] gap-4">
+    <div className="mx-auto grid max-w-page gap-4">
       <PageHeader
         title="REGEX"
         description="Search strings for the stash, vendor and inventory search box (English client). Copy, then paste in game with Ctrl+V."

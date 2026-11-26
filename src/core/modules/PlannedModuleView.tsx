@@ -21,7 +21,7 @@ export default function PlannedModuleView({ onNavigate }: SectionProps) {
     ? `${patch.definition.patch} ${patch.definition.name}${patch.assumed ? " (assumed: league not recognised)" : patch.permanent ? " (permanent league, current rules)" : ""}`
     : "no game-data definition for this game yet";
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       <PageHeader title={meta.label} description={meta.summary} actions={<Badge tone="neutral">Planned · not built yet</Badge>} />
       <div className="grid max-w-4xl grid-cols-1 gap-5 md:grid-cols-2">
         <Panel title="What it will do">

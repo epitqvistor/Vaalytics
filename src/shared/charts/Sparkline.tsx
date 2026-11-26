@@ -23,8 +23,8 @@ export const Sparkline = memo(function Sparkline({
   const last = pts[pts.length - 1]!;
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden className="block overflow-visible">
-      <path d={linePath(pts)} fill="none" stroke={color} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={last[0]} cy={last[1]} r={2} fill={color} />
+      <path d={linePath(pts)} fill="none" stroke={color} strokeWidth={1.25} strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={last[0]} cy={last[1]} r={1.5} fill={color} />
     </svg>
   );
 });

@@ -52,7 +52,7 @@ export default function LootJournal(_props: SectionProps) {
   }, [league]);
 
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       <PageHeader
         title="Loot Journal"
         description="Items you copy in Path of Exile 2 (Ctrl+C) are saved, categorised and valued automatically. It records captured items only — not everything you pick up."

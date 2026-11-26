@@ -26,7 +26,7 @@ export default function UltimatumChecker(_props: SectionProps) {
   const last: LastCheck | null = isLastCheck(stored) ? stored : null;
 
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       <PageHeader
         title="Ultimatum Checker"
         description={

@@ -20,7 +20,7 @@ export default function TradeView({ onNavigate }: SectionProps) {
   const exchangeUrl = league ? `${site}/exchange/${realm}${encode(league)}` : site;
 
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       <PageHeader title="Trade" description="Search and trade on the official site, scoped to your league." actions={<LeagueSelect />} />
 
       <div className="grid grid-cols-2 gap-4">

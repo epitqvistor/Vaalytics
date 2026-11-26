@@ -14,7 +14,7 @@ export interface BarChartProps {
 
 const PAD = { top: 12, right: 8, bottom: 22 };
 const TICK_CHAR_PX = 6.4;
-const RADIUS = 4;
+const RADIUS = 1;
 
 /** Path for a bar with rounded top corners anchored to the baseline. */
 export function barPath(x: number, y: number, w: number, h: number): string {
@@ -83,7 +83,7 @@ export function BarChart({ values, labels, formatValue, formatTick = formatValue
               const y = innerH - (t / top) * innerH;
               return (
                 <g key={t}>
-                  <line x1={0} x2={innerW} y1={y} y2={y} stroke="var(--color-line)" />
+                  <line x1={0} x2={innerW} y1={y} y2={y} stroke="var(--color-line)" strokeDasharray={t === 0 ? undefined : "2 3"} />
                   <text x={-8} y={y} dy="0.32em" textAnchor="end" className="fill-fg-subtle text-2xs tabular">
                     {tickLabels[ti]}
                   </text>
@@ -106,7 +106,7 @@ export function BarChart({ values, labels, formatValue, formatTick = formatValue
                 key={i}
                 d={barPath(xOf(i), innerH - hOf(v), barW, hOf(v))}
                 fill="var(--color-accent)"
-                opacity={active === null || active === i ? 0.9 : 0.45}
+                opacity={active === null || active === i ? 0.85 : 0.4}
               />
             ))}
             {/* Hit targets: the whole slot, taller than the bar. */}

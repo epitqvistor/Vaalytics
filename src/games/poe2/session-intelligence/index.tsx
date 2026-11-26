@@ -32,7 +32,7 @@ export default function SessionIntelligence(_props: SectionProps) {
   const s = status.data;
 
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       <PageHeader
         title="Session Intelligence"
         description="Your Path of Exile 2 sessions, recorded automatically from the game process and Client.txt (read-only)."

@@ -74,7 +74,7 @@ export function MarketIntelligenceView({ config }: SectionProps & { config: Game
   const labelOf = (id: string) => categories.find((c) => c.id === id)?.label ?? id;
 
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       <PageHeader
         title="Market Intelligence"
         description="Trends, movers and liquidity across every market category — from data Vaalytics already caches."

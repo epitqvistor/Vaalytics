@@ -15,10 +15,18 @@ export interface StatTileProps {
   className?: string;
 }
 
-/** A headline figure: label, value (+ unit), then change and context, in falling order of weight. */
-export function StatTile({ label, value, unit, change, caption, icon, className }: StatTileProps) {
+/** A headline figure on its own raised surface. */
+export function StatTile({ className, ...stat }: StatTileProps) {
+  return <Stat {...stat} className={cn("panel-raised led-edge rounded-lg", className)} />;
+}
+
+/**
+ * A headline figure without a surface, for strips of related figures (see the
+ * Dashboard): label, value (+ unit), then change and context, in falling order of weight.
+ */
+export function Stat({ label, value, unit, change, caption, icon, className }: StatTileProps) {
   return (
-    <div className={cn("panel-raised led-edge flex min-w-0 flex-col rounded-lg px-4 pt-3 pb-3", className)}>
+    <div className={cn("flex min-w-0 flex-col px-4 pt-3 pb-3", className)}>
       <span className="flex min-w-0 items-center gap-2 text-xs text-fg-muted">
         {icon}
         <span className="truncate">{label}</span>

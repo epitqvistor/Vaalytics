@@ -37,7 +37,7 @@ export function GameShell({ game }: { game: GameId }) {
       active={current === m.id}
       onSelect={() => setSection(m.id)}
       indicatorId="main-nav"
-      trailing={statusFor(m.id, game) === "planned" ? <span className="text-[10px] tracking-wide text-fg-subtle uppercase">Soon</span> : undefined}
+      trailing={statusFor(m.id, game) === "planned" ? <span className="text-2xs text-fg-disabled">Soon</span> : undefined}
     />
   );
 
@@ -46,27 +46,25 @@ export function GameShell({ game }: { game: GameId }) {
       <LeagueProvider game={game}>
         <DisplayCurrencyProvider game={game} base={GAME_MODULES[game].config.baseUnit} premium={GAME_MODULES[game].config.premiumUnit}>
           <div className="flex h-full">
-            <aside className="glass-nav relative flex w-sidebar shrink-0 flex-col border-r border-line px-3 pt-3 pb-3 shadow-[inset_-1px_0_0_rgb(255_255_255/0.02)]">
+            <aside className="glass-nav relative flex w-sidebar shrink-0 flex-col border-r border-line px-2.5 pt-2.5 pb-2.5">
               <GameSwitcher game={game} />
-              <nav className="mt-4 -mr-1.5 flex flex-col gap-3.5 overflow-y-auto pr-1.5" aria-label="Sections">
+              <nav className="mt-3 -mr-1.5 flex flex-col gap-3 overflow-y-auto pr-1.5" aria-label="Sections">
                 {nav.groups.map((g) => (
                   <div key={g.id}>
-                    <p className="mb-1.5 flex items-center gap-2 px-2.5 text-[10px] font-semibold tracking-[0.16em] text-fg-subtle uppercase">
-                      {g.label}
-                      <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-white/[0.06] to-transparent" />
-                    </p>
-                    <div className="flex flex-col gap-0.5">{g.items.map(navItem)}</div>
+                    <p className="mb-1 px-3 text-2xs font-medium text-fg-subtle">{g.label}</p>
+                    <div className="flex flex-col gap-px">{g.items.map(navItem)}</div>
                   </div>
                 ))}
               </nav>
-              <nav className="mt-auto flex flex-col gap-0.5 border-t border-line pt-3" aria-label="Application">
+              <div aria-hidden className="vaal-rule mt-auto mb-2" />
+              <nav className="flex flex-col gap-px" aria-label="Application">
                 {nav.footer.map(navItem)}
               </nav>
             </aside>
 
             <main className="relative min-w-0 flex-1 overflow-y-auto">
               <AnimatePresence mode="wait" initial={false}>
-                <motion.div key={current} variants={variants.rise} initial="hidden" animate="visible" exit="exit" className="min-h-full px-8 py-7">
+                <motion.div key={current} variants={variants.rise} initial="hidden" animate="visible" exit="exit" className="min-h-full px-7 pt-5 pb-8">
                   <Suspense
                     fallback={
                       <div className="flex h-40 items-center justify-center text-fg-subtle">
@@ -99,23 +97,22 @@ function GameSwitcher({ game }: { game: GameId }) {
       type="button"
       onClick={clearGame}
       title="Switch game"
-      className="group relative isolate flex h-[72px] items-end overflow-hidden rounded-lg border border-white/10 p-3 text-left transition-[border-color,transform] duration-200 hover:-translate-y-px hover:border-white/20"
+      className="group relative isolate flex h-14 items-center gap-2 overflow-hidden rounded-lg border border-line-strong px-3 text-left transition-colors duration-120 hover:border-fg-disabled"
     >
       <img
         src={art.art}
         alt=""
         draggable={false}
-        className="absolute inset-0 -z-20 size-full object-cover transition-transform duration-700 group-hover:scale-105"
+        className="absolute inset-0 -z-20 size-full object-cover opacity-70 transition-opacity duration-200 group-hover:opacity-90"
         style={{ objectPosition: art.focus }}
       />
-      <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-black/85 via-black/55 to-black/20" />
+      {/* Scrim so the label stays legible on any artwork. */}
+      <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-bg via-bg/80 to-bg/30" />
       <span className="min-w-0 flex-1">
-        <span className="block text-[10px] font-semibold tracking-wide text-accent-2">{GAMES[game].shortTitle}</span>
-        <span className="block truncate text-sm font-semibold text-white">{GAMES[game].title}</span>
+        <span className="block text-2xs font-medium text-accent-2">{GAMES[game].shortTitle}</span>
+        <span className="block truncate text-sm font-semibold text-fg">{GAMES[game].title}</span>
       </span>
-      <span className="glass flex size-7 items-center justify-center rounded-md text-white/80 transition-colors group-hover:text-white">
-        <Icon name="swap" size={14} />
-      </span>
+      <Icon name="swap" size={14} className="shrink-0 text-fg-muted transition-colors duration-120 group-hover:text-fg" />
     </button>
   );
 }

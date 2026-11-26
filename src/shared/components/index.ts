@@ -10,7 +10,7 @@ export { Spinner } from "./Spinner";
 export { SampleDataNotice } from "./SampleDataNotice";
 export { Checkbox, type CheckboxProps } from "./Checkbox";
 export { Select, type SelectOption, type SelectProps } from "./Select";
-export { StatTile, ChangeText, type StatTileProps } from "./StatTile";
+export { StatTile, Stat, ChangeText, type StatTileProps } from "./StatTile";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { ToastProvider, useToast, type ToastTone } from "./Toast";
 export { EmptyState, Skeleton } from "./States";

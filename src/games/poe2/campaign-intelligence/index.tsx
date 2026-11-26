@@ -156,7 +156,7 @@ export default function CampaignIntelligence(_props: SectionProps) {
 
   if ((chars.error && !chars.data) || (status.error && !status.data)) {
     return (
-      <div className="mx-auto max-w-[1360px]">
+      <div className="mx-auto max-w-page">
         {header}
         <EmptyState icon="error" title="Campaign data is unavailable" body={chars.error ?? status.error} />
       </div>
@@ -164,7 +164,7 @@ export default function CampaignIntelligence(_props: SectionProps) {
   }
   if (!chars.data || !configLoaded) {
     return (
-      <div className="mx-auto max-w-[1360px]">
+      <div className="mx-auto max-w-page">
         {header}
         <EmptyState icon="map" title="Loading…" loading />
       </div>
@@ -172,7 +172,7 @@ export default function CampaignIntelligence(_props: SectionProps) {
   }
   if (!character) {
     return (
-      <div className="mx-auto max-w-[1360px]">
+      <div className="mx-auto max-w-page">
         {header}
         <Panel>
           <EmptyState
@@ -194,7 +194,7 @@ export default function CampaignIntelligence(_props: SectionProps) {
   const mainDone = p ? CAMPAIGN_0_5_5.objectives.filter((o) => o.kind === "main" && p.objectives.get(o.id)?.status === "done").length : 0;
 
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       {header}
 
       <div className="mb-5 flex flex-wrap items-end gap-3">

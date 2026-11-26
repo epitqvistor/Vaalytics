@@ -42,7 +42,7 @@ export function TitleBar({ children }: { children?: ReactNode }) {
     >
       <div data-tauri-drag-region className="flex min-w-0 flex-1 items-center gap-2">
         <img src="/vaalytics.svg" alt="" className="pointer-events-none size-4" />
-        <span className="pointer-events-none text-xs font-semibold tracking-wide text-fg-muted">Vaalytics</span>
+        <span className="pointer-events-none text-xs font-semibold text-fg-muted">Vaalytics</span>
         {children}
       </div>
       {native && (
@@ -69,7 +69,7 @@ function WindowButton({ icon, label, onClick, danger }: { icon: IconName; label:
       onClick={onClick}
       className={cn(
         "flex h-full w-11.5 items-center justify-center text-fg-muted transition-colors duration-100",
-        danger ? "hover:bg-[#c42b1c] hover:text-white" : "hover:bg-glass-strong hover:text-fg",
+        danger ? "hover:bg-window-close hover:text-white" : "hover:bg-glass-strong hover:text-fg",
       )}
     >
       <Icon name={icon} size={14} />

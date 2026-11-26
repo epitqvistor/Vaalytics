@@ -25,7 +25,7 @@ export default function SettingsPage() {
     ...(DesignGallery ? [{ value: "design" as const, label: "Design system" }] : []),
   ];
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       <PageHeader title="Settings" actions={<SegmentedControl label="Settings section" value={tab} onChange={setTab} segments={tabs} />} />
       <Suspense fallback={null}>
         {/* Forms read best at a moderate width; the page edge stays aligned with other sections. */}

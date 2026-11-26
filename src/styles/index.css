@@ -106,9 +106,14 @@
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
+  /* Windows caption close-button hover (system convention, not part of the palette). */
+  --color-window-close: #c42b1c;
+
   /* ---- Layout ---- */
   --spacing-titlebar: 34px;
   --spacing-sidebar: 220px;
+  /* Page content width (max-w-page): wide enough for 2560 px screens, still scannable. */
+  --container-page: 1560px;
 }
 
 @layer base {

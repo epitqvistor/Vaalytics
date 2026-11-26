@@ -52,7 +52,7 @@ export default function LootIntelligence(_props: SectionProps) {
   const labelOf = (id: string) => categories.find((c) => c.id === id)?.label ?? id;
 
   return (
-    <div className="mx-auto max-w-[1360px]">
+    <div className="mx-auto max-w-page">
       <PageHeader
         title="Loot Intelligence"
         description="Which drops are worth picking up in this league, from live poe.ninja prices — with a loot-filter block to match."

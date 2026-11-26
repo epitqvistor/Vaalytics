@@ -71,7 +71,7 @@ export function CurrencyView({ config }: CurrencyViewProps) {
   const onSort = (key: SortKey) => setSort((s) => (s.key === key ? { key, desc: !s.desc } : { key, desc: key !== "name" }));
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-var(--spacing-titlebar)-56px)] max-w-[1360px] flex-col">
+    <div className="mx-auto flex h-[calc(100vh-var(--spacing-titlebar)-56px)] max-w-page flex-col">
       <PageHeader
         title="Currency Tracker"
         description={`Prices in ${display?.converting ? display.unit.name : config.baseUnit.name}s from poe.ninja`}
