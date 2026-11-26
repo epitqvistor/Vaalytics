@@ -98,7 +98,7 @@ export default function ActTrackerPage(_props: SectionProps) {
             </Button>
           ) : (
             <Button variant="primary" icon="waypoint" onClick={() => run(actTrackerOpen(GAME), "show")}>
-              SHOW OVERLAY
+              Show overlay
             </Button>
           )
         }
