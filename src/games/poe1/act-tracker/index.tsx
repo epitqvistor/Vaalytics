@@ -370,7 +370,7 @@ function ActSteps({
         return (
           <li key={s.id}>
             {header && (
-              <div className="mt-3 mb-1 flex items-center gap-2 text-2xs font-semibold tracking-[0.08em] text-fg-subtle uppercase first:mt-0">
+              <div className="mt-3 mb-1 flex items-center gap-2 text-xs font-medium text-fg-muted first:mt-0">
                 {header}
                 {onAtlas && (
                   <button type="button" className="text-fg-disabled hover:text-accent" title={`Open ${header} in the Location Atlas`} onClick={() => onAtlas(s.area)}>

@@ -56,7 +56,7 @@ const TAG_TONE: Record<StepTag, string> = {
 };
 
 export function StepTagLabel({ tag }: { tag: StepTag }) {
-  return <span className={cn("w-[74px] shrink-0 text-[10px] font-semibold tracking-[0.08em]", TAG_TONE[tag])}>[{tag}]</span>;
+  return <span className={cn("w-[74px] shrink-0 text-2xs font-semibold", TAG_TONE[tag])}>[{tag}]</span>;
 }
 
 /** Marker for the priorities worth noticing while playing (critical steps carry none). */
@@ -76,7 +76,7 @@ export function StepText({ step, muted, priority }: { step: ResolvedStep; muted?
       <span className="min-w-0">
         {step.text}
         {mark && (
-          <span title={`${PRIORITY_LABEL[priority!.priority]}: ${priority!.why}`} className={cn("ml-1.5 inline-block rounded border px-1 align-[1px] text-[9px] font-semibold tracking-[0.06em]", mark.cls)}>
+          <span title={`${PRIORITY_LABEL[priority!.priority]}: ${priority!.why}`} className={cn("ml-1.5 inline-block rounded-xs border px-1 align-[1px] text-2xs leading-3.5 font-medium", mark.cls)}>
             {mark.label}
           </span>
         )}
@@ -99,7 +99,7 @@ export function WayLine({ way, name }: { way: WayPlan; name: (id: string) => str
 /** Minimap direction hint (0° = up, clockwise), community source. */
 export function HintLine({ text, direction }: { text: string; direction?: number }) {
   return (
-    <li className="flex items-start gap-1.5 text-[11px] text-fg-muted">
+    <li className="flex items-start gap-1.5 text-2xs text-fg-muted">
       {direction !== undefined ? (
         <span className="mt-[2px] inline-flex shrink-0" style={{ transform: `rotate(${direction}deg)` }} aria-label={`direction ${direction}°`}>
           <Icon name="arrowUp" size={11} className="text-warning" />

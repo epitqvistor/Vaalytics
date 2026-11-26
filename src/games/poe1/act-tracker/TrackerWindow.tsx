@@ -90,8 +90,8 @@ function Overlay() {
   if (!loaded) return null;
   return (
     <div
-      className="flex h-screen flex-col overflow-hidden rounded-lg border border-line-strong text-[13px] text-fg"
-      style={{ backgroundColor: `rgb(15 16 19 / ${prefs.opacity})` }}
+      className="flex h-screen flex-col overflow-hidden rounded-lg border border-line-strong text-sm text-fg"
+      style={{ backgroundColor: `rgb(16 17 19 / ${prefs.opacity})` }}
     >
       {/* Unmounted while hidden: no log reading in the background. */}
       {win && !win.visible ? null : <Body prefs={prefs} clickThrough={!!win?.clickThrough} onCompact={setCompact} />}
@@ -191,7 +191,7 @@ function Body({ prefs, clickThrough, onCompact }: { prefs: TrackerPrefs; clickTh
         {banner && (
           <p
             className={cn(
-              "mb-2 rounded-md border px-2 py-1.5 text-[11px]",
+              "mb-2 rounded-md border px-2 py-1.5 text-2xs",
               position.kind === "off-route" ? "border-warning/25 bg-warning-soft text-warning" : "border-line bg-glass text-fg-muted",
             )}
           >
@@ -205,8 +205,8 @@ function Body({ prefs, clickThrough, onCompact }: { prefs: TrackerPrefs; clickTh
         )}
         {current ? (
           <section aria-label="Current objective">
-            <div className="text-[10px] font-semibold tracking-[0.1em] text-fg-subtle">CURRENT OBJECTIVE</div>
-            <div className="mt-0.5 text-[15px] font-semibold text-fg">{name(objective!.area)}</div>
+            <div className="text-2xs font-medium text-fg-subtle">Current objective</div>
+            <div className="mt-0.5 text-base font-semibold text-fg">{name(objective!.area)}</div>
             <ol className="mt-1.5 space-y-1">
               {objective!.steps.map((s, k) => (
                 <li key={s.id} className="flex items-start gap-1.5">
@@ -225,7 +225,7 @@ function Body({ prefs, clickThrough, onCompact }: { prefs: TrackerPrefs; clickTh
             <div className="mt-2 flex items-center gap-1.5">
               <button
                 type="button"
-                className="rounded-md border border-accent/30 bg-accent-soft px-2 py-1 text-[11px] font-medium text-accent-2 hover:bg-accent/25"
+                className="rounded-md border border-accent/40 bg-accent-soft px-2 py-1 text-2xs font-medium text-accent-2 transition-colors duration-120 hover:bg-accent/20"
                 onClick={() => void t.mark(current, "done")}
                 title="Mark this step done (the log can't see kills, items or hand-ins)"
               >
@@ -234,19 +234,19 @@ function Body({ prefs, clickThrough, onCompact }: { prefs: TrackerPrefs; clickTh
               </button>
               <button
                 type="button"
-                className="rounded-md border border-line px-2 py-1 text-[11px] text-fg-muted hover:bg-glass-hover"
+                className="rounded-md border border-line px-2 py-1 text-2xs text-fg-muted hover:bg-glass-hover"
                 onClick={() => void t.mark(current, "skipped")}
               >
                 Skip
               </button>
               {objective!.nextLocation && (
-                <span className="ml-auto truncate text-[11px] text-fg-muted">
+                <span className="ml-auto truncate text-2xs text-fg-muted">
                   NEXT LOCATION: <span className="text-fg">{name(objective!.nextLocation)}</span>
                 </span>
               )}
             </div>
             {visit && visit.handIns.length > 0 && (
-              <p className="mt-1.5 text-[11px] text-fg-muted">
+              <p className="mt-1.5 text-2xs text-fg-muted">
                 In {name(visit.town)}, hand in:{" "}
                 {visit.handIns.map((h, k) => (
                   <span key={h.id} className={t.priorities[h.index]?.priority === "PERMANENT_POWER" ? "text-accent-2" : undefined}>
@@ -265,7 +265,7 @@ function Body({ prefs, clickThrough, onCompact }: { prefs: TrackerPrefs; clickTh
           <section aria-label="Next steps" className="mt-3 border-t border-line pt-2">
             <ul className="space-y-1">
               {upcoming.map(({ step, tag }) => (
-                <li key={step.id} className="flex items-start text-[12px]">
+                <li key={step.id} className="flex items-start text-xs">
                   <StepTagLabel tag={tag} />
                   <StepText step={step} muted={tag === "UPCOMING"} priority={t.priorities[step.index]} />
                 </li>
@@ -274,9 +274,9 @@ function Body({ prefs, clickThrough, onCompact }: { prefs: TrackerPrefs; clickTh
           </section>
         )}
         {t.report && <RewardSummary report={t.report} />}
-        {t.markError && <p className="mt-2 text-[11px] text-danger">{t.markError}</p>}
+        {t.markError && <p className="mt-2 text-2xs text-danger">{t.markError}</p>}
       </div>
-      <footer className="flex shrink-0 items-center gap-3 border-t border-line px-3 py-1.5 text-[11px] text-fg-muted tabular-nums">
+      <footer className="flex shrink-0 items-center gap-3 border-t border-line px-3 py-1.5 text-2xs text-fg-muted tabular-nums">
         {act && (
           <span>
             Act {act.act}: {act.done}/{act.total}
@@ -298,7 +298,7 @@ function RewardSummary({ report }: { report: GuardianReport }) {
   const urgent = report.warnings.filter((w) => w.severity !== "info").slice(0, 3);
   const count = (st: RewardStatus) => report.rewards.filter((r) => r.status === st && !r.notExpected && (r.reward.type === "passive-points" || r.reward.type === "bandit-choice")).length;
   return (
-    <section aria-label="Rewards" className="mt-3 border-t border-line pt-2 text-[11px]">
+    <section aria-label="Rewards" className="mt-3 border-t border-line pt-2 text-2xs">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-fg-muted">
         <span>
           Passive points <span className="font-semibold text-accent-2 tabular-nums">{report.passive.completed}</span>

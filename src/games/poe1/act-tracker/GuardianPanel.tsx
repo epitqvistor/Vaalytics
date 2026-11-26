@@ -91,7 +91,7 @@ export function GuardianPanel({
 
       {trips.length > 0 && (
         <div className="mb-4 rounded-md border border-accent/25 bg-accent-soft px-3 py-2">
-          <div className="mb-1 text-2xs font-semibold tracking-[0.08em] text-accent-2 uppercase">Worth going back for</div>
+          <div className="mb-1 text-xs font-medium text-accent-2">Worth going back for</div>
           <ul className="flex flex-col gap-1 text-xs">
             {trips.map((trip) => (
               <li key={trip.reward.reward.id} className="text-fg">
@@ -145,7 +145,7 @@ export function GuardianPanel({
 function Figure({ label, value, caption }: { label: string; value: React.ReactNode; caption: string }) {
   return (
     <div className="rounded-md border border-line bg-bg-2 px-3 py-2">
-      <div className="text-2xs font-semibold tracking-[0.08em] text-fg-subtle uppercase">{label}</div>
+      <div className="text-xs font-medium text-fg-muted">{label}</div>
       <div className="text-lg font-semibold tabular-nums text-fg">{value}</div>
       <div className="truncate text-2xs text-fg-subtle">{caption}</div>
     </div>

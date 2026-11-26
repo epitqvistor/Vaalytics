@@ -27,7 +27,7 @@ export function ActTrackerAreaGuide({ areaId, tracking }: { areaId: string; trac
   return (
     <section aria-label="Act Tracker" className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <span className="text-2xs font-semibold tracking-wide text-fg-subtle uppercase">Act Tracker — your route here</span>
+        <span className="text-xs font-medium text-fg-muted">Act Tracker — your route here</span>
         {guide.isGuideArea && (
           <Badge tone="accent" dot>
             The guide is here

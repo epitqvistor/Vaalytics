@@ -44,7 +44,7 @@ export function TimerPanel({ times, name }: { times: CampaignTimes; name: (id: s
         <Fig label="Hideout · away" value={`${formatDuration(times.hideoutSeconds)} · ${formatDuration(times.awaySeconds)}`} caption={`${times.breaks} break${times.breaks === 1 ? "" : "s"} not counted`} />
       </div>
       <table className="w-full text-xs tabular-nums">
-        <thead className="text-2xs text-fg-subtle uppercase">
+        <thead className="text-xs text-fg-subtle">
           <tr>
             <th className="py-1 text-left font-semibold">Act</th>
             <th className="py-1 text-right font-semibold">Time</th>
@@ -80,7 +80,7 @@ export function TimerPanel({ times, name }: { times: CampaignTimes; name: (id: s
 function Fig({ label, value, caption }: { label: string; value: React.ReactNode; caption: string }) {
   return (
     <div className="rounded-md border border-line bg-bg-2 px-3 py-2">
-      <div className="text-2xs font-semibold tracking-[0.08em] text-fg-subtle uppercase">{label}</div>
+      <div className="text-xs font-medium text-fg-muted">{label}</div>
       <div className="text-lg font-semibold tabular-nums text-fg">{value}</div>
       <div className="truncate text-2xs text-fg-subtle">{caption}</div>
     </div>
@@ -100,7 +100,7 @@ export function HistoryPanel({ runs, error, currentId }: { runs: RunSummary[] | 
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-xs tabular-nums">
-            <thead className="text-2xs text-fg-subtle uppercase">
+            <thead className="text-xs text-fg-subtle">
               <tr>
                 <th className="py-1 text-left font-semibold">Character</th>
                 <th className="py-1 text-right font-semibold">Campaign</th>
