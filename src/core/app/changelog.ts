@@ -18,7 +18,6 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     version: "0.21.0",
     date: "2026-11-26",
     title: "New look: Vaal / Obsidian",
-    unreleased: true,
     changes: [
       "Complete visual redesign: solid dark surfaces, aged-bronze accents, calmer controls and one type scale.",
       "Dashboard: key prices in one strip, price trend with period change, low and high, gainers and decliners side by side.",
