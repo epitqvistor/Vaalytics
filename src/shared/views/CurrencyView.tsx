@@ -23,7 +23,7 @@ export interface CurrencyViewProps extends SectionProps {
 }
 
 type SortKey = "name" | "value" | "change" | "volume";
-const ROW_H = 44;
+const ROW_H = 40;
 const GRID = "grid grid-cols-[40px_minmax(0,1fr)_118px_84px_84px_76px] items-center";
 /** poe.ninja-style threshold: prices backed by fewer listings are unreliable. */
 const MIN_LISTINGS = 5;
@@ -98,7 +98,6 @@ export function CurrencyView({ config }: CurrencyViewProps) {
         <Input icon="search" placeholder="Search items" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search items" containerClassName="w-64" />
         <div className="flex-1" />
         <SegmentedControl
-          size="sm"
           label="Favourites filter"
           value={favOnly}
           onChange={setFavOnly}
@@ -130,7 +129,7 @@ export function CurrencyView({ config }: CurrencyViewProps) {
         />
       </div>
 
-      <div className="flex min-h-0 flex-1 gap-5">
+      <div className="flex min-h-0 flex-1 gap-4">
         <Panel flush className="flex min-w-0 flex-1 flex-col [&>div]:flex [&>div]:min-h-0 [&>div]:flex-1 [&>div]:flex-col">
           {leagueError || error ? (
             <EmptyState icon="error" title="Market data unavailable" body={leagueError ?? error ?? ""} />
@@ -151,7 +150,7 @@ export function CurrencyView({ config }: CurrencyViewProps) {
               rowHeight={ROW_H}
               getKey={(r) => r.itemId}
               header={
-                <div role="row" className={cn(GRID, "h-9 border-b border-line bg-bg-2/95 text-xs text-fg-subtle")}>
+                <div role="row" className={cn(GRID, "h-8 border-b border-line bg-bg-2 text-xs text-fg-subtle")}>
                   <span />
                   <SortHeader label="Item" k="name" sort={sort} onSort={onSort} />
                   <SortHeader label="Value" k="value" sort={sort} onSort={onSort} align="right" />
@@ -208,7 +207,7 @@ function Row({
       role="row"
       aria-selected={selected}
       onClick={onSelect}
-      className={cn(GRID, "h-full border-b border-line text-sm transition-colors", selected ? "bg-accent-soft shadow-[inset_2px_0_0_var(--color-accent)]" : "hover:bg-white/[0.025]")}
+      className={cn(GRID, "h-full border-b border-line text-sm transition-colors", selected ? "bg-accent-soft shadow-[inset_2px_0_0_var(--color-accent)]" : "hover:bg-glass")}
     >
       <span className="pl-2" onClick={(e) => e.stopPropagation()}>
         <IconButton
@@ -220,7 +219,7 @@ function Row({
         />
       </span>
       <span className="flex min-w-0 items-center gap-2.5 px-3">
-        <ItemIcon src={r.icon} name={r.name} size={26} />
+        <ItemIcon src={r.icon} name={r.name} size={22} />
         <span className="min-w-0">
           <span className="block truncate text-fg">{r.name}</span>
           {r.variant && <span className="block truncate text-2xs text-fg-subtle">{r.variant}</span>}
@@ -258,9 +257,9 @@ function SortHeader({
   const active = sort.key === k;
   return (
     <span role="columnheader" aria-sort={active ? (sort.desc ? "descending" : "ascending") : "none"} className={cn("px-3", align === "right" && "text-right")}>
-      <button type="button" onClick={() => onSort(k)} className={cn("inline-flex items-center gap-1 font-medium hover:text-fg", active && "text-fg-muted")}>
+      <button type="button" onClick={() => onSort(k)} className={cn("inline-flex items-center gap-1 font-medium transition-colors duration-120 hover:text-fg", active && "text-fg-muted", align === "right" && "flex-row-reverse")}>
         {label}
-        {active && <Icon name={sort.desc ? "chevronDown" : "chevronUp"} size={12} />}
+        {active && <Icon name={sort.desc ? "chevronDown" : "chevronUp"} size={12} className="text-accent-2" />}
       </button>
     </span>
   );

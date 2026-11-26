@@ -32,7 +32,7 @@ export function SegmentedControl<T extends string>({ value, onChange, segments, 
             onClick={() => onChange(s.value)}
             className={cn(
               "relative rounded-sm font-medium transition-colors duration-120",
-              size === "sm" ? "h-6 px-2.5 text-xs" : "h-7 px-3 text-sm",
+              size === "sm" ? "h-5.5 px-2.5 text-xs" : "h-6.5 px-3 text-sm",
               active ? "text-fg" : "text-fg-muted hover:text-fg",
             )}
           >
