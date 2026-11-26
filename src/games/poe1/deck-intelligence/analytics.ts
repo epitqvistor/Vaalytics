@@ -44,6 +44,8 @@ export interface SessionView {
   unrecognized: number;
   /** Value used for results: original valuation when finished, live estimate otherwise. */
   value: number;
+  /** False when the session has cards but none of them has a price (value unknown, not 0). */
+  valueKnown: boolean;
   valueKind: "original" | "live";
   /** Today's prices for the same cards (finished sessions; null while running = same as value). */
   currentValue: number | null;
@@ -119,7 +121,11 @@ export function sessionView(summary: DeckSessionSummary, totals: readonly DeckCa
   const value = finished ? v!.totalValue : live.value;
   const cards = summary.confirmed;
   const { decks, costBasis: cost, costPerDeck } = deckCounts(summary, cards);
-  const profit = cost !== null ? value - cost : null;
+  const priced = finished ? v!.pricedCards : live.priced;
+  // Cards but not one price (e.g. a league poe.ninja doesn't cover): the value is unknown, not 0 —
+  // so there is no profit or ROI either.
+  const valueKnown = cards === 0 || priced > 0;
+  const profit = cost !== null && valueKnown ? value - cost : null;
   return {
     summary,
     id: summary.id,
@@ -131,19 +137,46 @@ export function sessionView(summary: DeckSessionSummary, totals: readonly DeckCa
     review: summary.review,
     unrecognized: summary.unrecognized,
     value,
+    valueKnown,
     valueKind: finished ? "original" : "live",
     currentValue: finished ? live.value : null,
     pricedCards: finished ? v!.pricedCards : live.priced,
     unpricedCards: finished ? v!.unpricedCards : live.unpriced,
     cost,
     profit,
-    roi: roiOf(profit, cost),
+    roi: roiOf(profit, profit === null ? null : cost),
     valuePerDeck: cards > 0 ? value / cards : null,
     costPerDeck,
     valuePerMinute: summary.activeSecs >= 60 && summary.origin === "live" ? value / (summary.activeSecs / 60) : null,
-    outcome: outcomeOf(profit, cost),
+    outcome: outcomeOf(profit, profit === null ? null : cost),
     acquisition: summary.acquisition,
   };
+}
+
+// ---------- history groups ----------
+
+export interface LeagueGroup {
+  /** null = sessions without a league. */
+  league: string | null;
+  views: SessionView[];
+  /** Unix seconds of the newest session in the group. */
+  latest: number;
+}
+
+/**
+ * Sessions grouped by league (order inside a group is kept): the selected league first, then the
+ * others by their newest session, "no league" last.
+ */
+export function groupByLeague(views: readonly SessionView[], current: string | null): LeagueGroup[] {
+  const m = new Map<string | null, LeagueGroup>();
+  for (const v of views) {
+    const g = m.get(v.league) ?? { league: v.league, views: [], latest: 0 };
+    g.views.push(v);
+    g.latest = Math.max(g.latest, v.at);
+    m.set(v.league, g);
+  }
+  const rank = (g: LeagueGroup) => (g.league === current && current !== null ? 0 : g.league === null ? 2 : 1);
+  return [...m.values()].sort((a, b) => rank(a) - rank(b) || b.latest - a.latest || String(a.league).localeCompare(String(b.league)));
 }
 
 // ---------- filters ----------

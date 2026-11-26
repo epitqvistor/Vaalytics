@@ -7,6 +7,7 @@ import {
   DEFAULT_FILTER,
   distribution,
   isBuckets,
+  groupByLeague,
   outcomeOf,
   type PriceBook,
   roiOf,
@@ -98,6 +99,14 @@ describe("profit and ROI", () => {
     expect(v.pricedCards).toBe(3);
   });
 
+  it("has an unknown value (no profit) when no card of the session has a price", () => {
+    const v = sessionView(summary({ id: 9, status: "running", confirmed: 3, costTotal: 50 }), totalsFor(9, [["No Price Card", 3]]), book);
+    expect(v.valueKnown).toBe(false);
+    expect(v.profit).toBeNull();
+    expect(v.roi).toBeNull();
+    expect(v.outcome).toBeNull();
+  });
+
   it("counts planned decks when more decks were opened than cards confirmed", () => {
     const v = sessionView(summary({ id: 4, confirmed: 8, plannedDecks: 10, costTotal: 20 }), [], book);
     expect(v.decks).toBe(10);
@@ -168,6 +177,24 @@ describe("aggregation", () => {
     expect(v.reduce((a, x) => a + x.decks, 0)).toBe(20);
     expect(v.every((x) => /^\d{4}-\d{2}$/.test(x.key))).toBe(true);
     expect(volume(views, "day").length).toBe(3);
+  });
+});
+
+describe("history groups", () => {
+  it("groups by league: selected league first, then newest, no league last", () => {
+    const vs = [
+      sessionView(summary({ id: 1, league: "Standard", startedAt: NOW - 1 * DAY }), [], book),
+      sessionView(summary({ id: 2, league: "Covens", startedAt: NOW - 5 * DAY }), [], book),
+      sessionView(summary({ id: 3, league: null, startedAt: NOW }), [], book),
+      sessionView(summary({ id: 4, league: "Mercenaries", startedAt: NOW - 2 * DAY }), [], book),
+      sessionView(summary({ id: 5, league: "Covens", startedAt: NOW - 3 * DAY }), [], book),
+    ];
+    const g = groupByLeague(vs, "Covens");
+    expect(g.map((x) => x.league)).toEqual(["Covens", "Standard", "Mercenaries", null]);
+    expect(g[0]!.views.map((v) => v.id)).toEqual([2, 5]); // order inside a group is kept
+    expect(g[0]!.latest).toBe(NOW - 3 * DAY);
+    expect(groupByLeague(vs, null).map((x) => x.league)).toEqual(["Standard", "Mercenaries", "Covens", null]);
+    expect(groupByLeague([], "Covens")).toEqual([]);
   });
 });
 

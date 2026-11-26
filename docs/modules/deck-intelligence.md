@@ -107,6 +107,13 @@ Beauty" → Divine Beauty ×3 to review (the mouse pointer covers the end of the
   possible once finished.
 - Delete: permanent, with confirmation; removes the session, its entries and kept screenshots.
 - Export: sessions list → CSV, one session → JSON (save dialog).
+- History shows the **selected league** (the page's league picker) with its totals (sessions, decks, value, cost,
+  profit, ROI). Every other league — and sessions without a league — is behind **"Previous leagues · N"** at the
+  bottom: a window with one collapsible section per league (newest first, "No league" last; `groupByLeague`), compact
+  rows, totals in each header; clicking a session closes the window and opens it. Search, filters and sort apply to
+  both.
+- A session with cards but no price for any of them (e.g. a league poe.ninja doesn't cover) shows "no prices":
+  value unknown, no profit, no ROI — never 0 c / −100 %.
 
 ## Import (Client.txt)
 Settings → Import: pick a Client.txt (must look like a PoE 1 log), worker thread with progress events and cancel

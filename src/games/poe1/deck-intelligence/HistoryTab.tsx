@@ -2,14 +2,16 @@
  * Session history (search, sort, filters, compare, export) and the detailed report of one session
  * (read-only once finished): summary, every card, value distribution, timeline, comparison.
  */
+import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { type DeckEvent, decksDelete, decksSaveExport, decksUpdate } from "@/core/ipc/commands";
+import { useLeague } from "@/core/market/LeagueContext";
 import { Badge, Button, EmptyState, Input, Modal, Panel, ProvenanceTag, SegmentedControl, Select, useToast } from "@/shared/components";
 import { Icon } from "@/shared/icons/Icon";
 import { cn } from "@/shared/utilities/cn";
 import { formatDuration } from "@/shared/utilities/format";
 import { VirtualRows } from "@/shared/views/market-ui";
-import { distribution, type PriceBook, type SessionView, sessionsCsv, sessionUnit, unitPrice } from "./analytics";
+import { distribution, groupByLeague, type LeagueGroup, type PriceBook, type SessionView, sessionsCsv, sessionUnit, totals, unitPrice } from "./analytics";
 import { ColumnChart, TipRows } from "./charts";
 import { GAME, useDeckSession } from "./hooks";
 import type { DeckPrefs } from "./prefs";
@@ -20,17 +22,24 @@ const errText = (e: unknown) => String(e).replace(/^Error: /, "");
 type Sort = "newest" | "oldest" | "value" | "profit" | "roi" | "decks";
 type Profitability = "all" | "profit" | "loss" | "even" | "unknown";
 
+const COLS = "grid-cols-[28px_minmax(200px,1.4fr)_110px_70px_110px_100px_110px_80px]";
+/** Narrower rows for the "Previous leagues" window: date under the name, no compare / cost column. */
+const COLS_COMPACT = "grid-cols-[minmax(160px,1fr)_60px_100px_100px_70px]";
+const groupKey = (league: string | null) => league ?? "\u0000none";
+
 export function HistoryTab({ views, onOpen }: { views: readonly SessionView[]; onOpen: (id: number) => void }) {
   const notify = useToast();
+  const { league: currentLeague } = useLeague();
+  // Leagues expanded in the "Previous leagues" window (all collapsed at first).
+  const [openSet, setOpenSet] = useState<Set<string>>(new Set());
+  const [prevOpen, setPrevOpen] = useState(false);
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<Sort>("newest");
-  const [league, setLeague] = useState("all");
   const [acq, setAcq] = useState<string>("all");
   const [profit, setProfit] = useState<Profitability>("all");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [compare, setCompare] = useState<number[]>([]);
-  const leagues = useMemo(() => [...new Set(views.map((v) => v.league).filter((l): l is string => !!l))].sort(), [views]);
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const f = from ? Date.parse(`${from}T00:00:00`) / 1000 : null;
@@ -38,7 +47,6 @@ export function HistoryTab({ views, onOpen }: { views: readonly SessionView[]; o
     const list = views.filter(
       (v) =>
         (!needle || v.name.toLowerCase().includes(needle) || (v.summary.notes ?? "").toLowerCase().includes(needle)) &&
-        (league === "all" || v.league === league) &&
         (acq === "all" || v.acquisition === acq) &&
         (profit === "all" || (profit === "unknown" ? v.outcome === null : v.outcome === profit)) &&
         (f === null || v.at >= f) &&
@@ -53,7 +61,18 @@ export function HistoryTab({ views, onOpen }: { views: readonly SessionView[]; o
       decks: (a, b) => b.decks - a.decks,
     };
     return list.sort(by[sort]);
-  }, [views, q, league, acq, profit, from, to, sort]);
+  }, [views, q, acq, profit, from, to, sort]);
+  // The selected league on the page; every other league (and "no league") in the "Previous leagues" window.
+  const groups = useMemo(() => groupByLeague(shown, currentLeague), [shown, currentLeague]);
+  const current = groups.find((g) => g.league !== null && g.league === currentLeague) ?? null;
+  const previous = groups.filter((g) => g !== current);
+  const toggle = (k: string) =>
+    setOpenSet((prev) => {
+      const n = new Set(prev);
+      if (n.has(k)) n.delete(k);
+      else n.add(k);
+      return n;
+    });
   const comparing = compare.map((id) => views.find((v) => v.id === id)).filter((v): v is SessionView => !!v);
 
   if (views.length === 0) {
@@ -68,7 +87,6 @@ export function HistoryTab({ views, onOpen }: { views: readonly SessionView[]; o
     <div className="flex flex-col gap-4">
       <section className="panel flex flex-wrap items-end gap-3 rounded-lg px-4 py-3">
         <Input size="sm" icon="search" placeholder="Search name or notes" value={q} onChange={(e) => setQ(e.target.value)} containerClassName="w-56" aria-label="Search sessions" />
-        <Select size="sm" label="League" value={league} onChange={setLeague} options={[{ value: "all", label: "All leagues" }, ...leagues.map((l) => ({ value: l, label: l }))]} className="w-40" />
         <Select size="sm" label="Acquisition" value={acq} onChange={setAcq} options={[{ value: "all", label: "Any" }, ...ACQUISITIONS.map((a) => ({ value: a, label: ACQUISITION_LABEL[a] }))]} className="w-40" />
         <Select
           size="sm"
@@ -132,61 +150,210 @@ export function HistoryTab({ views, onOpen }: { views: readonly SessionView[]; o
       )}
       {comparing.length === 2 && <CompareTable a={comparing[0]!} b={comparing[1]!} />}
 
-      <Panel flush>
-        <VirtualRows
-          rows={shown}
-          rowHeight={52}
-          getKey={(v) => String(v.id)}
-          className="max-h-[620px]"
-          header={
-            <div className="grid h-9 grid-cols-[28px_minmax(200px,1.4fr)_110px_70px_110px_100px_110px_80px] items-center gap-3 border-b border-line bg-bg-2/95 px-4 text-xs text-fg-subtle">
-              <span />
-              <span>Session</span>
-              <span>Date</span>
-              <span className="text-right">Decks</span>
-              <span className="text-right">Value</span>
-              <span className="text-right">Cost</span>
-              <span className="text-right">Profit</span>
-              <span className="text-right">ROI</span>
-            </div>
-          }
-          renderRow={(v) => (
-            <div className="grid h-full grid-cols-[28px_minmax(200px,1.4fr)_110px_70px_110px_100px_110px_80px] items-center gap-3 border-b border-line px-4 text-sm hover:bg-elevated/60">
-              <input
-                type="checkbox"
-                aria-label={`Compare ${v.name}`}
-                checked={compare.includes(v.id)}
-                onChange={(e) => setCompare((c) => (e.target.checked ? [...c.filter((x) => x !== v.id), v.id].slice(-2) : c.filter((x) => x !== v.id)))}
-                className="accent-[var(--color-accent)]"
+      {shown.length === 0 ? (
+        <Panel>
+          <EmptyState icon="search" title="No sessions match" className="py-10" />
+        </Panel>
+      ) : current ? (
+        <LeagueSection group={current} open selected onToggle={null} compare={compare} setCompare={setCompare} onOpen={onOpen} />
+      ) : (
+        <Panel>
+          <EmptyState
+            icon="journal"
+            title={currentLeague ? `No sessions in ${currentLeague} yet` : "No sessions in the selected league"}
+            body={previous.length ? "Sessions from other leagues are under “Previous leagues” below." : undefined}
+            className="py-10"
+          />
+        </Panel>
+      )}
+      {previous.length > 0 && (
+        <div className="flex justify-center">
+          <Button variant="secondary" icon="journal" onClick={() => setPrevOpen(true)}>
+            Previous leagues · {previous.length}
+            <span className="ml-1 text-fg-subtle">({previous.reduce((a, g) => a + g.views.length, 0)} sessions)</span>
+          </Button>
+        </div>
+      )}
+      <Modal open={prevOpen} onClose={() => setPrevOpen(false)} title="Previous leagues" size="lg" description="Sessions from leagues other than the selected one. Click a league to see its openings.">
+        <div className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto pr-1">
+          {previous.map((g) => {
+            const k = groupKey(g.league);
+            return (
+              <LeagueSection
+                key={k}
+                group={g}
+                open={openSet.has(k)}
+                selected={false}
+                compact
+                onToggle={() => toggle(k)}
+                compare={compare}
+                setCompare={setCompare}
+                onOpen={(id) => {
+                  setPrevOpen(false);
+                  onOpen(id);
+                }}
               />
-              <button className="min-w-0 text-left" onClick={() => onOpen(v.id)}>
-                <span className="block truncate text-fg hover:text-accent">{v.name}</span>
-                <span className="block truncate text-2xs text-fg-subtle">
-                  {v.league ?? "No league"} · {ACQUISITION_LABEL[v.acquisition]}
-                  {v.summary.origin === "import" && " · imported"}
-                  {v.summary.status !== "finished" && ` · ${v.summary.status}`}
-                </span>
-              </button>
-              <span className="text-xs text-fg-muted">{dateLabel(v.at)}</span>
-              <span className="tabular text-right text-fg">{v.decks}</span>
-              <span className="text-right">
-                <Money value={v.value} />
-              </span>
-              <span className="text-right">
-                <Money value={v.cost} unknown="—" />
-              </span>
-              <span className="text-right">
-                <Profit value={v.profit} unknown="—" />
-              </span>
-              <span className="text-right">
-                <Roi value={v.roi} />
-              </span>
-            </div>
-          )}
-        />
-        {shown.length === 0 && <EmptyState icon="search" title="No sessions match" className="py-10" />}
-      </Panel>
+            );
+          })}
+        </div>
+      </Modal>
     </div>
+  );
+}
+
+/** One league: header with its totals (click to collapse when `onToggle` is given) and its sessions. */
+function LeagueSection({
+  group: g,
+  open,
+  selected,
+  onToggle,
+  compare,
+  setCompare,
+  onOpen,
+  compact = false,
+}: {
+  group: LeagueGroup;
+  open: boolean;
+  selected: boolean;
+  compact?: boolean;
+  onToggle: (() => void) | null;
+  compare: number[];
+  setCompare: (f: (c: number[]) => number[]) => void;
+  onOpen: (id: number) => void;
+}) {
+  const t = totals(g.views);
+  // Every entered cost counts here, even for sessions whose value is unknown.
+  const costs = g.views.map((v) => v.cost).filter((c): c is number => c !== null);
+  const head = (
+    <>
+      <span className="flex min-w-0 items-center gap-2.5">
+        {onToggle && <Icon name={open ? "chevronDown" : "chevronRight"} size={16} className="shrink-0 text-fg-muted" />}
+        <span className="truncate text-base font-semibold text-fg">{g.league ?? "No league"}</span>
+        {selected && <Badge tone="accent">Selected league</Badge>}
+      </span>
+      <span className="text-xs text-fg-muted">
+        {t.sessions} session{t.sessions === 1 ? "" : "s"} · {t.decks.toLocaleString()} decks · last {dateLabel(g.latest)}
+      </span>
+      <span className="ml-auto flex items-center gap-5 text-sm">
+        <span className="flex flex-col items-end">
+          <span className="text-2xs text-fg-subtle">Value</span>
+          <Money value={g.views.some((v) => v.valueKnown) || t.cards === 0 ? t.value : null} unknown="no prices" />
+        </span>
+        <span className="flex flex-col items-end">
+          <span className="text-2xs text-fg-subtle">Cost</span>
+          <Money value={costs.length ? costs.reduce((a, b) => a + b, 0) : null} unknown="—" />
+        </span>
+        <span className="flex flex-col items-end">
+          <span className="text-2xs text-fg-subtle">Profit</span>
+          <Profit value={t.profit} unknown="—" />
+        </span>
+        <span className="flex w-16 flex-col items-end">
+          <span className="text-2xs text-fg-subtle">ROI</span>
+          <Roi value={t.roi} />
+        </span>
+      </span>
+    </>
+  );
+  const headClass = cn("flex w-full flex-wrap items-center gap-x-5 gap-y-1 px-4 py-3 text-left", open && "border-b border-line");
+  return (
+    <Panel flush>
+      {onToggle ? (
+        <button type="button" aria-expanded={open} onClick={onToggle} className={cn(headClass, "hover:bg-elevated/60")}>
+          {head}
+        </button>
+      ) : (
+        <div className={headClass}>{head}</div>
+      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+            <VirtualRows
+              rows={g.views}
+              rowHeight={52}
+              getKey={(v) => String(v.id)}
+              className="max-h-[520px]"
+              header={
+                compact ? (
+                  <div className={cn("grid h-9 items-center gap-3 border-b border-line bg-bg-2/95 px-4 text-xs text-fg-subtle", COLS_COMPACT)}>
+                    <span>Session</span>
+                    <span className="text-right">Decks</span>
+                    <span className="text-right">Value</span>
+                    <span className="text-right">Profit</span>
+                    <span className="text-right">ROI</span>
+                  </div>
+                ) : (
+                  <div className={cn("grid h-9 items-center gap-3 border-b border-line bg-bg-2/95 px-4 text-xs text-fg-subtle", COLS)}>
+                    <span />
+                    <span>Session</span>
+                    <span>Date</span>
+                    <span className="text-right">Decks</span>
+                    <span className="text-right">Value</span>
+                    <span className="text-right">Cost</span>
+                    <span className="text-right">Profit</span>
+                    <span className="text-right">ROI</span>
+                  </div>
+                )
+              }
+              renderRow={(v) =>
+                compact ? (
+                  <div className={cn("grid h-full items-center gap-3 border-b border-line px-4 text-sm hover:bg-elevated/60", COLS_COMPACT)}>
+                    <button className="min-w-0 text-left" onClick={() => onOpen(v.id)}>
+                      <span className="block truncate text-fg hover:text-accent">{v.name}</span>
+                      <span className="block truncate text-2xs text-fg-subtle">
+                        {dateLabel(v.at)} · {ACQUISITION_LABEL[v.acquisition]}
+                        {v.summary.origin === "import" && " · imported"}
+                      </span>
+                    </button>
+                    <span className="tabular text-right text-fg">{v.decks}</span>
+                    <span className="text-right">
+                      <Money value={v.valueKnown ? v.value : null} unknown="no prices" />
+                    </span>
+                    <span className="text-right">
+                      <Profit value={v.profit} unknown="—" />
+                    </span>
+                    <span className="text-right">
+                      <Roi value={v.roi} />
+                    </span>
+                  </div>
+                ) : (
+                <div className={cn("grid h-full items-center gap-3 border-b border-line px-4 text-sm hover:bg-elevated/60", COLS)}>
+                  <input
+                    type="checkbox"
+                    aria-label={`Compare ${v.name}`}
+                    checked={compare.includes(v.id)}
+                    onChange={(e) => setCompare((c) => (e.target.checked ? [...c.filter((x) => x !== v.id), v.id].slice(-2) : c.filter((x) => x !== v.id)))}
+                    className="accent-[var(--color-accent)]"
+                  />
+                  <button className="min-w-0 text-left" onClick={() => onOpen(v.id)}>
+                    <span className="block truncate text-fg hover:text-accent">{v.name}</span>
+                    <span className="block truncate text-2xs text-fg-subtle">
+                      {ACQUISITION_LABEL[v.acquisition]}
+                      {v.summary.origin === "import" && " · imported"}
+                      {v.summary.status !== "finished" && ` · ${v.summary.status}`}
+                    </span>
+                  </button>
+                  <span className="text-xs text-fg-muted">{dateLabel(v.at)}</span>
+                  <span className="tabular text-right text-fg">{v.decks}</span>
+                  <span className="text-right">
+                    <Money value={v.valueKnown ? v.value : null} unknown="no prices" />
+                  </span>
+                  <span className="text-right">
+                    <Money value={v.cost} unknown="—" />
+                  </span>
+                  <span className="text-right">
+                    <Profit value={v.profit} unknown="—" />
+                  </span>
+                  <span className="text-right">
+                    <Roi value={v.roi} />
+                  </span>
+                </div>
+                )
+              }
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Panel>
   );
 }
 
@@ -348,7 +515,7 @@ export function SessionDetail({
         <Kpi
           label={finished ? "Original value" : "Live value"}
           tone="accent"
-          value={<Money value={view.value} strong />}
+          value={<Money value={view.valueKnown ? view.value : null} strong unknown="No prices" />}
           sub={view.currentValue !== null ? <>today <Money value={view.currentValue} /></> : view.unpricedCards ? `${view.unpricedCards} unpriced` : undefined}
         />
         <Kpi label="Profit · ROI" value={<Profit value={view.profit} />} sub={<>cost <Money value={view.cost} unknown="unknown" /> · ROI <Roi value={view.roi} /></>} />
