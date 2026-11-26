@@ -202,12 +202,12 @@ export function EmulatorPanel({
       {goal.targets.length > 0 && (
         <div className={cn("flex items-center gap-2 rounded-lg border px-3 py-2 text-xs", done ? "border-success/40 bg-success/10 text-fg" : "border-line text-fg-muted")}>
           <Icon name={done ? "success" : "crafting"} size={14} className={done ? "text-success" : "text-fg-subtle"} />
-          Targets on item: <span className="font-mono tabular text-fg">{hits(item)}</span> / {need}
+          Targets on item: <span className="tabular text-fg">{hits(item)}</span> / {need}
           {done && <Badge tone="success">Hit</Badge>}
         </div>
       )}
 
-      <section className="panel rounded-xl">
+      <section className="panel rounded-lg">
         <header className="flex items-center justify-between gap-2 border-b border-line px-3.5 py-2.5">
           <h2 className="text-sm font-semibold text-fg">Currency emulator</h2>
           <span className="text-2xs text-fg-subtle">Shift+click: repeat until hit</span>
@@ -364,7 +364,7 @@ export function EmulatorPanel({
           {auto ? (
             <div className="flex items-center justify-between gap-2">
               <span className="text-fg-muted">
-                Auto-rolling {auto.label}… <span className="font-mono tabular text-fg">{auto.count.toLocaleString("en-US")}</span>
+                Auto-rolling {auto.label}… <span className="tabular text-fg">{auto.count.toLocaleString("en-US")}</span>
               </span>
               <Button size="sm" variant="secondary" onClick={() => (stop.current = true)}>
                 Stop
@@ -380,8 +380,8 @@ export function EmulatorPanel({
           )}
           <div className="flex items-center justify-between gap-2">
             <span className="text-fg-muted" title={Object.entries(spent).map(([n, q]) => `${q}× ${n}`).join("\n")}>
-              Used <span className="font-mono tabular text-fg">{totals.count.toLocaleString("en-US")}</span> ·{" "}
-              <span className="font-mono tabular text-fg">{money(totals.chaos)}</span>
+              Used <span className="tabular text-fg">{totals.count.toLocaleString("en-US")}</span> ·{" "}
+              <span className="tabular text-fg">{money(totals.chaos)}</span>
               {totals.missing && <span className="text-warning"> + unpriced</span>}
             </span>
             <Button
@@ -449,9 +449,9 @@ function CurrencyButton({
       {icon ? <img src={icon} alt="" className={compact ? "size-5" : "size-7"} /> : <Icon name="crafting" size={compact ? 14 : 18} className="text-fg-subtle" />}
       <span className="min-w-0">
         <span className="block truncate text-xs text-fg">{label}</span>
-        {!compact && <span className="block font-mono text-2xs tabular text-fg-subtle">{price === null ? "no price" : unitMoney(price)}</span>}
+        {!compact && <span className="block text-2xs tabular text-fg-subtle">{price === null ? "no price" : unitMoney(price)}</span>}
       </span>
-      {compact && <span className="font-mono text-2xs tabular text-fg-subtle">{price === null ? "—" : unitMoney(price)}</span>}
+      {compact && <span className="text-2xs tabular text-fg-subtle">{price === null ? "—" : unitMoney(price)}</span>}
     </button>
   );
 }

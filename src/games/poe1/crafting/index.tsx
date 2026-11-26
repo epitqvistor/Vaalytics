@@ -31,7 +31,7 @@ export default function CraftingSection(_props: SectionProps) {
     return (
       <div className="mx-auto max-w-page">
         <PageHeader title="Crafting" />
-        <div className="panel rounded-xl">
+        <div className="panel rounded-lg">
           {error ? (
             <EmptyState icon="error" title="Couldn't load crafting data" body={error} action={<Button onClick={reload}>Try again</Button>} />
           ) : (
@@ -58,9 +58,9 @@ function Cost({ chaos, divine, className }: { chaos: number | null; divine: numb
   const dc = useDisplayCurrency();
   const money = useChaos(null);
   if (chaos === null || !Number.isFinite(chaos)) return <span className={cn("text-fg-subtle", className)}>no price</span>;
-  if (dc?.converting) return <span className={cn("font-mono tabular", className)}>{money(chaos)}</span>;
+  if (dc?.converting) return <span className={cn("tabular", className)}>{money(chaos)}</span>;
   return (
-    <span className={cn("font-mono tabular", className)}>
+    <span className={cn("tabular", className)}>
       {fmtNum(chaos)}c{divine && chaos >= divine ? <span className="text-fg-subtle"> · {fmtNum(chaos / divine, 2)} div</span> : null}
     </span>
   );
@@ -213,7 +213,7 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
         snapshot={snapshots.currency ?? null}
         extra={
           <span className="text-fg-subtle">
-            {divine ? <>1 div = <span className="font-mono tabular text-fg-muted">{fmtNum(divine)}c</span> · </> : null}
+            {divine ? <>1 div = <span className="tabular text-fg-muted">{fmtNum(divine)}c</span> · </> : null}
             Mod data checked {new Date(checkedAt * 1000).toLocaleDateString()}
             {staleError && <span className="text-warning"> · couldn't refresh ({staleError})</span>}
           </span>
@@ -221,7 +221,7 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
       />
 
       {/* Item configuration + summary */}
-      <section className="panel flex flex-wrap items-end gap-3 rounded-xl p-3.5">
+      <section className="panel flex flex-wrap items-end gap-3 rounded-lg p-3.5">
         <Select
           label="Item class"
           size="sm"
@@ -308,12 +308,12 @@ function Workspace({ idx, staleError, checkedAt }: { idx: CraftingIndex; staleEr
           {best ? (
             <>
               <div>
-                <p className="text-2xs tracking-wide text-fg-subtle uppercase">Best: {best.label}</p>
+                <p className="text-xs text-fg-subtle">Best: {best.label}</p>
                 <Cost chaos={best.avgCost} divine={divine} className="text-base text-fg" />
               </div>
               <div className="text-xs text-fg-muted">
                 <p>
-                  Chance <span className="font-mono tabular text-fg">{chanceText(best.chance)}</span>
+                  Chance <span className="tabular text-fg">{chanceText(best.chance)}</span>
                 </p>
                 {best.costAt && (
                   <p className="text-fg-subtle">
@@ -414,7 +414,7 @@ function TargetsPanel({
 }) {
   const rows = useMemo(() => families(pool), [pool]);
   return (
-    <section className="panel rounded-xl">
+    <section className="panel rounded-lg">
       <header className="flex items-center justify-between gap-2 border-b border-line px-3.5 py-2.5">
         <h2 className="text-sm font-semibold text-fg">Target modifiers</h2>
         {targets.length > 1 && (
@@ -485,7 +485,7 @@ function GenTag({ gen }: { gen: Gen }) {
   return (
     <span
       className={cn(
-        "w-5 shrink-0 rounded border text-center font-mono text-[10px] leading-4",
+        "w-5 shrink-0 rounded-xs border text-center tabular text-2xs leading-4",
         gen === "prefix" ? "border-info/40 text-info" : "border-accent/40 text-accent-2",
       )}
       title={gen === "prefix" ? "Prefix" : "Suffix"}
@@ -513,7 +513,7 @@ function PoolPanel({ pool, targets, onAdd }: { pool: Pool; targets: Target[]; on
   const picked = (r: FamilyRow) => targets.some((t) => t.family === r.family && t.gen === r.gen);
 
   return (
-    <section className="panel flex h-[520px] min-h-0 flex-col rounded-xl">
+    <section className="panel flex h-[520px] min-h-0 flex-col rounded-lg">
       <header className="space-y-2 border-b border-line px-3.5 py-2.5">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-fg">Modifier pool</h2>
@@ -536,7 +536,7 @@ function PoolPanel({ pool, targets, onAdd }: { pool: Pool; targets: Target[]; on
           />
         </div>
       </header>
-      <div className="flex px-3.5 py-1.5 text-2xs tracking-wide text-fg-subtle uppercase">
+      <div className="flex px-3.5 py-1.5 text-xs text-fg-subtle">
         <span className="flex-1">Modifier (best tier)</span>
         <span className="w-16 text-right">Weight</span>
         <span className="w-14 text-right">Roll %</span>
@@ -557,8 +557,8 @@ function PoolPanel({ pool, targets, onAdd }: { pool: Pool; targets: Target[]; on
                 {firstLine(r.best.mod.text)}
                 <span className="ml-1.5 text-fg-subtle">T{r.best.tier}</span>
               </span>
-              <span className="w-16 text-right font-mono tabular text-fg-muted">{r.weight.toLocaleString("en-US")}</span>
-              <span className="w-14 text-right font-mono tabular text-fg-muted">{((r.weight / total) * 100).toFixed(2)}</span>
+              <span className="w-16 text-right tabular text-fg-muted">{r.weight.toLocaleString("en-US")}</span>
+              <span className="w-14 text-right tabular text-fg-muted">{((r.weight / total) * 100).toFixed(2)}</span>
               <span className="w-8 text-right">
                 {picked(r) ? (
                   <Icon name="check" size={14} className="ml-auto text-success" />
@@ -579,7 +579,7 @@ function PoolPanel({ pool, targets, onAdd }: { pool: Pool; targets: Target[]; on
 function MethodsPanel({ results, busy, error, divine, hasTargets }: { results: MethodResult[]; busy: boolean; error: string | null; divine: number | null; hasTargets: boolean }) {
   const bestId = results.find((r) => r.avgCost !== null)?.id;
   return (
-    <section className="panel flex flex-col rounded-xl">
+    <section className="panel flex flex-col rounded-lg">
       <header className="flex items-center justify-between border-b border-line px-3.5 py-2.5">
         <h2 className="text-sm font-semibold text-fg">Cheapest methods</h2>
         {busy && <Spinner size={14} className="text-fg-subtle" />}
@@ -619,7 +619,7 @@ function MethodRow({ m, best, divine }: { m: MethodResult; best: boolean; divine
         <div className="shrink-0 text-right">
           <Cost chaos={m.avgCost} divine={divine} className="text-sm text-fg" />
           <p className="text-2xs text-fg-subtle">
-            chance <span className="font-mono tabular">{chanceText(m.chance)}</span>
+            chance <span className="tabular">{chanceText(m.chance)}</span>
           </p>
         </div>
         <Icon name={open ? "chevronUp" : "chevronDown"} size={14} className="mt-1 text-fg-subtle" />
@@ -642,7 +642,7 @@ function MethodRow({ m, best, divine }: { m: MethodResult; best: boolean; divine
                   <span>
                     {c.qty}× {c.name}
                   </span>
-                  <span className={cn("font-mono tabular", c.price === null && "text-warning")}>{c.price === null ? "no price" : unitMoney(c.price)}</span>
+                  <span className={cn("tabular", c.price === null && "text-warning")}>{c.price === null ? "no price" : unitMoney(c.price)}</span>
                 </li>
               ))}
             </ul>

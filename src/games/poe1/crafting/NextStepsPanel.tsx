@@ -33,7 +33,7 @@ export function NextStepsPanel({
   const bestRepeat = steps.filter((s) => s.repeatable && s.avgCost !== null).sort((a, b) => a.avgCost! - b.avgCost!)[0]?.id;
 
   return (
-    <section className="panel rounded-xl">
+    <section className="panel rounded-lg">
       <header className="flex items-center justify-between gap-2 border-b border-line px-3.5 py-2.5">
         <h2 className="text-sm font-semibold text-fg">Next step from this item</h2>
         <span className="text-2xs text-fg-subtle">metacrafts · Eldritch · Exalt</span>
@@ -62,7 +62,7 @@ export function NextStepsPanel({
               </div>
               <div className="shrink-0 text-right">
                 <p className="font-mono text-sm tabular text-fg">{chance(s.chance)}</p>
-                <p className={cn("font-mono text-2xs tabular", s.costPerTry === null ? "text-warning" : "text-fg-subtle")}>
+                <p className={cn("text-2xs tabular", s.costPerTry === null ? "text-warning" : "text-fg-subtle")}>
                   {s.costPerTry === null ? "no price" : s.repeatable ? `avg ${money(s.avgCost!)}` : `${money(s.costPerTry)} / try`}
                 </p>
               </div>

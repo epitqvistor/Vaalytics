@@ -29,7 +29,7 @@ export function MonteCarloPanel({
   const result = state.status === "done" && state.methodId === method.id ? state.result : null;
 
   return (
-    <section className="panel rounded-xl">
+    <section className="panel rounded-lg">
       <header className="flex items-center justify-between gap-2 border-b border-line px-3.5 py-2.5">
         <h2 className="text-sm font-semibold text-fg">Monte Carlo</h2>
         <span className="text-2xs text-fg-subtle">10,000 simulated crafts</span>
@@ -54,8 +54,8 @@ export function MonteCarloPanel({
               <div className="h-full rounded-full bg-accent transition-[width] duration-150" style={{ width: `${state.fraction * 100}%` }} />
             </div>
             <p className="mt-1 text-2xs text-fg-subtle">
-              <span className="font-mono tabular">{state.attempts.toLocaleString("en-US")}</span> attempts ·{" "}
-              <span className="font-mono tabular">{state.hits.toLocaleString("en-US")}</span> hits
+              <span className="tabular">{state.attempts.toLocaleString("en-US")}</span> attempts ·{" "}
+              <span className="tabular">{state.hits.toLocaleString("en-US")}</span> hits
             </p>
           </div>
         )}
@@ -82,14 +82,14 @@ function McSummary({ r, divine }: { r: McResult; divine: number | null }) {
       <dl className="grid grid-cols-2 gap-2 text-xs">
         <div className="rounded-md bg-bg-2/80 px-2.5 py-2">
           <dt className="text-2xs text-fg-subtle">Measured chance</dt>
-          <dd className="font-mono tabular text-fg">{r.usedModel ? "no hits" : chance(r.chance)}</dd>
+          <dd className="tabular text-fg">{r.usedModel ? "no hits" : chance(r.chance)}</dd>
           <dd className="text-2xs text-fg-subtle">
             {r.hits.toLocaleString("en-US")} in {r.attempts.toLocaleString("en-US")} attempts
           </dd>
         </div>
         <div className="rounded-md bg-bg-2/80 px-2.5 py-2">
           <dt className="text-2xs text-fg-subtle">Model chance</dt>
-          <dd className="font-mono tabular text-fg">{chance(r.modelChance)}</dd>
+          <dd className="tabular text-fg">{chance(r.modelChance)}</dd>
           {!r.usedModel && r.hits >= 30 && (
             <dd className={cn("text-2xs", Math.abs(diff) > 0.1 ? "text-warning" : "text-fg-subtle")}>
               {diff >= 0 ? "+" : ""}
@@ -117,7 +117,7 @@ function McSummary({ r, divine }: { r: McResult; divine: number | null }) {
             <th className="text-right font-normal">Cost</th>
           </tr>
         </thead>
-        <tbody className="font-mono tabular">
+        <tbody className="tabular">
           {rows.map(([p, tries, cost]) => (
             <tr key={p}>
               <td className="font-sans text-fg-muted">{p}%</td>
@@ -154,7 +154,7 @@ function Histogram({ r, divine }: { r: McResult; divine: number | null }) {
     <figure className="space-y-1">
       <figcaption className="flex justify-between text-2xs text-fg-subtle">
         <span>{r.cost ? "Cost per finished craft" : "Tries per finished craft"}</span>
-        <span className="font-mono tabular text-fg-muted">
+        <span className="tabular text-fg-muted">
           {h ? `${label(h.from)}–${label(h.to)}: ${((h.count / r.crafts) * 100).toFixed(1)}%` : "hover a bar"}
         </span>
       </figcaption>
