@@ -72,7 +72,7 @@ export default function DiagnosticsPanel() {
         {rows.map(([k, v]) => (
           <div key={k} className="flex justify-between px-4 py-2.5 text-sm">
             <dt className="text-fg-muted">{k}</dt>
-            <dd className="tabular font-mono text-xs leading-5 text-fg" data-selectable>
+            <dd className="tabular text-xs leading-5 text-fg" data-selectable>
               {v}
             </dd>
           </div>
@@ -94,7 +94,7 @@ function StatRows({ rows }: { rows: [string, string][] }) {
       {rows.map(([k, v]) => (
         <div key={k} className="flex justify-between px-4 py-2.5 text-sm">
           <dt className="text-fg-muted">{k}</dt>
-          <dd className="tabular font-mono text-xs leading-5 text-fg" data-selectable>
+          <dd className="tabular text-xs leading-5 text-fg" data-selectable>
             {v}
           </dd>
         </div>

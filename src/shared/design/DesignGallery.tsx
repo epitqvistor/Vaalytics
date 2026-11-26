@@ -59,7 +59,7 @@ export default function DesignGallery() {
           ))}
           <div className="flex items-baseline gap-4">
             <span className="w-32 shrink-0 text-2xs text-fg-subtle">mono · numbers</span>
-            <span className="tabular font-mono text-sm">0123456789 · 12.5 div</span>
+            <span className="tabular text-sm">0123456789 · 12.5 div</span>
           </div>
         </div>
       </Panel>

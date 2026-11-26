@@ -508,7 +508,7 @@ function PreviewPanel({
       />
       <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
         <span
-          className={cn("font-mono tabular", ls === "error" ? "text-danger" : ls === "warn" ? "text-warning" : "text-fg-muted")}
+          className={cn("tabular", ls === "error" ? "text-danger" : ls === "warn" ? "text-warning" : "text-fg-muted")}
           aria-live="polite"
         >
           {len} / {LIMIT}
