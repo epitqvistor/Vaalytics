@@ -4,7 +4,52 @@ Location: `src/styles/index.css` (tokens), `src/shared/design` (motion, dev gall
 `src/shared/icons` (icon set), `src/shared/components` (primitives).
 Dev builds include a live gallery at **Settings → Design system** (excluded from production bundles).
 
-## 0.6 visual rework (Nov 2026)
+## "Vaal / Obsidian instrument" redesign (0.21, Nov 2026) — current
+Supersedes the 0.6 and 0.2 notes below wherever they disagree. Audit: `docs/reports/vaal-redesign-audit-2026-11-26.md`.
+Rollback point: local tag `pre-vaal-redesign`.
+
+**Idea.** An analytical instrument made by a precise ancient civilisation: layered dark stone, warm bone text,
+aged bronze used sparingly, near-square geometry. Beautiful through proportion and typography; it must still
+work with every ornament removed.
+
+- **Material.** Solid colours only: `bg` #101113 → `bg-2` #141518 → `surface` #17191C → `elevated` #1C1E21 →
+  `elevated-2` #232528; `well` #0D0E10 for recessed fields. Lines are solid hex (`line` #25272B, `line-strong`
+  #33353A) so a hairline weighs the same on every surface. No blur, glass, glow, gradients or ambient light.
+  Shadows only under floating layers (menus, modals, toasts, tooltips).
+- **Legacy utility names kept** so modules compile unchanged: `glass` / `glass-nav` (now solid chrome), `glass-float`
+  (solid elevated + shadow), `panel-raised` (panel + bronze top hairline), `ornament-rule` (plain hairline),
+  `bg-glass*` (low-alpha warm tints, for hover/selection only). `Atmosphere` now only sets `data-game`.
+- **Bronze.** `bronze` #795536 (identity marks) · `copper` #A2764B (focus ring, selected outline) · `accent`
+  #C08A4E (primary button, active indicator, selected data point, chart line) · `accent-2` #D0A36D (accent text).
+  Not for headings, borders of ordinary panels, or every icon.
+- **Text.** `fg` #E7E3DB · `fg-muted` #A09B91 · `fg-subtle` #78756E (metadata only) · `fg-disabled` #4B4A47.
+- **Status** stays functional: `success` #5BB287 · `danger` #D8665C · `warning` #D3A64A · `info` #6E9FD6.
+- **Typography.** Segoe UI Variable Text/Display (native, best ClearType rendering; no bundled fonts). Page title
+  20 px semibold; panel title 13 px semibold; headline figures 24 px display, `tabular`; labels 12 px sentence case,
+  `fg-muted` — no tracked uppercase micro-labels. All numbers use `tabular` (Segoe tabular lining figures);
+  Cascadia Mono only for code / regex.
+- **Geometry.** Radii `xs` 2 · `sm`/`md` 3 · `lg` 4 · `xl` 6 (floating only). Control heights 28 (`sm`) / 32 (`md`);
+  table rows 36 (dense 32), header 32; panel header 40; panel padding 16; grid gap 16; page padding 28 × 20;
+  content width `max-w-page` (1560 px).
+- **Vaal marks (closed set).** `vaal-lintel` — short bronze bar with a stepped end before the page eyebrow;
+  `vaal-step` — the active-nav marker (2 px accent bar, chamfered ends); `vaal-rule` — hairline that starts with a
+  bronze segment and one step (sidebar footer). Nothing else is ornamental.
+- **Shell.** Title bar 34 px; sidebar 220 px solid `bg-2`; game switcher 56 px (user artwork under a scrim, no zoom);
+  group labels 11 px sentence case; nav items 32 px, active = tint + `vaal-step` + accent icon (no pill).
+- **Page header.** Eyebrow (lintel + "Group · Game"), title, description; contextual controls right-aligned on
+  the title baseline; one hairline below.
+- **Tables.** `Table` / `Th` (`numeric`, `sort`, `onSort` → `aria-sort` + chevron) / `Tr` (`selected`) / `Td`
+  (`numeric`, `muted`) / `ItemCell` (icon + truncating name + optional sub-line). Hairline row separators,
+  numeric columns right-aligned and tabular.
+- **Charts.** Dashed recessive grid, solid axis baseline with ticks, width-aware date labels (2–8, always first and
+  last), 1.5 px accent line over a faint fill, a marker on the latest value, dashed crosshair + solid tooltip.
+  No draw-in animation.
+- **Stat / StatTile.** `Stat` is a figure without a surface (for strips, e.g. Dashboard key prices with
+  `divide-x`); `StatTile` = `Stat` on `panel-raised`. Both keep the PoE 2 `led-edge` (user request; unchanged).
+- **Motion.** Colour transitions 120 ms; no hover lift or press scale; shared-layout indicators use a 180 ms tween
+  (no spring); page enter = 4 px rise + fade.
+
+## 0.6 visual rework (Nov 2026) — superseded
 - **Atmosphere** (`src/app/Atmosphere.tsx`, `atmo-*` utilities): static layers behind the app,
   outside every scroll container — key light (warm for PoE 1, cooler `data-game="poe2"`),
   an original etched atlas drawing (`src/assets/atmosphere/atlas-lines.svg`, 12 KB, 3.5–7 %
