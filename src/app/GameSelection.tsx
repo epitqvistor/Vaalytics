@@ -63,7 +63,7 @@ export function GameSelection() {
       </div>
 
       <footer className="mx-auto mt-6 flex w-full max-w-[1120px] items-center justify-between text-2xs text-fg-subtle">
-        <span>Artwork: original Vaalytics illustrations · Path of Exile is a trademark of Grinding Gear Games.</span>
+        <span>Artwork: original Vaalytics artwork · Path of Exile is a trademark of Grinding Gear Games.</span>
         <span>Vaalytics is not affiliated with Grinding Gear Games.</span>
       </footer>
     </div>

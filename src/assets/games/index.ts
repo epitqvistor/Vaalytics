@@ -1,11 +1,10 @@
 /**
- * Game artwork manifest. To use approved official artwork instead, place the
- * optimized file next to this one (e.g. poe1.webp, ~1200×1600, < 300 KB) and
- * point `art` at it. See docs/modules/game-artwork.md for licensing rules.
+ * Game artwork manifest. Art files sit next to this one (portrait WebP,
+ * < 300 KB). See docs/modules/game-artwork.md for sources and licensing rules.
  */
 import type { GameId } from "@/core/game-context/games";
-import poe1Art from "./poe1-wraeclast.svg";
-import poe2Art from "./poe2-vaal.svg";
+import poe1Art from "./poe1.webp";
+import poe2Art from "./poe2.webp";
 
 export interface GameArt {
   art: string;
@@ -16,6 +15,6 @@ export interface GameArt {
 }
 
 export const GAME_ART: Record<GameId, GameArt> = {
-  poe1: { art: poe1Art, focus: "40% 60%", credit: "Original Vaalytics illustration" },
-  poe2: { art: poe2Art, focus: "50% 45%", credit: "Original Vaalytics illustration" },
+  poe1: { art: poe1Art, focus: "55% 55%", credit: "Original artwork supplied for Vaalytics" },
+  poe2: { art: poe2Art, focus: "50% 45%", credit: "Original artwork supplied for Vaalytics" },
 };
