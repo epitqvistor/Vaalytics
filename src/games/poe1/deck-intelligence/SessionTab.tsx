@@ -33,10 +33,10 @@ import { Badge, Button, EmptyState, IconButton, Input, Kbd, Modal, Panel, Proven
 import { Icon } from "@/shared/icons/Icon";
 import { cn } from "@/shared/utilities/cn";
 import { formatDuration } from "@/shared/utilities/format";
-import { type PriceBook, roiOf, unitPrice, valueCards } from "./analytics";
+import { deckCounts, type PriceBook, roiOf, unitPrice, valueCards } from "./analytics";
 import { GAME, useDeckSession, useDecksUpdated } from "./hooks";
 import { type DeckPrefs, sessionName } from "./prefs";
-import { ACQUISITION_LABEL, ACQUISITIONS, CardArt, Kpi, Money, Profit, Roi, SOURCE_LABEL, StatusBadge, timeLabel, UNIT } from "./ui";
+import { ACQUISITION_LABEL, ACQUISITIONS, CardArt, Kpi, Money, OpenedEditor, Profit, Roi, SOURCE_LABEL, StatusBadge, timeLabel, UNIT } from "./ui";
 import { listen } from "@tauri-apps/api/event";
 
 const errText = (e: unknown) => String(e).replace(/^Error: /, "");
@@ -61,6 +61,7 @@ export function SessionForm({
   const { leagues } = useLeague();
   const [v, setV] = useState(initial);
   const [decks, setDecks] = useState(initial.plannedDecks?.toString() ?? "");
+  const [opened, setOpened] = useState(initial.openedDecks?.toString() ?? "");
   const [cost, setCost] = useState(initial.costTotal?.toString() ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,19 +72,22 @@ export function SessionForm({
     if (!open) return;
     setV(initial);
     setDecks(initial.plannedDecks?.toString() ?? "");
+    setOpened(initial.openedDecks?.toString() ?? "");
     setCost(initial.costTotal?.toString() ?? "");
     setError(null);
   }, [open]);
 
   const decksN = decks.trim() === "" ? null : Number(decks);
+  const openedN = opened.trim() === "" ? null : Number(opened);
   const costN = cost.trim() === "" ? null : Number(cost);
-  const invalid = !v.name.trim() || (decksN !== null && (!Number.isInteger(decksN) || decksN < 0)) || (costN !== null && (!Number.isFinite(costN) || costN < 0));
+  const badCount = (n: number | null) => n !== null && (!Number.isInteger(n) || n < 0 || n > 1_000_000);
+  const invalid = !v.name.trim() || badCount(decksN) || badCount(openedN) || (costN !== null && (!Number.isFinite(costN) || costN < 0));
 
   const submit = async () => {
     setBusy(true);
     setError(null);
     try {
-      await onSubmit({ ...v, plannedDecks: decksN, costTotal: costN, notes: v.notes?.trim() ? v.notes : null, openedOn: v.openedOn || null });
+      await onSubmit({ ...v, plannedDecks: decksN, openedDecks: openedN, costTotal: costN, notes: v.notes?.trim() ? v.notes : null, openedOn: v.openedOn || null });
       onClose();
     } catch (e) {
       setError(errText(e));
@@ -118,8 +122,9 @@ export function SessionForm({
           options={[{ value: "", label: "No league" }, ...leagues.map((l) => ({ value: l.name, label: l.displayName }))]}
         />
         <Input label="Opening date" type="date" value={v.openedOn ?? ""} onChange={(e) => setV({ ...v, openedOn: e.target.value || null })} hint="Optional" />
-        <Input label="Stacked Decks" type="number" min={0} step={1} value={decks} onChange={(e) => setDecks(e.target.value)} hint="Optional — how many you're opening" />
-        <Select label="Acquisition" value={v.acquisition} onChange={(a) => setV({ ...v, acquisition: a })} options={ACQUISITIONS.map((a) => ({ value: a, label: ACQUISITION_LABEL[a] }))} />
+        <Input label="Decks bought" type="number" min={0} step={1} value={decks} onChange={(e) => setDecks(e.target.value)} hint="Optional — how many the cost is for" />
+        <Input label="Decks opened" type="number" min={0} step={1} value={opened} onChange={(e) => setOpened(e.target.value)} hint="Optional — empty counts confirmed cards" />
+        <Select label="Acquisition" value={v.acquisition} onChange={(a) => setV({ ...v, acquisition: a })} options={ACQUISITIONS.map((a) => ({ value: a, label: ACQUISITION_LABEL[a] }))} className="col-span-2" />
         <div className="col-span-2 flex items-end gap-2">
           <Input
             label="Total acquisition cost"
@@ -212,6 +217,7 @@ export function SessionTab({
       league,
       openedOn: null,
       plannedDecks: null,
+      openedDecks: null,
       acquisition: prefs.defaultAcquisition,
       costTotal: null,
       notes: null,
@@ -314,7 +320,9 @@ function ActiveSession({ summary, book, cardNames, onOpenSession, notifyFinished
     return [...m].map(([card, qty]) => ({ card, qty }));
   }, [confirmed]);
   const value = valueCards(counts, book);
-  const cost = summary.costTotal;
+  // Cost of the decks opened so far (total × opened / bought), so unopened decks aren't counted as a loss.
+  const dc = deckCounts(summary, confirmed.length);
+  const cost = dc.costBasis;
   const profit = cost !== null ? value.value - cost : null;
   // activeSecs from Rust includes the running stretch up to when it was read; add the time since.
   const readAt = useMemo(() => Date.now(), [summary]);
@@ -365,12 +373,20 @@ function ActiveSession({ summary, book, cardNames, onOpenSession, notifyFinished
       </section>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
-        <Kpi label="Decks opened" value={confirmed.length} sub={summary.plannedDecks ? `of ${summary.plannedDecks} planned` : "confirmed cards"} />
+        <Kpi
+          label="Decks opened"
+          value={<OpenedEditor sessionId={summary.id} decks={dc.decks} entered={dc.entered} cards={confirmed.length} />}
+          sub={`${dc.entered ? "entered by you" : "confirmed cards"}${dc.bought ? ` · of ${dc.bought.toLocaleString()}` : ""}`}
+        />
         <Kpi label="Cards detected" value={live.length} sub={`${events.length - live.length} removed`} />
         <Kpi label="Confirmed" value={confirmed.length} />
         <Kpi label="Needs review" value={pending.length} sub={pending.length ? "not in totals yet" : "nothing waiting"} />
         <Kpi label="Est. card value" tone="accent" value={<Money value={value.value} strong />} sub={value.unpriced ? `${value.unpriced} unpriced` : "live poe.ninja prices"} />
-        <Kpi label="Cost" value={<Money value={cost} />} sub={cost === null ? "not entered" : summary.plannedDecks ? `${(cost / summary.plannedDecks).toFixed(2)} c / deck` : undefined} />
+        <Kpi
+          label="Cost of opened"
+          value={<Money value={cost} />}
+          sub={summary.costTotal === null ? "not entered" : <>{dc.costPerDeck !== null && <><Money value={dc.costPerDeck} /> / deck · </>}total <Money value={summary.costTotal} /></>}
+        />
         <Kpi label="Est. profit" value={<Profit value={profit} />} />
         <Kpi label="Est. ROI" value={<Roi value={roiOf(profit, cost)} />} />
       </div>
@@ -392,7 +408,7 @@ function ActiveSession({ summary, book, cardNames, onOpenSession, notifyFinished
       <SessionForm
         open={editing}
         onClose={() => setEditing(false)}
-        initial={{ name: summary.name, league: summary.league, openedOn: summary.openedOn, plannedDecks: summary.plannedDecks, acquisition: summary.acquisition, costTotal: summary.costTotal, notes: summary.notes }}
+        initial={{ name: summary.name, league: summary.league, openedOn: summary.openedOn, plannedDecks: summary.plannedDecks, openedDecks: summary.openedDecks, acquisition: summary.acquisition, costTotal: summary.costTotal, notes: summary.notes }}
         title="Edit session"
         submitLabel="Save"
         onSubmit={(input) => decksUpdate(GAME, summary.id, input)}

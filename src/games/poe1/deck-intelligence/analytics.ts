@@ -49,6 +49,7 @@ export interface SessionView {
   currentValue: number | null;
   pricedCards: number;
   unpricedCards: number;
+  /** Cost of the decks opened (total × opened / bought when the number bought is known). */
   cost: number | null;
   profit: number | null;
   /** Percent; null when the cost is unknown or zero. */
@@ -94,16 +95,31 @@ export function openedOnSeconds(s: { openedOn: string | null; startedAt: number 
   return s.startedAt;
 }
 
+/**
+ * Decks opened and the share of the cost they used.
+ * - opened = the user's count, else (finished with a purchase count) max(bought, cards), else confirmed cards —
+ *   never fewer than the confirmed cards (one deck = one card);
+ * - cost basis = total cost × opened / bought when the number bought is known (decks still unopened aren't a
+ *   loss yet), else the whole cost.
+ */
+export function deckCounts(s: Pick<DeckSessionSummary, "status" | "plannedDecks" | "openedDecks" | "costTotal">, cards: number) {
+  const bought = s.plannedDecks && s.plannedDecks > 0 ? s.plannedDecks : null;
+  const base = s.openedDecks ?? (s.status === "finished" && bought ? Math.max(bought, cards) : cards);
+  const decks = Math.max(base, cards);
+  const costBasis = s.costTotal === null ? null : bought ? s.costTotal * Math.min(1, decks / bought) : s.costTotal;
+  const costPerDeck = s.costTotal === null ? null : bought ? s.costTotal / bought : decks > 0 ? s.costTotal / decks : null;
+  return { decks, bought, entered: s.openedDecks !== null, costBasis, costPerDeck };
+}
+
 export function sessionView(summary: DeckSessionSummary, totals: readonly DeckCardTotal[], book: PriceBook | null): SessionView {
   const counts = totals.filter((t) => t.sessionId === summary.id);
   const live = valueCards(counts, book);
   const v = summary.valuation;
   const finished = summary.status === "finished" && v !== null;
   const value = finished ? v!.totalValue : live.value;
-  const cost = summary.costTotal;
-  const profit = cost !== null ? value - cost : null;
   const cards = summary.confirmed;
-  const decks = summary.plannedDecks && summary.plannedDecks > 0 ? Math.max(summary.plannedDecks, cards) : cards;
+  const { decks, costBasis: cost, costPerDeck } = deckCounts(summary, cards);
+  const profit = cost !== null ? value - cost : null;
   return {
     summary,
     id: summary.id,
@@ -123,7 +139,7 @@ export function sessionView(summary: DeckSessionSummary, totals: readonly DeckCa
     profit,
     roi: roiOf(profit, cost),
     valuePerDeck: cards > 0 ? value / cards : null,
-    costPerDeck: cost !== null && decks > 0 ? cost / decks : null,
+    costPerDeck,
     valuePerMinute: summary.activeSecs >= 60 && summary.origin === "live" ? value / (summary.activeSecs / 60) : null,
     outcome: outcomeOf(profit, cost),
     acquisition: summary.acquisition,

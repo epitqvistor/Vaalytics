@@ -34,6 +34,7 @@ function summary(p: Partial<DeckSessionSummary> & { id: number }): DeckSessionSu
     activeSecs: 600,
     resumedAt: null,
     plannedDecks: null,
+    openedDecks: null,
     acquisition: "bulk",
     costTotal: null,
     notes: null,
@@ -101,6 +102,26 @@ describe("profit and ROI", () => {
     const v = sessionView(summary({ id: 4, confirmed: 8, plannedDecks: 10, costTotal: 20 }), [], book);
     expect(v.decks).toBe(10);
     expect(v.costPerDeck).toBe(2);
+    expect(v.cost).toBe(20);
+  });
+
+  it("uses the decks you opened for the cost while a session runs", () => {
+    // 2472 bought, none opened yet: no loss yet (was −100 %).
+    const empty = sessionView(summary({ id: 5, status: "running", confirmed: 0, plannedDecks: 2472, costTotal: 8034 }), [], book);
+    expect(empty.decks).toBe(0);
+    expect(empty.cost).toBe(0);
+    expect(empty.roi).toBeNull();
+    expect(empty.costPerDeck).toBeCloseTo(3.25, 2);
+    // 100 opened (entered), 90 cards read: cost of 100 decks.
+    const s = summary({ id: 6, status: "running", confirmed: 90, plannedDecks: 200, openedDecks: 100, costTotal: 600 });
+    const v = sessionView(s, totalsFor(6, [["The Lover", 90]]), book);
+    expect(v.decks).toBe(100);
+    expect(v.cost).toBe(300);
+    expect(v.profit).toBe(180 - 300);
+    // An entered count lower than the confirmed cards is raised to the cards (one deck = one card).
+    expect(sessionView(summary({ id: 7, confirmed: 5, openedDecks: 3 }), [], book).decks).toBe(5);
+    // Finished with fewer opened than bought: only the opened share is spent.
+    expect(sessionView(summary({ id: 8, confirmed: 50, plannedDecks: 100, openedDecks: 50, costTotal: 300 }), [], book).cost).toBe(150);
   });
 });
 

@@ -47,9 +47,19 @@ pub struct SessionInput {
     pub league: Option<String>,
     pub opened_on: Option<String>,
     pub planned_decks: Option<i64>,
+    /// Decks opened so far, entered by the user (None = count confirmed cards).
+    #[serde(default)]
+    pub opened_decks: Option<i64>,
     pub acquisition: Acquisition,
     pub cost_total: Option<f64>,
     pub notes: Option<String>,
+}
+
+fn valid_count(n: Option<i64>) -> AppResult<()> {
+    if n.is_some_and(|n| !(0..=1_000_000).contains(&n)) {
+        return Err(AppError::InvalidInput("The number of decks must be between 0 and 1,000,000.".into()));
+    }
+    Ok(())
 }
 
 impl SessionInput {
@@ -60,9 +70,8 @@ impl SessionInput {
         }
         self.league = self.league.map(|l| l.trim().chars().take(80).collect::<String>()).filter(|l| !l.is_empty());
         self.opened_on = self.opened_on.filter(|d| d.len() == 10 && d.as_bytes()[4] == b'-' && d.as_bytes()[7] == b'-');
-        if self.planned_decks.is_some_and(|n| !(0..=1_000_000).contains(&n)) {
-            return Err(AppError::InvalidInput("The number of decks must be between 0 and 1,000,000.".into()));
-        }
+        valid_count(self.planned_decks)?;
+        valid_count(self.opened_decks)?;
         if self.cost_total.is_some_and(|c| !c.is_finite() || c < 0.0) {
             return Err(AppError::InvalidInput("The cost must be zero or more.".into()));
         }
@@ -87,6 +96,7 @@ pub struct Session {
     pub active_secs: i64,
     pub resumed_at: Option<i64>,
     pub planned_decks: Option<i64>,
+    pub opened_decks: Option<i64>,
     pub acquisition: Acquisition,
     pub cost_total: Option<f64>,
     pub notes: Option<String>,
@@ -176,7 +186,7 @@ pub struct NewEvent<'a> {
     pub review_reason: Option<String>,
 }
 
-const SESSION_COLS: &str = "id, name, league, created_at, opened_on, status, origin, started_at, ended_at, active_secs, resumed_at, planned_decks, acquisition, cost_total, notes";
+const SESSION_COLS: &str = "id, name, league, created_at, opened_on, status, origin, started_at, ended_at, active_secs, resumed_at, planned_decks, acquisition, cost_total, notes, opened_decks";
 
 fn session_row(r: &Row, now: i64) -> rusqlite::Result<Session> {
     let status: String = r.get(5)?;
@@ -199,6 +209,7 @@ fn session_row(r: &Row, now: i64) -> rusqlite::Result<Session> {
         acquisition: Acquisition::parse(&r.get::<_, String>(12)?),
         cost_total: r.get(13)?,
         notes: r.get(14)?,
+        opened_decks: r.get(15)?,
     })
 }
 
@@ -229,9 +240,9 @@ pub fn create(db: &Database, input: SessionInput, now: i64, log_pos: Option<(Opt
     let (key, offset) = log_pos.map_or((None, None), |(k, o)| (k, Some(o as i64)));
     tx.execute(
         "INSERT INTO deck_sessions (game, name, league, created_at, opened_on, status, origin, started_at, active_secs, resumed_at,
-                                    planned_decks, acquisition, cost_total, notes, log_key, log_offset)
-         VALUES (?1, ?2, ?3, ?4, ?5, 'running', 'live', ?4, 0, ?4, ?6, ?7, ?8, ?9, ?10, ?11)",
-        params![GAME, input.name, input.league, now, input.opened_on, input.planned_decks, input.acquisition.as_str(), input.cost_total, input.notes, key, offset],
+                                    planned_decks, acquisition, cost_total, notes, log_key, log_offset, opened_decks)
+         VALUES (?1, ?2, ?3, ?4, ?5, 'running', 'live', ?4, 0, ?4, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
+        params![GAME, input.name, input.league, now, input.opened_on, input.planned_decks, input.acquisition.as_str(), input.cost_total, input.notes, key, offset, input.opened_decks],
     )?;
     let id = tx.last_insert_rowid();
     tx.commit()?;
@@ -241,10 +252,20 @@ pub fn create(db: &Database, input: SessionInput, now: i64, log_pos: Option<(Opt
 pub fn update(db: &Database, id: i64, input: SessionInput) -> AppResult<()> {
     let input = input.validate()?;
     let n = db.conn()?.execute(
-        "UPDATE deck_sessions SET name = ?2, league = ?3, opened_on = ?4, planned_decks = ?5, acquisition = ?6, cost_total = ?7, notes = ?8
+        "UPDATE deck_sessions SET name = ?2, league = ?3, opened_on = ?4, planned_decks = ?5, acquisition = ?6, cost_total = ?7, notes = ?8, opened_decks = ?9
          WHERE id = ?1 AND game = 'poe1'",
-        params![id, input.name, input.league, input.opened_on, input.planned_decks, input.acquisition.as_str(), input.cost_total, input.notes],
+        params![id, input.name, input.league, input.opened_on, input.planned_decks, input.acquisition.as_str(), input.cost_total, input.notes, input.opened_decks],
     )?;
+    if n == 0 {
+        return Err(AppError::InvalidInput("That session doesn't exist any more.".into()));
+    }
+    Ok(())
+}
+
+/// Sets only the number of decks opened (the quick edit on the session page). Allowed for finished sessions too.
+pub fn set_opened(db: &Database, id: i64, opened: Option<i64>) -> AppResult<()> {
+    valid_count(opened)?;
+    let n = db.conn()?.execute("UPDATE deck_sessions SET opened_decks = ?2 WHERE id = ?1 AND game = 'poe1'", params![id, opened])?;
     if n == 0 {
         return Err(AppError::InvalidInput("That session doesn't exist any more.".into()));
     }
@@ -494,7 +515,7 @@ pub fn summaries(c: &Connection, now: i64) -> AppResult<Vec<SessionSummary>> {
          FROM deck_sessions s WHERE game = 'poe1' ORDER BY started_at DESC, id DESC"
     ))?;
     let rows = st
-        .query_map([], |r| Ok((session_row(r, now)?, r.get(15)?, r.get(16)?, r.get(17)?, r.get(18)?, r.get(19)?)))?
+        .query_map([], |r| Ok((session_row(r, now)?, r.get(16)?, r.get(17)?, r.get(18)?, r.get(19)?, r.get(20)?)))?
         .collect::<Result<Vec<_>, _>>()?;
     let mut out = Vec::with_capacity(rows.len());
     for (session, confirmed, review, unrecognized, first_card_at, last_card_at) in rows {
@@ -624,7 +645,7 @@ pub fn insert_imported(db: &Database, name: &str, league: Option<&str>, events: 
         tx.rollback()?;
         return Ok(None);
     }
-    tx.execute("UPDATE deck_sessions SET planned_decks = ?2 WHERE id = ?1", params![id, inserted as i64])?;
+    tx.execute("UPDATE deck_sessions SET planned_decks = ?2, opened_decks = ?2 WHERE id = ?1", params![id, inserted as i64])?;
     let counts = session_card_counts(&tx, id)?;
     insert_valuation(&tx, id, &valuation(&counts))?;
     tx.commit()?;
@@ -636,7 +657,7 @@ mod tests {
     use super::*;
 
     fn input(name: &str) -> SessionInput {
-        SessionInput { name: name.into(), league: Some("Covens".into()), opened_on: None, planned_decks: Some(10), acquisition: Acquisition::Bulk, cost_total: Some(50.0), notes: None }
+        SessionInput { name: name.into(), league: Some("Covens".into()), opened_on: None, planned_decks: Some(10), opened_decks: None, acquisition: Acquisition::Bulk, cost_total: Some(50.0), notes: None }
     }
 
     fn ev(session_id: i64, uid: &str, card: &str, status: &'static str) -> NewEvent<'static> {
@@ -684,6 +705,11 @@ mod tests {
         assert_eq!((s[0].confirmed, s[0].review, s[0].session.active_secs), (2, 1, 160));
         assert_eq!(s[0].valuation.as_ref().unwrap().total_value, 4.0);
         assert!(require_open(&db.conn().unwrap(), id).is_err(), "finished sessions are read-only");
+        // The opened count stays editable (user data), and is validated.
+        set_opened(&db, id, Some(12)).unwrap();
+        assert_eq!(session(&db.conn().unwrap(), id, 400).unwrap().opened_decks, Some(12));
+        assert!(set_opened(&db, id, Some(-1)).is_err());
+        assert_eq!(summaries(&db.conn().unwrap(), 400).unwrap()[0].confirmed, 2, "aggregates still line up after the new column");
         // A new session can start now.
         let id2 = create(&db, input("Next"), 500, Some((Some("k".into()), 42))).unwrap();
         assert_eq!(log_position(&db.conn().unwrap(), id2).unwrap(), (Some("k".into()), Some(42)));

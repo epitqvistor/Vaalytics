@@ -20,9 +20,10 @@ PoE 1 writes one system line per Stacked Deck card:
 ```
 
 Verified on a real log (2026-11-26: 400+ such lines between 2025-11 and 2026-11, one burst of ~350 cards on one
-day). **Not verified yet: whether the line is also written when the card is dropped on the ground** (the user
-couldn't say which method produced those lines). If it is, Client.txt alone tracks ground openings completely and
-screenshots are only a fallback.
+day). **Cards dropped on the ground are not logged** (verified 2026-11-26: the user opened decks onto the ground in
+Kingsmarch at ~03:13 — 25 cards visible on screen — and the log has normal lines around it but no
+"Card drawn from the deck" line that day). So the line comes from opening into the inventory; ground openings
+need the screenshot path, and with both on there is no overlap for ground drops.
 
 - `decks/logparse.rs` accepts only system messages (`] : `); chat lines (sender / channel prefix) can't add cards.
 - Reading reuses the shared incremental reader (`session::reader`: complete lines only, truncation / replacement
@@ -81,8 +82,14 @@ goes to review. A synthetic image (serif font, light text on dark) also read per
 - Fields: name (default format `Stacked Decks · {date}`), league, opening date, number of decks, acquisition
   (individually / bulk / farmed / free / unknown), total cost (chaos; "Market price" = decks × poe.ninja Stacked Deck
   price, labelled), notes. All but the name optional; editable later (also for finished sessions).
-- One Stacked Deck = one card, so confirmed cards = decks seen opened. Planned decks > confirmed cards (labels not
-  read) is shown, and cost per deck uses the planned count.
+- One Stacked Deck = one card. **Decks opened** is the user's own count (editable in the session's "Decks opened" tile
+  and in the form; migration 0015 `opened_decks`) — ground openings aren't in Client.txt and a screenshot can miss
+  labels. Without it: confirmed cards (finished sessions with a "decks bought" count: max(bought, cards)). Never fewer
+  than the confirmed cards.
+- **Decks bought** (form; stored as `planned_decks`) is what the cost is for. Cost per deck = cost / bought; the cost
+  used for profit and ROI is the share of the decks opened: total × opened / bought (capped at the total), so decks
+  not opened yet aren't counted as a loss (before 0.22 a fresh session with 2,472 bought decks showed −100 %).
+  Without a bought count the whole cost is used.
 - **Finish** freezes the session's valuation (`deck_valuations`, kind `final`, never overwritten): per card qty, unit
   price and its source (market / manual / unknown), poe.ninja fetch time, league. History shows both that original
   value and today's value.
@@ -103,7 +110,8 @@ can't be recovered.
 - Card value = Σ confirmed cards × unit price; unit = manual price (league) → poe.ninja → **unknown** (counted as
   unpriced, never 0).
 - Session value = original valuation when finished, live estimate otherwise.
-- Profit = value − cost; **ROI = profit / cost × 100**, only when the cost is known and > 0. Outcome: profitable /
+- Profit = value − cost of the decks opened (see Sessions); **ROI = profit / that cost × 100**, only when it is known
+  and > 0. Profit follows "Prices in" like every other amount. Outcome: profitable /
   unprofitable / break-even (±1 % of cost, min 1 c) / no cost.
 - Totals: profit and ROI over sessions with a known cost only (the count is shown); value per deck, cost per deck,
   average card, average session ROI, best / worst session, unique vs duplicate cards, cards above the top range,
@@ -148,7 +156,7 @@ session), `deck_price_overrides`. All `game = 'poe1'` (CHECK). Multi-row writes 
   planned decks, totals, filters, cumulative, volume, card rows, top drops, distribution, CSV.
 
 ## Not yet / limitations
-- Ground recognition validated on one real screenshot only (see above). Unknown whether ground drops are logged.
+- Ground recognition validated on one real screenshot only (see above). Ground drops are not in Client.txt.
 - Mouse buttons can't be used as the shortcut (global-shortcut plugin).
 - No per-card artwork, no drop-rate simulator.
 - The live-session duration counts from the session start, not from the first card.

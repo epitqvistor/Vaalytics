@@ -943,7 +943,7 @@ mod tests {
     }
 
     fn input() -> store::SessionInput {
-        store::SessionInput { name: "T".into(), league: None, opened_on: None, planned_decks: None, acquisition: store::Acquisition::Unknown, cost_total: None, notes: None }
+        store::SessionInput { name: "T".into(), league: None, opened_on: None, planned_decks: None, opened_decks: None, acquisition: store::Acquisition::Unknown, cost_total: None, notes: None }
     }
 
     #[test]

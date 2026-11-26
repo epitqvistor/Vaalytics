@@ -1146,6 +1146,15 @@ pub async fn decks_update(app: tauri::AppHandle, state: State<'_, AppState>, gam
     r
 }
 
+/// Sets the number of decks opened (None = count confirmed cards).
+#[tauri::command]
+pub async fn decks_set_opened(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64, opened: Option<i64>) -> AppResult<()> {
+    require_decks_game(game)?;
+    let r = crate::decks::store::set_opened(&state.db, id, opened);
+    decks_changed(&app, &r);
+    r
+}
+
 #[tauri::command]
 pub async fn decks_pause(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<()> {
     require_decks_game(game)?;

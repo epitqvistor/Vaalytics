@@ -154,6 +154,7 @@ pub fn run() {
             commands::decks_create,
             commands::decks_update,
             commands::decks_pause,
+            commands::decks_set_opened,
             commands::decks_resume,
             commands::decks_finish,
             commands::decks_delete,

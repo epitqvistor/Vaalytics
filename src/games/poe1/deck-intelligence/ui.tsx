@@ -1,7 +1,8 @@
 /** Small shared pieces of the Deck Intelligence views. */
-import { memo, type ReactNode } from "react";
-import type { DeckAcquisition, DeckEventSource, DeckEventStatus } from "@/core/ipc/commands";
-import { Badge, type BadgeTone } from "@/shared/components";
+import { memo, type ReactNode, useState } from "react";
+import { type DeckAcquisition, type DeckEventSource, type DeckEventStatus, decksSetOpened } from "@/core/ipc/commands";
+import { useDisplayCurrency } from "@/core/market/DisplayCurrency";
+import { Badge, type BadgeTone, Button, IconButton, Input, useToast } from "@/shared/components";
 import { cn } from "@/shared/utilities/cn";
 import { formatAmount } from "@/shared/utilities/format";
 import { Price } from "@/shared/views/common";
@@ -26,15 +27,79 @@ export function Money({ value, strong, className, unknown = "Unknown" }: { value
   return <Price amount={value} unit={UNIT} strong={strong} className={className} />;
 }
 
-/** Signed profit: green above zero, red below. */
+/** Signed profit: green above zero, red below. Follows "Prices in" like `Money`. */
 export function Profit({ value, className, unknown = "No cost" }: { value: number | null; className?: string; unknown?: string }) {
+  const d = useDisplayCurrency();
   if (value === null) return <span className={cn("text-xs text-fg-subtle", className)}>{unknown}</span>;
+  const convert = d !== null && d.converting && d.base.id === UNIT.id;
+  const shown = convert ? d.toUnit(value) : value;
+  const unit = convert ? d.unit : UNIT;
   const tone = value > 0 ? "text-success" : value < 0 ? "text-danger" : "text-fg-muted";
   return (
     <span className={cn("tabular whitespace-nowrap", tone, className)} title={`${formatAmount(value)} ${UNIT.name}`}>
       {value > 0 ? "+" : value < 0 ? "−" : ""}
-      {formatAmount(Math.abs(value))}
-      <span className="ml-1 text-xs opacity-70">{UNIT.short}</span>
+      {formatAmount(Math.abs(shown))}
+      <span className="ml-1 text-xs opacity-70">{unit.short}</span>
+    </span>
+  );
+}
+
+/**
+ * "Decks opened" with an inline editor: the user's own count (ground openings aren't in Client.txt and a
+ * screenshot can miss labels). Clearing it goes back to counting confirmed cards.
+ */
+export function OpenedEditor({ sessionId, decks, entered, cards }: { sessionId: number; decks: number; entered: boolean; cards: number }) {
+  const notify = useToast();
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState("");
+  const n = text.trim() === "" ? null : Number(text);
+  const valid = n === null || (Number.isInteger(n) && n >= 0 && n <= 1_000_000);
+  const save = (value: number | null) =>
+    decksSetOpened("poe1", sessionId, value)
+      .then(() => setEditing(false))
+      .catch((e) => notify("warning", "Couldn't save the number of decks", String(e).replace(/^Error: /, "")));
+  if (!editing)
+    return (
+      <span className="flex items-center gap-1.5">
+        <span className="tabular">{decks.toLocaleString()}</span>
+        <IconButton
+          size="sm"
+          icon="sliders"
+          label="Set the number of decks opened"
+          onClick={() => {
+            setText(entered ? String(decks) : "");
+            setEditing(true);
+          }}
+        />
+      </span>
+    );
+  return (
+    <span className="flex flex-col gap-1.5">
+      <Input
+        size="sm"
+        type="number"
+        min={Math.max(0, cards)}
+        autoFocus
+        value={text}
+        placeholder={String(cards)}
+        aria-label="Decks opened"
+        error={valid ? undefined : "0–1,000,000"}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && valid) save(n);
+          if (e.key === "Escape") setEditing(false);
+        }}
+      />
+      <span className="flex gap-1">
+        <Button size="sm" variant="primary" disabled={!valid} onClick={() => save(n)}>
+          Save
+        </Button>
+        {entered && (
+          <Button size="sm" variant="ghost" onClick={() => save(null)} title="Count confirmed cards instead">
+            Clear
+          </Button>
+        )}
+      </span>
     </span>
   );
 }
@@ -78,7 +143,7 @@ export function Kpi({ label, value, sub, tone }: { label: string; value: ReactNo
     <div className={cn("rounded-lg border border-line bg-surface px-4 py-3", tone === "accent" && "border-line-warm")}>
       <div className="text-xs text-fg-muted">{label}</div>
       <div className="mt-1.5 text-xl leading-none font-semibold text-fg">{value}</div>
-      {sub && <div className="mt-1.5 truncate text-xs text-fg-muted">{sub}</div>}
+      {sub && <div className="mt-1.5 line-clamp-2 text-xs leading-snug text-fg-muted">{sub}</div>}
     </div>
   );
 }

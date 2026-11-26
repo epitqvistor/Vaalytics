@@ -14,7 +14,7 @@ import { ColumnChart, TipRows } from "./charts";
 import { GAME, useDeckSession } from "./hooks";
 import type { DeckPrefs } from "./prefs";
 import { SessionForm } from "./SessionTab";
-import { ACQUISITION_LABEL, ACQUISITIONS, CardArt, dateLabel, fmtChaos, Kpi, Money, Profit, Roi, SOURCE_LABEL, STATUS_LABEL, StatusBadge, timeLabel } from "./ui";
+import { ACQUISITION_LABEL, ACQUISITIONS, CardArt, dateLabel, fmtChaos, Kpi, Money, OpenedEditor, Profit, Roi, SOURCE_LABEL, STATUS_LABEL, StatusBadge, timeLabel } from "./ui";
 
 const errText = (e: unknown) => String(e).replace(/^Error: /, "");
 type Sort = "newest" | "oldest" | "value" | "profit" | "roi" | "decks";
@@ -340,7 +340,11 @@ export function SessionDetail({
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <Kpi label="Date" value={<span className="text-base">{dateLabel(view.at)}</span>} sub={`${s.league ?? "No league"} · ${ACQUISITION_LABEL[s.acquisition]}`} />
         <Kpi label="Duration" value={formatDuration(s.activeSecs)} sub={s.origin === "import" ? "first to last card" : "running time"} />
-        <Kpi label="Decks / cards" value={`${view.decks} / ${view.cards}`} sub={view.review + view.unrecognized ? `${view.review + view.unrecognized} not confirmed` : "all confirmed"} />
+        <Kpi
+          label="Decks opened"
+          value={<OpenedEditor sessionId={s.id} decks={view.decks} entered={s.openedDecks !== null} cards={view.cards} />}
+          sub={`${view.cards} confirmed cards${view.review + view.unrecognized ? ` · ${view.review + view.unrecognized} not confirmed` : ""}`}
+        />
         <Kpi
           label={finished ? "Original value" : "Live value"}
           tone="accent"
@@ -470,7 +474,7 @@ export function SessionDetail({
       <SessionForm
         open={editing}
         onClose={() => setEditing(false)}
-        initial={{ name: s.name, league: s.league, openedOn: s.openedOn, plannedDecks: s.plannedDecks, acquisition: s.acquisition, costTotal: s.costTotal, notes: s.notes }}
+        initial={{ name: s.name, league: s.league, openedOn: s.openedOn, plannedDecks: s.plannedDecks, openedDecks: s.openedDecks, acquisition: s.acquisition, costTotal: s.costTotal, notes: s.notes }}
         title="Edit session details"
         submitLabel="Save"
         onSubmit={(input) => decksUpdate(GAME, s.id, input)}

@@ -30,5 +30,5 @@ is unknown whether ground drops are included. The fallback is reading the ground
 - First real screenshot (25 cards, a blue-label loot filter): all 25 found, none wrong, 2 sent to review, no false
   entries after raising the "unrecognized" default to 60 %. More filters / resolutions still to test; the UI never
   treats an uncertain read as confirmed.
-- If ground drops turn out to be logged, the screenshot path is a fallback; both together flag likely duplicates.
+- Verified 2026-11-26: ground drops are NOT logged, so screenshots are the only way to track ground openings; Client.txt covers inventory openings.
 - Schema v13 (migration 0013, additive). Older builds refuse a v13 database.

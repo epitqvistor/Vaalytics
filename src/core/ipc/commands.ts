@@ -1025,6 +1025,8 @@ export interface DeckSessionInput {
   league: string | null;
   openedOn: string | null;
   plannedDecks: number | null;
+  /** Decks opened so far, entered by the user; null = count confirmed cards. */
+  openedDecks: number | null;
   acquisition: DeckAcquisition;
   /** Chaos; null = unknown. */
   costTotal: number | null;
@@ -1043,6 +1045,8 @@ export interface DeckSession {
   activeSecs: number;
   resumedAt: number | null;
   plannedDecks: number | null;
+  /** Decks opened so far, entered by the user; null = count confirmed cards. */
+  openedDecks: number | null;
   acquisition: DeckAcquisition;
   costTotal: number | null;
   notes: string | null;
@@ -1160,6 +1164,8 @@ export const decksCardTotals = (game: GameId) => invoke<DeckCardTotal[]>("decks_
 export const decksCreate = (game: GameId, input: DeckSessionInput) => invoke<number>("decks_create", { game, input });
 export const decksUpdate = (game: GameId, id: number, input: DeckSessionInput) => invoke<void>("decks_update", { game, id, input });
 export const decksPause = (game: GameId, id: number) => invoke<void>("decks_pause", { game, id });
+/** null = count confirmed cards again. */
+export const decksSetOpened = (game: GameId, id: number, opened: number | null) => invoke<void>("decks_set_opened", { game, id, opened });
 export const decksResume = (game: GameId, id: number) => invoke<void>("decks_resume", { game, id });
 export const decksFinish = (game: GameId, id: number) => invoke<DeckValuation>("decks_finish", { game, id });
 export const decksDelete = (game: GameId, id: number) => invoke<void>("decks_delete", { game, id });
