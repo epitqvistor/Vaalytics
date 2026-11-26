@@ -52,6 +52,10 @@ See `docs/architecture/overview.md`. Key points:
 - Specs: `docs/modules/loot-journal.md`, `docs/modules/session-intelligence.md`. Background services in Rust (`src-tauri/src/loot`, `src-tauri/src/session`); no polling of clipboard content, no memory reading.
 - Captured items are "captured", never "all loot": no profit from captures; copy location ≠ drop location (origin stays unknown unless the user sets it). Never price rares/uniques from a name.
 
+## Update Center (both games)
+- Spec `docs/modules/update-center.md`, ADR 0005. Rust `src-tauri/src/updates`. Versioned game data goes through it: register module dependencies in `updates/registry.rs`, read via the store / `useDatasetChanged` — never fetch a source from a module.
+- Check never installs; only validated, review-free updates from established sources auto-apply. Patch notes are information only. No application self-updater (private release repo, no signing key).
+
 ## Deck Intelligence (PoE 1)
 - Spec `docs/modules/deck-intelligence.md`, ADR 0004. Rust `src-tauri/src/decks`. Client.txt (`Card drawn from the deck`) via the shared reader, only while a session runs; ground screenshots only on the user's key while PoE 1 is focused, Windows OCR, local only.
 - Uncertain or possibly duplicated reads are never confirmed automatically; unknown prices are never 0; ROI only with a known cost; finished sessions keep their original valuation.
