@@ -150,7 +150,7 @@ export function LibraryPanel({
                             {Array.from({ length: 8 }, (_, i) => i + 1).map((n) => (
                               <button
                                 key={n}
-                                className="h-6 w-6 rounded border border-line font-mono hover:border-accent/50 hover:text-fg"
+                                className="h-6 w-6 rounded-sm border border-line font-mono transition-colors duration-120 hover:border-copper hover:text-fg"
                                 onClick={() => (onToSlot(e, n), setSlotFor(null))}
                               >
                                 {n}

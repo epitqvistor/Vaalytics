@@ -125,7 +125,7 @@ export function SaveDialog({
         <label className="sm:col-span-2 grid gap-1 text-xs text-fg-muted">
           Regex *
           <textarea
-            className="min-h-20 rounded-md border border-line bg-bg-2 p-2 font-mono text-sm text-fg"
+            className="min-h-20 rounded-md border border-line bg-well p-2 font-mono text-sm text-fg"
             value={d.regex}
             spellCheck={false}
             onChange={(e) => setD({ ...d, regex: e.target.value })}

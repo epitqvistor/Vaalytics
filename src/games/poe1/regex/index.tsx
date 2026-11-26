@@ -39,7 +39,7 @@ export default function RegexSection(_props: SectionProps) {
     return (
       <div className="mx-auto max-w-page">
         <PageHeader title="REGEX" />
-        <div className="panel rounded-xl">
+        <div className="panel rounded-lg">
           {error ? (
             <EmptyState icon="error" title="Couldn't load game data" body={error} action={<Button onClick={reload}>Try again</Button>} />
           ) : (
@@ -385,7 +385,7 @@ function GeneratorPanel({ cat, st, setSt }: { cat: Category; st: GenState; setSt
                   min={0}
                   aria-label={`Minimum for ${o.label}`}
                   placeholder="min"
-                  className="h-7 w-16 rounded border border-line bg-bg-1 px-1.5 text-right font-mono text-xs"
+                  className="h-7 w-16 rounded-sm border border-line bg-well px-1.5 text-right font-mono text-xs"
                   value={st.mins[o.id] ?? ""}
                   onChange={(e) => {
                     const mins = { ...st.mins };
@@ -424,7 +424,7 @@ function GeneratorPanel({ cat, st, setSt }: { cat: Category; st: GenState; setSt
           <div className="mb-1 font-medium text-warning">Kept from the loaded string (no option explains these)</div>
           <div className="flex flex-wrap gap-1.5">
             {st.extra.map((t, i) => (
-              <span key={i} className="inline-flex items-center gap-1 rounded bg-bg-2 px-1.5 py-0.5 font-mono">
+              <span key={i} className="inline-flex items-center gap-1 rounded-sm bg-elevated px-1.5 py-0.5 font-mono">
                 {t}
                 <button
                   aria-label={`Remove ${t}`}
@@ -502,7 +502,7 @@ function PreviewPanel({
         onChange={(e) => onText(e.target.value)}
         placeholder="Pick options on the left, or type a search string."
         className={cn(
-          "min-h-28 w-full rounded-lg border bg-bg-2 p-3 font-mono text-sm text-fg outline-none focus:border-accent/50",
+          "min-h-28 w-full rounded-md border bg-well p-3 font-mono text-sm text-fg outline-none transition-colors duration-120 focus:border-copper",
           ls === "error" ? "border-danger/50" : ls === "warn" ? "border-warning/50" : "border-line",
         )}
       />
@@ -546,7 +546,7 @@ function PreviewPanel({
                 {split.parts.map((p, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <span className="w-5 text-xs text-fg-subtle">{i + 1}.</span>
-                    <code className="min-w-0 flex-1 truncate rounded bg-bg-1 px-2 py-1 font-mono text-xs" title={p}>
+                    <code className="min-w-0 flex-1 truncate rounded-sm bg-well px-2 py-1 font-mono text-xs" title={p}>
                       {p}
                     </code>
                     <span className="font-mono text-xs text-fg-subtle">{p.length}</span>
@@ -603,7 +603,7 @@ function PreviewPanel({
                 value={item}
                 onChange={(e) => setItem(e.target.value)}
                 placeholder="Paste an item copied in game (Ctrl+C) to see whether this string matches it."
-                className="min-h-28 w-full rounded-lg border border-line bg-bg-2 p-2 font-mono text-xs text-fg"
+                className="min-h-28 w-full rounded-md border border-line bg-well p-2 font-mono text-xs text-fg"
               />
               {test && (
                 <div className="text-xs">
@@ -738,14 +738,14 @@ function SlotsPanel({
                   <span className="font-mono text-fg-subtle">{n}</span>
                   <span className={cn("truncate", s ? "text-fg" : "text-fg-subtle")}>{s?.label ?? (picking ? "Put here" : "Empty")}</span>
                 </div>
-                <code className="mt-0.5 block truncate font-mono text-[11px] text-fg-muted">{s?.regex ?? "—"}</code>
+                <code className="mt-0.5 block truncate font-mono text-2xs text-fg-muted">{s?.regex ?? "—"}</code>
               </button>
               {s && !picking && (
                 <div className="absolute right-1 top-1 flex gap-0.5 rounded bg-bg-2 opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100">
                   <button
                     aria-label={`Load slot ${n} into the editor`}
                     title="Load into the editor"
-                    className="rounded px-1 text-[11px] text-fg-subtle hover:bg-elevated hover:text-fg"
+                    className="rounded-sm px-1 text-2xs text-fg-subtle hover:bg-elevated hover:text-fg"
                     onClick={() => onLoad(s)}
                   >
                     Load
@@ -753,7 +753,7 @@ function SlotsPanel({
                   <button
                     aria-label={`Clear slot ${n}`}
                     title="Clear slot"
-                    className="rounded px-1 text-[11px] text-fg-subtle hover:bg-elevated hover:text-danger"
+                    className="rounded-sm px-1 text-2xs text-fg-subtle hover:bg-elevated hover:text-danger"
                     onClick={() => onClear(n)}
                   >
                     ×
