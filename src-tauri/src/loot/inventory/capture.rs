@@ -8,8 +8,15 @@
 
 use super::image::Rgba;
 
-#[cfg(windows)]
+/// The Path of Exile 2 window (Loot Journal inventory snapshots).
 pub fn game_window() -> Result<Rgba, String> {
+    game_window_of(crate::game::GameId::Poe2)
+}
+
+/// The client area of `game`'s window when it is the foreground window. Also used by Deck
+/// Intelligence (PoE 1 ground labels); same rules: one capture per deliberate key press.
+#[cfg(windows)]
+pub fn game_window_of(game: crate::game::GameId) -> Result<Rgba, String> {
     use crate::game::GameId;
     use windows::Win32::Foundation::{POINT, RECT};
     use windows::Win32::Graphics::Gdi::{
@@ -26,8 +33,12 @@ pub fn game_window() -> Result<Rgba, String> {
     };
     let class = read(&|b| unsafe { GetClassNameW(hwnd, b) });
     let title = read(&|b| unsafe { GetWindowTextW(hwnd, b) });
-    if crate::overlay::win::classify(&class, &title) != Some(GameId::Poe2) {
-        return Err("Path of Exile 2 isn't the active window. Switch to the game, open your inventory and press the shortcut again.".into());
+    if crate::overlay::win::classify(&class, &title) != Some(game) {
+        return Err(match game {
+            GameId::Poe2 => "Path of Exile 2 isn't the active window. Switch to the game, open your inventory and press the shortcut again.",
+            GameId::Poe1 => "Path of Exile isn't the active window. Switch to the game and press the shortcut again.",
+        }
+        .into());
     }
     if unsafe { IsIconic(hwnd) }.as_bool() {
         return Err("The game window is minimised.".into());
@@ -36,7 +47,7 @@ pub fn game_window() -> Result<Rgba, String> {
     unsafe { GetClientRect(hwnd, &mut rc) }.map_err(|e| format!("Couldn't read the game window size: {e}"))?;
     let (w, h) = ((rc.right - rc.left) as i32, (rc.bottom - rc.top) as i32);
     if w < 640 || h < 360 {
-        return Err("The game window is too small to read the inventory.".into());
+        return Err("The game window is too small to capture.".into());
     }
     let mut origin = POINT { x: 0, y: 0 };
     let _ = unsafe { ClientToScreen(hwnd, &mut origin) };
@@ -78,15 +89,15 @@ pub fn game_window() -> Result<Rgba, String> {
         }
         let img = Rgba::from_raw(w as usize, h as usize, bgra).ok_or("Unexpected image size.")?;
         if is_blank(&img) {
-            return Err("The screenshot came back black. Exclusive fullscreen can't be captured — switch Path of Exile 2 to “Windowed fullscreen”.".into());
+            return Err("The screenshot came back black. Exclusive fullscreen can't be captured — switch the game to “Windowed fullscreen”.".into());
         }
         Ok(img)
     }
 }
 
 #[cfg(not(windows))]
-pub fn game_window() -> Result<Rgba, String> {
-    Err("Inventory screenshots are only supported on Windows.".into())
+pub fn game_window_of(_game: crate::game::GameId) -> Result<Rgba, String> {
+    Err("Screenshots are only supported on Windows.".into())
 }
 
 /// Almost every sampled pixel black (exclusive fullscreen / protected content).

@@ -52,6 +52,16 @@ pub struct OverlayStatus {
     pub last_error: Option<String>,
     /// Loot Tracker keys (PoE 2), registered while PoE 2 is in the foreground.
     pub loot_hotkeys: Vec<LootKeyState>,
+    /// Deck Intelligence ground-screenshot key (PoE 1), registered while PoE 1 is in the foreground.
+    pub deck_hotkey: DeckKeyState,
+}
+
+#[derive(Debug, Default, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeckKeyState {
+    pub key: Option<String>,
+    pub registered: bool,
+    pub error: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -139,6 +149,16 @@ pub fn init(app: &tauri::App) -> tauri::Result<()> {
                     std::thread::spawn(move || crate::loot::on_hotkey(&h, action));
                     return;
                 }
+                // Deck Intelligence ground screenshot (PoE 1).
+                let deck = app.state::<OverlayState>().status().deck_hotkey;
+                if deck.registered && deck.key.as_deref().is_some_and(|k| same_key(k, shortcut)) {
+                    let h = app.clone();
+                    std::thread::spawn(move || {
+                        let decks = std::sync::Arc::clone(&h.state::<AppState>().decks);
+                        decks.on_hotkey(&h);
+                    });
+                    return;
+                }
                 // The Act Tracker's show/hide key (PoE 1 only, registered next to the price-check key).
                 let tracker = app.state::<OverlayState>().status().tracker_hotkey;
                 if tracker.and_then(|t| t.parse::<Shortcut>().ok()).is_some_and(|t| t.id() == shortcut.id()) {
@@ -196,14 +216,19 @@ fn on_foreground(app: &AppHandle, game: Option<GameId>) {
                 .flatten()
                 .filter(|t| t.parse::<Shortcut>().ok().map(|t| t.id()) != wanted.parse::<Shortcut>().ok().map(|w| w.id()));
             let loot_wanted = loot_keys_for(app, g, &wanted);
+            let deck_wanted = (g == crate::decks::GAME)
+                .then(|| crate::decks::hotkey(app))
+                .flatten()
+                .filter(|k| !same_key_str(k, &wanted) && !tracker.as_deref().is_some_and(|t| same_key_str(k, t)));
             let loot_current: Vec<(crate::loot::hotkeys::Action, String)> = status.loot_hotkeys.iter().map(|k| (k.action, k.key.clone())).collect();
-            if current.as_deref() == Some(wanted.as_str()) && status.tracker_hotkey == tracker && loot_current == loot_wanted {
+            if current.as_deref() == Some(wanted.as_str()) && status.tracker_hotkey == tracker && loot_current == loot_wanted && status.deck_hotkey.key == deck_wanted {
                 set_status(app, |s| s.foreground_game = Some(g));
                 return;
             }
             let _ = gs.unregister_all();
             register_tracker_hotkey(app, tracker);
             register_loot_hotkeys(app, loot_wanted);
+            register_deck_hotkey(app, deck_wanted);
             match gs.register(wanted.as_str()) {
                 Ok(()) => set_status(app, |s| {
                     s.foreground_game = Some(g);
@@ -221,7 +246,7 @@ fn on_foreground(app: &AppHandle, game: Option<GameId>) {
             }
         }
         None => {
-            if current.is_some() || status.tracker_hotkey.is_some() || !status.loot_hotkeys.is_empty() {
+            if current.is_some() || status.tracker_hotkey.is_some() || !status.loot_hotkeys.is_empty() || status.deck_hotkey.registered {
                 let _ = gs.unregister_all();
             }
             set_status(app, |s| {
@@ -229,6 +254,8 @@ fn on_foreground(app: &AppHandle, game: Option<GameId>) {
                 s.registered_hotkey = None;
                 s.tracker_hotkey = None;
                 s.loot_hotkeys.clear();
+                s.deck_hotkey.registered = false;
+                s.deck_hotkey.error = None;
             });
         }
     }
@@ -261,6 +288,25 @@ fn register_loot_hotkeys(app: &AppHandle, keys: Vec<(crate::loot::hotkeys::Actio
         })
         .collect();
     set_status(app, |s| s.loot_hotkeys = states);
+}
+
+fn same_key_str(a: &str, b: &str) -> bool {
+    b.parse::<Shortcut>().is_ok_and(|b| same_key(a, &b))
+}
+
+/// Registers the Deck Intelligence key (after `unregister_all`); a failure is shown in its settings.
+fn register_deck_hotkey(app: &AppHandle, key: Option<String>) {
+    let state = match key {
+        None => DeckKeyState::default(),
+        Some(k) => match app.global_shortcut().register(k.as_str()) {
+            Ok(()) => DeckKeyState { key: Some(k), registered: true, error: None },
+            Err(e) => {
+                log::warn!("deck intelligence: could not register {k}: {e}");
+                DeckKeyState { error: Some(format!("{k} is already used by another application.")), key: Some(k), registered: false }
+            }
+        },
+    };
+    set_status(app, |s| s.deck_hotkey = state);
 }
 
 /// Registers the keys again after the user changed one (only does anything while a game is in the foreground).

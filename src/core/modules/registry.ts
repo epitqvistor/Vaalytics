@@ -18,6 +18,7 @@ export type ModuleId =
   | "currency"
   | "trade"
   | "market-intelligence"
+  | "deck-intelligence"
   // Endgame (PoE 1 3.30)
   | "atlas-planner"
   | "thread-planner"
@@ -83,6 +84,14 @@ export const MODULES: readonly ModuleMeta[] = [
     availability: BOTH,
   },
 
+  {
+    id: "deck-intelligence",
+    label: "Deck Intelligence",
+    icon: "cards",
+    group: "economy",
+    summary: "Track your Stacked Deck openings from Client.txt and ground screenshots, with a permanent history, valuations and statistics.",
+    availability: { poe1: "ready" },
+  },
   {
     id: "atlas-planner",
     label: "Atlas Planner",

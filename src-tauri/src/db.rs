@@ -21,6 +21,7 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ("0010_campaign_passives", include_str!("../migrations/0010_campaign_passives.sql")),
     ("0011_loot_maps", include_str!("../migrations/0011_loot_maps.sql")),
     ("0012_loot_inventory", include_str!("../migrations/0012_loot_inventory.sql")),
+    ("0013_decks", include_str!("../migrations/0013_decks.sql")),
 ];
 
 pub struct Database {

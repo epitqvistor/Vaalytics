@@ -36,6 +36,7 @@ const READY: Record<GameId, Partial<Record<SectionId, SectionComponent>>> = {
     "act-tracker": lazy(() => import("@/games/poe1/act-tracker")),
     regex: lazy(() => import("@/games/poe1/regex")),
     "ultimatum-checker": lazy(() => import("@/games/poe1/ultimatum")),
+    "deck-intelligence": lazy(() => import("@/games/poe1/deck-intelligence")),
   },
   poe2: {
     dashboard: lazy(() => import("@/games/poe2/dashboard")),

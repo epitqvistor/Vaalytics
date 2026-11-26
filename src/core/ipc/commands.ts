@@ -987,6 +987,219 @@ export interface HotkeyStatus {
   trackerHotkey: string | null;
   /** Loot Tracker keys (PoE 2) and whether Windows accepted them. */
   lootHotkeys: { action: LootHotkeyAction; key: string; registered: boolean; error: string | null }[];
+  /** Deck Intelligence ground-screenshot key (PoE 1). */
+  deckHotkey?: DeckKeyState;
 }
 export const HOTKEY_STATUS_EVENT = "overlay:status";
 export const hotkeyStatus = () => invoke<HotkeyStatus>("overlay_status");
+
+// ---------- Deck Intelligence (src-tauri/src/decks, PoE 1) ----------
+
+export type DeckAcquisition = "individual" | "bulk" | "farmed" | "free" | "unknown";
+export type DeckSessionStatus = "running" | "paused" | "finished";
+export type DeckEventStatus = "confirmed" | "review" | "unrecognized" | "removed";
+export type DeckEventSource = "ocr" | "log" | "manual" | "import";
+
+export interface DivinationCard {
+  name: string;
+  stackSize: number | null;
+  /** Reward text without game markup ("3x Chaos Orb"). */
+  reward: string;
+  rewardKind: string;
+  dropLevel: number | null;
+  legacy: boolean;
+}
+export interface DivinationCardDb {
+  cards: DivinationCard[];
+  checkedAt: number;
+  source: string;
+  sourceModified: string | null;
+  staleError: string | null;
+}
+export interface DeckRegion {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface DeckThresholds {
+  autoConfirm: number;
+  review: number;
+  unrecognized: number;
+}
+export interface DeckConfig {
+  logTracking: boolean;
+  groundTracking: boolean;
+  /** "" = off. Registered only while PoE 1 is in the foreground. */
+  hotkey: string;
+  region: DeckRegion;
+  thresholds: DeckThresholds;
+  dedupeSecs: number;
+  dedupeTolerance: number;
+  keepScreenshots: boolean;
+}
+export interface DeckSessionInput {
+  name: string;
+  league: string | null;
+  openedOn: string | null;
+  plannedDecks: number | null;
+  acquisition: DeckAcquisition;
+  /** Chaos; null = unknown. */
+  costTotal: number | null;
+  notes: string | null;
+}
+export interface DeckSession {
+  id: number;
+  name: string;
+  league: string | null;
+  createdAt: number;
+  openedOn: string | null;
+  status: DeckSessionStatus;
+  origin: "live" | "import";
+  startedAt: number;
+  endedAt: number | null;
+  activeSecs: number;
+  resumedAt: number | null;
+  plannedDecks: number | null;
+  acquisition: DeckAcquisition;
+  costTotal: number | null;
+  notes: string | null;
+}
+export interface DeckValuationLine {
+  card: string;
+  qty: number;
+  unit: number | null;
+  source: "market" | "manual" | null;
+}
+export interface DeckValuation {
+  valuedAt: number;
+  league: string | null;
+  pricesAt: number | null;
+  totalValue: number;
+  pricedCards: number;
+  unpricedCards: number;
+  lines: DeckValuationLine[];
+}
+export interface DeckSessionSummary extends DeckSession {
+  confirmed: number;
+  review: number;
+  unrecognized: number;
+  firstCardAt: number | null;
+  lastCardAt: number | null;
+  valuation: DeckValuation | null;
+}
+export interface DeckEvent {
+  id: number;
+  sessionId: number;
+  at: number;
+  source: DeckEventSource;
+  captureId: number | null;
+  recognizedText: string | null;
+  recognizedCard: string | null;
+  confidence: number;
+  bbox: DeckRegion | null;
+  card: string | null;
+  status: DeckEventStatus;
+  reviewReason: string | null;
+  corrected: boolean;
+}
+export interface DeckCapture {
+  id: number;
+  sessionId: number;
+  takenAt: number;
+  source: "hotkey" | "file";
+  hasImage: boolean;
+  width: number;
+  height: number;
+  ocrLines: number;
+  ignoredLines: number;
+  error: string | null;
+}
+export interface DeckSessionDetail {
+  session: DeckSession;
+  events: DeckEvent[];
+  captures: DeckCapture[];
+  valuation: DeckValuation | null;
+}
+export interface DeckCardTotal {
+  sessionId: number;
+  card: string;
+  qty: number;
+  firstAt: number;
+  lastAt: number;
+}
+export interface DeckDetectedEvent {
+  sessionId: number | null;
+  source: "ocr" | "log";
+  cards: { id: number; card: string | null; status: DeckEventStatus; unit: number | null }[];
+  ignored: number;
+  captureId: number | null;
+  error: string | null;
+  /** Estimated value of the session's confirmed cards after this change (priced only). */
+  sessionValue: number | null;
+  sessionCost: number | null;
+}
+export interface DeckLogStatus {
+  path: string | null;
+  watching: boolean;
+  lastReadAt: number | null;
+  error: string | null;
+}
+export interface DeckImportStatus {
+  running: boolean;
+  file: string | null;
+  bytesDone: number;
+  bytesTotal: number;
+  cardsFound: number;
+  sessionsCreated: number;
+  cardsAdded: number;
+  duplicates: number;
+  finished: boolean;
+  cancelled: boolean;
+  error: string | null;
+}
+export interface DeckKeyState {
+  key: string | null;
+  registered: boolean;
+  error: string | null;
+}
+/** A session changed (payload: session id, 0 = several). */
+export const DECKS_UPDATED_EVENT = "decks:updated";
+/** Cards arrived from Client.txt or a screenshot (or a screenshot failed). */
+export const DECKS_DETECTED_EVENT = "decks:detected";
+export const DECKS_IMPORT_EVENT = "decks:import";
+
+export const decksCards = (game: GameId, force = false) => invoke<DivinationCardDb>("decks_cards", { game, force });
+export const decksConfig = (game: GameId) => invoke<DeckConfig>("decks_config", { game });
+export const decksSetConfig = (game: GameId, config: DeckConfig) => invoke<DeckConfig>("decks_set_config", { game, config });
+export const decksSessions = (game: GameId) => invoke<DeckSessionSummary[]>("decks_sessions", { game });
+export const decksSession = (game: GameId, id: number) => invoke<DeckSessionDetail>("decks_session", { game, id });
+export const decksCardTotals = (game: GameId) => invoke<DeckCardTotal[]>("decks_card_totals", { game });
+export const decksCreate = (game: GameId, input: DeckSessionInput) => invoke<number>("decks_create", { game, input });
+export const decksUpdate = (game: GameId, id: number, input: DeckSessionInput) => invoke<void>("decks_update", { game, id, input });
+export const decksPause = (game: GameId, id: number) => invoke<void>("decks_pause", { game, id });
+export const decksResume = (game: GameId, id: number) => invoke<void>("decks_resume", { game, id });
+export const decksFinish = (game: GameId, id: number) => invoke<DeckValuation>("decks_finish", { game, id });
+export const decksDelete = (game: GameId, id: number) => invoke<void>("decks_delete", { game, id });
+export const decksEventConfirm = (game: GameId, id: number) => invoke<void>("decks_event_confirm", { game, id });
+export const decksEventRemove = (game: GameId, id: number) => invoke<void>("decks_event_remove", { game, id });
+export const decksEventRestore = (game: GameId, id: number) => invoke<void>("decks_event_restore", { game, id });
+export const decksEventCorrect = (game: GameId, id: number, card: string) => invoke<void>("decks_event_correct", { game, id, card });
+export const decksAddManual = (game: GameId, sessionId: number, card: string, qty: number) => invoke<number>("decks_add_manual", { game, sessionId, card, qty });
+/** Opens a file dialog; null = cancelled. */
+export const decksRecognizeFile = (game: GameId, sessionId: number) => invoke<DeckDetectedEvent | null>("decks_recognize_file", { game, sessionId });
+export const decksRetryCapture = (game: GameId, captureId: number) => invoke<DeckDetectedEvent>("decks_retry_capture", { game, captureId });
+/** data: URL of the kept screenshot, or null when it wasn't kept. */
+export const decksCaptureImage = (game: GameId, captureId: number) => invoke<string | null>("decks_capture_image", { game, captureId });
+export const decksPriceOverrides = (game: GameId, league: string) => invoke<Record<string, number>>("decks_price_overrides", { game, league });
+export const decksSetPriceOverride = (game: GameId, league: string, card: string, value: number | null) =>
+  invoke<void>("decks_set_price_override", { game, league, card, value });
+export const decksLogStatus = (game: GameId) => invoke<DeckLogStatus>("decks_log_status", { game });
+/** Opens a file dialog; false = cancelled. Progress arrives as DECKS_IMPORT_EVENT. */
+export const decksImportStart = (game: GameId, options: { league: string | null; splitGapMinutes: number }) =>
+  invoke<boolean>("decks_import_start", { game, options });
+export const decksImportCancel = (game: GameId) => invoke<void>("decks_import_cancel", { game });
+export const decksImportStatus = (game: GameId) => invoke<DeckImportStatus>("decks_import_status", { game });
+export const decksHotkeyStatus = (game: GameId) => invoke<DeckKeyState>("decks_hotkey_status", { game });
+/** Save dialog for a CSV / JSON export; false = cancelled. */
+export const decksSaveExport = (game: GameId, fileName: string, contents: string) => invoke<boolean>("decks_save_export", { game, fileName, contents });

@@ -1070,3 +1070,271 @@ pub async fn act_tracker_set_hotkey(state: State<'_, AppState>, game: GameId, ho
     }
     crate::settings::set_game(&state.db, game, crate::act_tracker::KEY_HOTKEY, &serde_json::Value::String(hotkey))
 }
+
+// ---------- deck intelligence (src-tauri/src/decks, PoE 1) ----------
+
+/// Tells every view that Deck Intelligence data changed (after a successful change).
+fn decks_changed<T>(app: &tauri::AppHandle, r: &AppResult<T>) {
+    use tauri::Emitter;
+    if r.is_ok() {
+        let _ = app.emit(crate::decks::EVENT_UPDATED, 0);
+    }
+}
+
+fn require_decks_game(game: GameId) -> AppResult<()> {
+    if game == crate::decks::GAME {
+        Ok(())
+    } else {
+        Err(crate::error::AppError::InvalidInput("Deck Intelligence is available for Path of Exile 1 only.".into()))
+    }
+}
+
+#[tauri::command]
+pub async fn decks_cards(state: State<'_, AppState>, game: GameId, force: bool) -> AppResult<crate::decks::cards::CardDbResponse> {
+    require_decks_game(game)?;
+    let r = state.decks.cards.get(force).await?;
+    state.decks.reset_matcher();
+    Ok(r)
+}
+
+#[tauri::command]
+pub fn decks_config(state: State<'_, AppState>, game: GameId) -> AppResult<crate::decks::DeckConfig> {
+    require_decks_game(game)?;
+    Ok(state.decks.config())
+}
+
+#[tauri::command]
+pub fn decks_set_config(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, config: crate::decks::DeckConfig) -> AppResult<crate::decks::DeckConfig> {
+    require_decks_game(game)?;
+    let cfg = state.decks.set_config(config)?;
+    crate::overlay::refresh_hotkeys(&app);
+    Ok(cfg)
+}
+
+#[tauri::command]
+pub async fn decks_sessions(state: State<'_, AppState>, game: GameId) -> AppResult<Vec<crate::decks::store::SessionSummary>> {
+    require_decks_game(game)?;
+    crate::decks::store::summaries(&*state.db.conn()?, crate::market::http::unix_now())
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeckSessionDetail {
+    session: crate::decks::store::Session,
+    events: Vec<crate::decks::store::Event>,
+    captures: Vec<crate::decks::store::Capture>,
+    valuation: Option<crate::decks::store::Valuation>,
+}
+
+#[tauri::command]
+pub async fn decks_session(state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<DeckSessionDetail> {
+    require_decks_game(game)?;
+    let c = state.db.conn()?;
+    use crate::decks::store;
+    Ok(DeckSessionDetail {
+        session: store::session(&c, id, crate::market::http::unix_now())?,
+        events: store::events(&c, id)?,
+        captures: store::captures(&c, id)?,
+        valuation: store::valuation(&c, id)?,
+    })
+}
+
+#[tauri::command]
+pub async fn decks_card_totals(state: State<'_, AppState>, game: GameId) -> AppResult<Vec<crate::decks::store::CardTotal>> {
+    require_decks_game(game)?;
+    crate::decks::store::card_totals(&*state.db.conn()?)
+}
+
+#[tauri::command]
+pub async fn decks_create(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, input: crate::decks::store::SessionInput) -> AppResult<i64> {
+    require_decks_game(game)?;
+    let r = state.decks.create(input);
+    decks_changed(&app, &r);
+    r
+}
+
+#[tauri::command]
+pub async fn decks_update(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64, input: crate::decks::store::SessionInput) -> AppResult<()> {
+    require_decks_game(game)?;
+    let r = crate::decks::store::update(&state.db, id, input);
+    decks_changed(&app, &r);
+    r
+}
+
+#[tauri::command]
+pub async fn decks_pause(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<()> {
+    require_decks_game(game)?;
+    let r = state.decks.pause(id);
+    decks_changed(&app, &r);
+    r
+}
+
+#[tauri::command]
+pub async fn decks_resume(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<()> {
+    require_decks_game(game)?;
+    let r = state.decks.resume(id);
+    decks_changed(&app, &r);
+    r
+}
+
+#[tauri::command]
+pub async fn decks_finish(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<crate::decks::store::Valuation> {
+    require_decks_game(game)?;
+    let r = state.decks.finish(id);
+    decks_changed(&app, &r);
+    r
+}
+
+#[tauri::command]
+pub async fn decks_delete(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<()> {
+    require_decks_game(game)?;
+    let r = state.decks.delete(id);
+    decks_changed(&app, &r);
+    r
+}
+
+#[tauri::command]
+pub async fn decks_event_confirm(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<()> {
+    require_decks_game(game)?;
+    let r = state.decks.confirm(id);
+    decks_changed(&app, &r);
+    r
+}
+
+#[tauri::command]
+pub async fn decks_event_remove(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<()> {
+    require_decks_game(game)?;
+    let r = state.decks.remove(id);
+    decks_changed(&app, &r);
+    r
+}
+
+#[tauri::command]
+pub async fn decks_event_restore(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64) -> AppResult<()> {
+    require_decks_game(game)?;
+    let r = state.decks.restore(id);
+    decks_changed(&app, &r);
+    r
+}
+
+#[tauri::command]
+pub async fn decks_event_correct(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, id: i64, card: String) -> AppResult<()> {
+    require_decks_game(game)?;
+    let r = state.decks.correct(id, &card);
+    decks_changed(&app, &r);
+    r
+}
+
+#[tauri::command]
+pub async fn decks_add_manual(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, session_id: i64, card: String, qty: u32) -> AppResult<usize> {
+    require_decks_game(game)?;
+    let r = state.decks.add_manual(session_id, &card, qty);
+    decks_changed(&app, &r);
+    r
+}
+
+/// Recognises a PNG screenshot the user picks. None = cancelled.
+#[tauri::command]
+pub async fn decks_recognize_file(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, session_id: i64) -> AppResult<Option<crate::decks::DetectedEvent>> {
+    use tauri_plugin_dialog::DialogExt;
+    require_decks_game(game)?;
+    let picked = app.dialog().file().set_title("Recognise a ground screenshot").add_filter("PNG screenshot", &["png"]).blocking_pick_file();
+    let Some(file) = picked else { return Ok(None) };
+    let path = file.into_path().map_err(|_| crate::error::AppError::InvalidInput("Unsupported file location.".into()))?;
+    if std::fs::metadata(&path)?.len() > 40 * 1024 * 1024 {
+        return Err(crate::error::AppError::InvalidInput("The file is larger than 40 MB.".into()));
+    }
+    let decks = std::sync::Arc::clone(&state.decks);
+    tauri::async_runtime::spawn_blocking(move || decks.recognize_file(&app, session_id, &path).map(Some))
+        .await
+        .map_err(|_| crate::error::AppError::InvalidInput("Recognition stopped unexpectedly.".into()))?
+}
+
+#[tauri::command]
+pub async fn decks_retry_capture(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, capture_id: i64) -> AppResult<crate::decks::DetectedEvent> {
+    require_decks_game(game)?;
+    let decks = std::sync::Arc::clone(&state.decks);
+    tauri::async_runtime::spawn_blocking(move || decks.retry(&app, capture_id))
+        .await
+        .map_err(|_| crate::error::AppError::InvalidInput("Recognition stopped unexpectedly.".into()))?
+}
+
+#[tauri::command]
+pub async fn decks_capture_image(state: State<'_, AppState>, game: GameId, capture_id: i64) -> AppResult<Option<String>> {
+    require_decks_game(game)?;
+    state.decks.capture_image(capture_id)
+}
+
+#[tauri::command]
+pub async fn decks_price_overrides(state: State<'_, AppState>, game: GameId, league: String) -> AppResult<std::collections::HashMap<String, f64>> {
+    require_decks_game(game)?;
+    crate::decks::store::overrides(&*state.db.conn()?, &league)
+}
+
+#[tauri::command]
+pub async fn decks_set_price_override(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, league: String, card: String, value: Option<f64>) -> AppResult<()> {
+    require_decks_game(game)?;
+    let r = crate::decks::store::set_override(&state.db, &league, &card, value, crate::market::http::unix_now());
+    decks_changed(&app, &r);
+    r
+}
+
+#[tauri::command]
+pub fn decks_log_status(state: State<'_, AppState>, game: GameId) -> AppResult<crate::decks::LogStatus> {
+    require_decks_game(game)?;
+    Ok(state.decks.log_status())
+}
+
+/// Picks a Client.txt and imports its "Card drawn from the deck" lines in the background.
+/// false = cancelled in the file dialog.
+#[tauri::command]
+pub async fn decks_import_start(app: tauri::AppHandle, state: State<'_, AppState>, game: GameId, options: crate::decks::ImportOptions) -> AppResult<bool> {
+    use tauri_plugin_dialog::DialogExt;
+    require_decks_game(game)?;
+    let picked = app.dialog().file().set_title("Import Stacked Deck openings from Client.txt").add_filter("Client log", &["txt"]).blocking_pick_file();
+    let Some(file) = picked else { return Ok(false) };
+    let path = file.into_path().map_err(|_| crate::error::AppError::InvalidInput("Unsupported file location.".into()))?;
+    if !crate::session::discover::is_poe1_log(&path) {
+        return Err(crate::error::AppError::InvalidInput("This doesn't look like a Path of Exile 1 log (Client.txt).".into()));
+    }
+    state.decks.import(&app, path, options)?;
+    Ok(true)
+}
+
+#[tauri::command]
+pub fn decks_import_cancel(state: State<'_, AppState>, game: GameId) -> AppResult<()> {
+    require_decks_game(game)?;
+    state.decks.cancel_import();
+    Ok(())
+}
+
+#[tauri::command]
+pub fn decks_import_status(state: State<'_, AppState>, game: GameId) -> AppResult<crate::decks::ImportStatus> {
+    require_decks_game(game)?;
+    Ok(state.decks.import_status())
+}
+
+/// The screenshot key and whether it is registered right now (only while PoE 1 is focused).
+#[tauri::command]
+pub fn decks_hotkey_status(app: tauri::AppHandle, game: GameId) -> AppResult<crate::overlay::DeckKeyState> {
+    require_decks_game(game)?;
+    use tauri::Manager;
+    Ok(app.state::<crate::overlay::OverlayState>().status().deck_hotkey)
+}
+
+/// Saves an export (CSV / JSON text made by the frontend) where the user chooses. false = cancelled.
+#[tauri::command]
+pub async fn decks_save_export(app: tauri::AppHandle, game: GameId, file_name: String, contents: String) -> AppResult<bool> {
+    use tauri_plugin_dialog::DialogExt;
+    require_decks_game(game)?;
+    if contents.len() > 20 * 1024 * 1024 {
+        return Err(crate::error::AppError::InvalidInput("The export is too large.".into()));
+    }
+    let safe: String = file_name.chars().filter(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.' | ' ')).take(80).collect();
+    let (label, ext) = if safe.ends_with(".json") { ("JSON", "json") } else { ("CSV", "csv") };
+    let picked = app.dialog().file().set_title("Export Deck Intelligence").set_file_name(&safe).add_filter(label, &[ext]).blocking_save_file();
+    let Some(file) = picked else { return Ok(false) };
+    let path = file.into_path().map_err(|_| crate::error::AppError::InvalidInput("Unsupported file location.".into()))?;
+    std::fs::write(path, contents)?;
+    Ok(true)
+}

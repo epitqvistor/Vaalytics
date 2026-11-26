@@ -6,6 +6,7 @@ mod atlas;
 mod campaign;
 mod commands;
 mod crafting;
+mod decks;
 mod db;
 mod diagnostics;
 mod farming;
@@ -32,6 +33,7 @@ pub struct AppState {
     pub crafting: crafting::CraftingService,
     pub sessions: session::SessionService,
     pub loot: loot::LootService,
+    pub decks: std::sync::Arc<decks::DeckService>,
 }
 
 pub fn run() {
@@ -72,7 +74,9 @@ pub fn run() {
             let loot = loot::LootService::new(Arc::clone(&db), Some(Arc::clone(&market)), loot::session_context_from(sessions.clone()), market::http::unix_now);
             loot.set_data_dir(data_dir.clone());
             loot.start(app.handle().clone());
-            app.manage(AppState { db, diagnostics: diagnostics::Diagnostics::new(), market, trade, pob: pob::PobService::new(), crafting: crafting::CraftingService::new(data_dir.clone()), sessions, loot });
+            let decks = decks::DeckService::new(Arc::clone(&db), data_dir.clone());
+            decks.start(app.handle().clone());
+            app.manage(AppState { db, diagnostics: diagnostics::Diagnostics::new(), market, trade, pob: pob::PobService::new(), crafting: crafting::CraftingService::new(data_dir.clone()), sessions, loot, decks });
             app.manage(overlay::OverlayState::default());
             overlay::init(app)?;
             Ok(())
@@ -131,6 +135,34 @@ pub fn run() {
             commands::browser_close,
             commands::browser_open_external,
             commands::crafting_data,
+            commands::decks_cards,
+            commands::decks_config,
+            commands::decks_set_config,
+            commands::decks_sessions,
+            commands::decks_session,
+            commands::decks_card_totals,
+            commands::decks_create,
+            commands::decks_update,
+            commands::decks_pause,
+            commands::decks_resume,
+            commands::decks_finish,
+            commands::decks_delete,
+            commands::decks_event_confirm,
+            commands::decks_event_remove,
+            commands::decks_event_restore,
+            commands::decks_event_correct,
+            commands::decks_add_manual,
+            commands::decks_recognize_file,
+            commands::decks_retry_capture,
+            commands::decks_capture_image,
+            commands::decks_price_overrides,
+            commands::decks_set_price_override,
+            commands::decks_log_status,
+            commands::decks_import_start,
+            commands::decks_import_cancel,
+            commands::decks_import_status,
+            commands::decks_hotkey_status,
+            commands::decks_save_export,
             commands::session_status,
             commands::session_diagnostics,
             commands::session_list,

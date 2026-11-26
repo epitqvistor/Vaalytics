@@ -6,6 +6,7 @@ import { ErrorBoundary, ToastProvider } from "@/shared/components";
 import { transition } from "@/shared/design/motion";
 import { LootCaptureIndicator, LootNotifier } from "@/games/poe2/loot-journal/LootNotifier";
 import { SessionNotifier } from "@/games/poe2/session-intelligence/SessionNotifier";
+import { DeckNotifier } from "@/games/poe1/deck-intelligence/DeckNotifier";
 import { Icon } from "@/shared/icons/Icon";
 import { Atmosphere } from "./Atmosphere";
 import { GameSelection } from "./GameSelection";
@@ -30,6 +31,7 @@ function MotionRoot() {
       <ToastProvider>
         <SessionNotifier />
         <LootNotifier />
+        <DeckNotifier />
         <div className="relative isolate flex h-full flex-col">
           <AppAtmosphere />
           <AppTitleBar />
