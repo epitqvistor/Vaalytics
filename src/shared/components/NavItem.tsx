@@ -13,17 +13,21 @@ export interface NavItemProps {
   /** Shared layoutId so the active marker glides between items of one nav. */
   indicatorId: string;
   trailing?: ReactNode;
+  /** Called on hover/focus so the section can start loading before the click. */
+  onPreload?: () => void;
 }
 
 /**
  * Sidebar item. Active = brighter text on a faint tint with the stepped bronze
  * marker (`vaal-step`) on the left edge; no pill, no glow.
  */
-export function NavItem({ icon, label, active, onSelect, indicatorId, trailing }: NavItemProps) {
+export function NavItem({ icon, label, active, onSelect, indicatorId, trailing, onPreload }: NavItemProps) {
   return (
     <button
       type="button"
       onClick={onSelect}
+      onPointerEnter={onPreload}
+      onFocus={onPreload}
       aria-current={active ? "page" : undefined}
       className={cn(
         "group relative flex h-8 w-full items-center gap-2.5 rounded-sm pr-2 pl-3 text-sm transition-colors duration-120",

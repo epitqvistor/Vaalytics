@@ -330,6 +330,16 @@
   }
 }
 
+/* Loading indicators that should not flash: invisible for the first 300 ms. */
+.delayed-reveal {
+  animation: delayed-reveal 150ms ease-out 300ms both;
+}
+@keyframes delayed-reveal {
+  from {
+    opacity: 0;
+  }
+}
+
 @utility tabular {
   font-variant-numeric: tabular-nums lining-nums;
 }

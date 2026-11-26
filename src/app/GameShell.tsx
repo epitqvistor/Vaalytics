@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from "motion/react";
-import { Suspense, useMemo, useState } from "react";
+import { motion } from "motion/react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { GAME_ART } from "@/assets/games";
 import { ActiveGameProvider, useGameContext } from "@/core/game-context/GameContext";
 import { GAMES, type GameId } from "@/core/game-context/games";
@@ -12,12 +12,14 @@ import { GAME_MODULES } from "./gameModules";
 import { ErrorBoundary, NavItem, PageContext, Spinner } from "@/shared/components";
 import { variants } from "@/shared/design/motion";
 import { Icon } from "@/shared/icons/Icon";
-import { viewFor } from "./sections";
+import { preloadAllViews, preloadView, viewFor } from "./sections";
 
 export function GameShell({ game }: { game: GameId }) {
   const { prefs } = usePreferences();
   const [section, setSection] = useState<SectionId>("dashboard");
   const nav = useMemo(() => navigationFor(game, { showPlanned: prefs.showPlanned }), [game, prefs.showPlanned]);
+  // Load the other sections' code while idle, so switching never waits on a download.
+  useEffect(() => preloadAllViews(game), [game]);
   // A hidden planned module (setting turned off) falls back to the dashboard.
   const visible = [...nav.groups.flatMap((g) => g.items), ...nav.footer].some((m) => m.id === section);
   const current: SectionId = visible ? section : "dashboard";
@@ -36,6 +38,7 @@ export function GameShell({ game }: { game: GameId }) {
       label={m.label}
       active={current === m.id}
       onSelect={() => setSection(m.id)}
+      onPreload={() => preloadView(game, m.id)}
       indicatorId="main-nav"
       trailing={statusFor(m.id, game) === "planned" ? <span className="text-2xs text-fg-subtle">Soon</span> : undefined}
     />
@@ -63,11 +66,12 @@ export function GameShell({ game }: { game: GameId }) {
             </aside>
 
             <main className="relative min-w-0 flex-1 overflow-y-auto">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div key={current} variants={variants.rise} initial="hidden" animate="visible" exit="exit" className="min-h-full px-7 pt-5 pb-8">
+              {/* No exit animation: the new section mounts at once and fades in (4 px rise). */}
+              <motion.div key={current} variants={variants.rise} initial="hidden" animate="visible" className="min-h-full px-7 pt-5 pb-8">
                   <Suspense
                     fallback={
-                      <div className="flex h-40 items-center justify-center text-fg-subtle">
+                      // Shown only if loading takes longer than 300 ms (no flash on fast switches).
+                      <div className="delayed-reveal flex h-40 items-center justify-center text-fg-subtle">
                         <Spinner />
                       </div>
                     }
@@ -79,7 +83,6 @@ export function GameShell({ game }: { game: GameId }) {
                     </ErrorBoundary>
                   </Suspense>
                 </motion.div>
-              </AnimatePresence>
             </main>
           </div>
         </DisplayCurrencyProvider>
