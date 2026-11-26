@@ -143,6 +143,20 @@ pub fn overlay_status(state: State<'_, OverlayState>) -> OverlayStatus {
 }
 
 /// The overlay calls this on load to receive the capture that opened it.
+/// Stores the show/hide-Vaalytics key ("" turns it off) and registers it right away.
+#[tauri::command]
+pub fn main_window_set_hotkey(app: tauri::AppHandle, state: State<'_, AppState>, hotkey: String) -> AppResult<()> {
+    let hotkey = hotkey.trim().to_owned();
+    if !hotkey.is_empty() {
+        if let Some(p) = crate::main_window::key_problem(&hotkey).or_else(|| crate::main_window::clash(&app, &hotkey)) {
+            return Err(crate::error::AppError::InvalidInput(p));
+        }
+    }
+    crate::settings::set_app(&state.db, crate::main_window::KEY_HOTKEY, &serde_json::Value::String(hotkey))?;
+    crate::overlay::refresh_hotkeys(&app);
+    Ok(())
+}
+
 #[tauri::command]
 pub fn overlay_take_pending(state: State<'_, OverlayState>) -> Option<CaptureEvent> {
     state.take_pending()

@@ -971,8 +971,15 @@ export interface HotkeyStatus {
   lootHotkeys: { action: LootHotkeyAction; key: string; registered: boolean; error: string | null }[];
   /** Deck Intelligence ground-screenshot key (PoE 1). */
   deckHotkey?: DeckKeyState;
+  /** Show/hide-Vaalytics key (`main_window`), registered while a PoE window or Vaalytics is in the foreground. */
+  mainHotkey?: DeckKeyState;
 }
 export const HOTKEY_STATUS_EVENT = "overlay:status";
+/** App setting read by `mainWindowSetHotkey`'s Rust side. */
+export const MAIN_WINDOW_HOTKEY_KEY = "mainWindow.hotkey";
+export const MAIN_WINDOW_HOTKEY_DEFAULT = "Insert";
+/** "" turns it off. Rejects with a reason (reserved key, or used by another Vaalytics feature). Applies immediately. */
+export const mainWindowSetHotkey = (hotkey: string) => invoke<void>("main_window_set_hotkey", { hotkey });
 export const hotkeyStatus = () => invoke<HotkeyStatus>("overlay_status");
 
 // ---------- Deck Intelligence (src-tauri/src/decks, PoE 1) ----------

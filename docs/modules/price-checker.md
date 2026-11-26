@@ -7,6 +7,7 @@ Behaviour modelled on Awakened PoE Trade's documented flow (studied, not copied)
 
 - A foreground-change hook (`SetWinEventHook(EVENT_SYSTEM_FOREGROUND)`, event-driven, no polling) detects the game window by class `POEWindowClass` **and** exact title (`Path of Exile` / `Path of Exile 2`).
 - The price-check shortcut (per game, default **Ctrl+D**, alternatives in Settings) is registered with `RegisterHotKey` **only while the game is focused**. Ctrl+D therefore keeps working normally in browsers and other apps.
+- The same registration routine also handles the Act Tracker, Deck Intelligence, Loot Tracker and show/hide-Vaalytics keys (docs/architecture/overview.md → Global hotkeys, docs/modules/main-window-hotkey.md).
 - On press: remember the clipboard text (clear it if it already holds item text) → send the game's own copy shortcut (Ctrl is only pressed if the user isn't already holding it; since PoE 3.29 Ctrl+C copies the advanced format) → poll the clipboard every 40 ms for up to 600 ms for text starting with `Item Class:` → restore the previous text (Settings → *Restore clipboard*, default on).
 - The price check never monitors the clipboard. (Loot Journal, PoE 2, listens for clipboard changes only while the PoE 2 window is focused — see loot-journal.md; a price-checked item is captured there too, as it is an item copy.) No memory reading, injection or game-file access.
 

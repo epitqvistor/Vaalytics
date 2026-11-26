@@ -67,6 +67,30 @@ Modules, navigation and reusable services: [modules.md](modules.md). Patch rules
   after use, not closed; `on_window_event` exits the app when `main` gets `CloseRequested`, so a
   hidden window can't keep the process alive. Background services (market, sessions, loot) end
   with the process.
+- **Show / hide over the game** (`src-tauri/src/main_window.rs`, docs/modules/main-window-hotkey.md): one key
+  (app setting `mainWindow.hotkey`, default **Insert**) restores, raises and focuses `main` on the game's monitor,
+  and the next press hands the foreground back to the game and **minimises** `main` (never `hide()` — no taskbar
+  entry — and never close, which would exit). Not always-on-top.
+
+## Global hotkeys
+
+One manager: `tauri-plugin-global-shortcut` with a single handler in `overlay::init`, and one registration
+routine, `overlay::on_foreground`, driven by the event-based foreground hook (`overlay/win.rs`,
+`SetWinEventHook(EVENT_SYSTEM_FOREGROUND)`, no polling). On every foreground change it `unregister_all`s and
+registers only what that window needs:
+
+| Foreground window | Registered keys |
+|-------------------|-----------------|
+| Path of Exile 1   | price check, Act Tracker, Deck Intelligence, show/hide Vaalytics |
+| Path of Exile 2   | price check, Loot Tracker keys, show/hide Vaalytics |
+| a Vaalytics window | show/hide Vaalytics only (so the key can hide Vaalytics again) |
+| anything else     | nothing — every key works normally in other apps |
+
+Clashes: the show/hide key gives way to a game feature key bound to the same combination (reported in
+Settings); saving it checks all configured feature keys first. Every status (registered / error) is in
+`OverlayStatus` (`overlay_status`, event `overlay:status`). The plugin registers with `MOD_NOREPEAT`, so a held
+key fires once. The foreground hook never reads titles of our own windows (WM_GETTEXT to our UI thread could
+deadlock).
 
 ## Data storage
 

@@ -3,9 +3,18 @@ import { listen } from "@tauri-apps/api/event";
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { useActiveGame } from "@/core/game-context/GameContext";
 import { GAMES, type GameId } from "@/core/game-context/games";
-import { getAppSetting, setAppSetting } from "@/core/ipc/commands";
+import {
+  getAppSetting,
+  hotkeyStatus,
+  HOTKEY_STATUS_EVENT,
+  MAIN_WINDOW_HOTKEY_DEFAULT,
+  MAIN_WINDOW_HOTKEY_KEY,
+  mainWindowSetHotkey,
+  setAppSetting,
+  type HotkeyStatus as HotkeyStatusData,
+} from "@/core/ipc/commands";
 import { isValidContact, useTradeContact } from "@/core/trade/hooks";
-import { Badge, Button, Input, PageHeader, Panel, SegmentedControl, Select, Switch, type Segment } from "@/shared/components";
+import { Badge, Button, Input, Kbd, PageHeader, Panel, SegmentedControl, Select, Switch, useToast, type Segment } from "@/shared/components";
 import { usePreferences } from "./PreferencesContext";
 import { useGameSetting } from "./useGameSetting";
 
@@ -66,12 +75,88 @@ function GeneralSettings() {
           />
         </div>
       </Panel>
+      <WindowHotkeySettings />
       <TradeSettings />
     </div>
   );
 }
 
 const isBool = (v: unknown): v is boolean => typeof v === "boolean";
+
+/** Show / hide Vaalytics over the game (Rust `main_window`, app-wide — the same key in both games). */
+function WindowHotkeySettings() {
+  const notify = useToast();
+  const [saved, setSaved] = useState<string | null>(null);
+  const [draft, setDraft] = useState<string | null>(null);
+  const [status, setStatus] = useState<HotkeyStatusData | null>(null);
+  useEffect(() => {
+    getAppSetting<string>(MAIN_WINDOW_HOTKEY_KEY)
+      .then((v) => setSaved(typeof v === "string" ? v : MAIN_WINDOW_HOTKEY_DEFAULT))
+      .catch(() => setSaved(MAIN_WINDOW_HOTKEY_DEFAULT));
+    hotkeyStatus().then(setStatus).catch(() => {});
+    let un: (() => void) | undefined;
+    let disposed = false;
+    listen<HotkeyStatusData>(HOTKEY_STATUS_EVENT, ({ payload }) => setStatus(payload))
+      .then((u) => (disposed ? u() : (un = u)))
+      .catch(() => {});
+    return () => {
+      disposed = true;
+      un?.();
+    };
+  }, []);
+  if (saved === null) return null;
+  const value = draft ?? saved;
+  const save = (key: string) =>
+    mainWindowSetHotkey(key)
+      .then(() => {
+        setSaved(key.trim());
+        setDraft(null);
+        notify("success", "Shortcut saved", key.trim() ? `${key.trim()} shows and hides Vaalytics.` : "The shortcut is off.");
+      })
+      .catch((e) => notify("warning", "Couldn't use that shortcut", String(e)));
+  const main = status?.mainHotkey;
+  return (
+    <Panel
+      title="Show over the game"
+      actions={
+        main?.error ? (
+          <Badge tone="warning">{main.error}</Badge>
+        ) : main?.registered ? (
+          <Badge tone="success" dot>
+            Active · {main.key}
+          </Badge>
+        ) : saved ? (
+          <Badge tone="neutral" dot>
+            Waiting for the game window
+          </Badge>
+        ) : null
+      }
+    >
+      <div className="flex flex-col gap-3">
+        <Row
+          label="Show / hide Vaalytics"
+          description="Press it in Path of Exile to bring Vaalytics to the front on the game's monitor; press it again to minimise Vaalytics and return to the game. Active only while a Path of Exile or Vaalytics window is focused."
+        >
+          <div className="flex w-72 items-start gap-2">
+            <Input aria-label="Show / hide Vaalytics shortcut" value={value} placeholder="e.g. Insert (empty = off)" onChange={(e) => setDraft(e.target.value)} containerClassName="flex-1" />
+            <Button disabled={draft === null || draft.trim() === saved} onClick={() => void save(value)}>
+              Save
+            </Button>
+          </div>
+        </Row>
+        <p className="text-2xs leading-relaxed text-fg-subtle">
+          Works with the game in <span className="text-fg-muted">Windowed</span> or <span className="text-fg-muted">Windowed Fullscreen</span>. In
+          exclusive Fullscreen no window can appear over the game — Windows switches away from it instead.{" "}
+          {saved !== MAIN_WINDOW_HOTKEY_DEFAULT && (
+            <button type="button" className="text-accent hover:underline" onClick={() => void save(MAIN_WINDOW_HOTKEY_DEFAULT)}>
+              Use default (<Kbd>{MAIN_WINDOW_HOTKEY_DEFAULT}</Kbd>)
+            </button>
+          )}
+        </p>
+      </div>
+    </Panel>
+  );
+}
 
 function TradeSettings() {
   const { contact, save } = useTradeContact();

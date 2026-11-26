@@ -13,6 +13,7 @@ mod regex_library;
 mod error;
 mod game;
 mod loot;
+mod main_window;
 mod market;
 mod overlay;
 mod pob;
@@ -96,6 +97,7 @@ pub fn run() {
             updates.start(app.handle().clone());
             app.manage(AppState { db, diagnostics: diagnostics::Diagnostics::new(), market, trade, pob: pob::PobService::new(), crafting: crafting::CraftingService::new(data_dir.clone()), sessions, loot, decks, updates });
             app.manage(overlay::OverlayState::default());
+            app.manage(main_window::MainWindowState::default());
             overlay::init(app)?;
             Ok(())
         })
@@ -214,6 +216,7 @@ pub fn run() {
             commands::act_tracker_state,
             commands::act_tracker_set_click_through,
             commands::act_tracker_set_hotkey,
+            commands::main_window_set_hotkey,
             commands::session_export,
             commands::loot_status,
             commands::loot_config,

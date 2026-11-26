@@ -15,6 +15,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: "0.24.0",
+    date: "2026-11-26",
+    title: "Show Vaalytics over the game with Insert",
+    changes: [
+      "Press Insert in Path of Exile (Windowed or Windowed Fullscreen) to bring Vaalytics to the front on the game's monitor; press it again to minimise it and return to the game.",
+      "The key works only while a Path of Exile or Vaalytics window is focused, so other apps keep their Insert. Change or turn it off in Settings → General → Show over the game.",
+      "Exclusive Fullscreen can't show any window over the game — use Windowed Fullscreen.",
+    ],
+  },
+  {
     version: "0.21.1",
     date: "2026-11-26",
     title: "Smoother navigation, new background",

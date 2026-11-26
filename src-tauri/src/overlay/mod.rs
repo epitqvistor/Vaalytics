@@ -54,6 +54,8 @@ pub struct OverlayStatus {
     pub loot_hotkeys: Vec<LootKeyState>,
     /// Deck Intelligence ground-screenshot key (PoE 1), registered while PoE 1 is in the foreground.
     pub deck_hotkey: DeckKeyState,
+    /// Show/hide-Vaalytics key (`main_window`), registered while a PoE window or Vaalytics is in the foreground.
+    pub main_hotkey: DeckKeyState,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize)]
@@ -149,6 +151,13 @@ pub fn init(app: &tauri::App) -> tauri::Result<()> {
                     std::thread::spawn(move || crate::loot::on_hotkey(&h, action));
                     return;
                 }
+                // Show / hide the main window (both games, and while Vaalytics has focus).
+                let main = app.state::<OverlayState>().status().main_hotkey;
+                if main.registered && main.key.as_deref().is_some_and(|k| same_key(k, shortcut)) {
+                    let h = app.clone();
+                    let _ = app.run_on_main_thread(move || crate::main_window::toggle(&h));
+                    return;
+                }
                 // Deck Intelligence ground screenshot (PoE 1).
                 let deck = app.state::<OverlayState>().status().deck_hotkey;
                 if deck.registered && deck.key.as_deref().is_some_and(|k| same_key(k, shortcut)) {
@@ -179,10 +188,10 @@ pub fn init(app: &tauri::App) -> tauri::Result<()> {
     #[cfg(windows)]
     {
         let handle = app.handle().clone();
-        win::watch_foreground(move |game| {
+        win::watch_foreground(move |game, own| {
             crate::loot::on_foreground(game);
             let h = handle.clone();
-            let _ = handle.run_on_main_thread(move || on_foreground(&h, game));
+            let _ = handle.run_on_main_thread(move || on_foreground(&h, game, own));
         });
         set_status(app.handle(), |s| s.supported = true);
     }
@@ -201,10 +210,12 @@ fn set_status(app: &AppHandle, f: impl FnOnce(&mut OverlayStatus)) {
     let _ = app.emit(EVENT_STATUS, snapshot);
 }
 
-fn on_foreground(app: &AppHandle, game: Option<GameId>) {
+/// `own`: a Vaalytics window is the foreground window (only the show/hide key is registered then).
+fn on_foreground(app: &AppHandle, game: Option<GameId>, own: bool) {
     let gs = app.global_shortcut();
     let status = app.state::<OverlayState>().status();
     let current = status.registered_hotkey;
+    let main_key = crate::main_window::hotkey(app);
     if let Some(g) = game {
         quick_close(app, g);
     }
@@ -220,8 +231,23 @@ fn on_foreground(app: &AppHandle, game: Option<GameId>) {
                 .then(|| crate::decks::hotkey(app))
                 .flatten()
                 .filter(|k| !same_key_str(k, &wanted) && !tracker.as_deref().is_some_and(|t| same_key_str(k, t)));
+            // The show/hide key gives way to the game's own feature keys (their settings check clashes on save).
+            let main_clash = main_key.as_deref().and_then(|k| {
+                let mut taken: Vec<(&str, &str)> = vec![("price check", wanted.as_str())];
+                taken.extend(tracker.as_deref().map(|t| ("the Act Tracker", t)));
+                taken.extend(deck_wanted.as_deref().map(|d| ("Deck Intelligence", d)));
+                taken.extend(loot_wanted.iter().map(|(_, l)| ("the Loot Tracker", l.as_str())));
+                taken.into_iter().find(|(_, t)| same_key_str(k, t)).map(|(label, _)| format!("{k} is also the {label} key here, so it doesn't show Vaalytics in this game."))
+            });
+            let main_wanted = main_key.filter(|_| main_clash.is_none());
             let loot_current: Vec<(crate::loot::hotkeys::Action, String)> = status.loot_hotkeys.iter().map(|k| (k.action, k.key.clone())).collect();
-            if current.as_deref() == Some(wanted.as_str()) && status.tracker_hotkey == tracker && loot_current == loot_wanted && status.deck_hotkey.key == deck_wanted {
+            if current.as_deref() == Some(wanted.as_str())
+                && status.tracker_hotkey == tracker
+                && loot_current == loot_wanted
+                && status.deck_hotkey.key == deck_wanted
+                && status.main_hotkey.key == main_wanted
+                && status.main_hotkey.error == main_clash
+            {
                 set_status(app, |s| s.foreground_game = Some(g));
                 return;
             }
@@ -229,6 +255,7 @@ fn on_foreground(app: &AppHandle, game: Option<GameId>) {
             register_tracker_hotkey(app, tracker);
             register_loot_hotkeys(app, loot_wanted);
             register_deck_hotkey(app, deck_wanted);
+            register_main_hotkey(app, main_wanted, main_clash);
             match gs.register(wanted.as_str()) {
                 Ok(()) => set_status(app, |s| {
                     s.foreground_game = Some(g);
@@ -246,8 +273,12 @@ fn on_foreground(app: &AppHandle, game: Option<GameId>) {
             }
         }
         None => {
-            if current.is_some() || status.tracker_hotkey.is_some() || !status.loot_hotkeys.is_empty() || status.deck_hotkey.registered {
+            let main_wanted = main_key.filter(|_| own);
+            let others = current.is_some() || status.tracker_hotkey.is_some() || !status.loot_hotkeys.is_empty() || status.deck_hotkey.registered;
+            let main_same = status.main_hotkey.key == main_wanted && status.main_hotkey.error.is_none() && (main_wanted.is_none() || status.main_hotkey.registered);
+            if others || !main_same {
                 let _ = gs.unregister_all();
+                register_main_hotkey(app, main_wanted, None);
             }
             set_status(app, |s| {
                 s.foreground_game = None;
@@ -309,11 +340,33 @@ fn register_deck_hotkey(app: &AppHandle, key: Option<String>) {
     set_status(app, |s| s.deck_hotkey = state);
 }
 
-/// Registers the keys again after the user changed one (only does anything while a game is in the foreground).
+/// Registers the show/hide-Vaalytics key (after `unregister_all`), or records why it is off.
+fn register_main_hotkey(app: &AppHandle, key: Option<String>, clash: Option<String>) {
+    let state = match (key, clash) {
+        (_, Some(error)) => DeckKeyState { key: None, registered: false, error: Some(error) },
+        (None, None) => DeckKeyState::default(),
+        (Some(k), None) => match app.global_shortcut().register(k.as_str()) {
+            Ok(()) => DeckKeyState { key: Some(k), registered: true, error: None },
+            Err(e) => {
+                log::warn!("main window: could not register {k}: {e}");
+                DeckKeyState { error: Some(format!("{k} is already used by another application.")), key: Some(k), registered: false }
+            }
+        },
+    };
+    set_status(app, |s| s.main_hotkey = state);
+}
+
+/// Registers the keys again after the user changed one (only does anything while a game or Vaalytics is in the foreground).
 pub fn refresh_hotkeys(app: &AppHandle) {
     let status = app.state::<OverlayState>().status();
-    set_status(app, |s| s.registered_hotkey = None);
-    on_foreground(app, status.foreground_game);
+    set_status(app, |s| {
+        s.registered_hotkey = None;
+        s.main_hotkey = DeckKeyState::default();
+    });
+    #[cfg(windows)]
+    on_foreground(app, status.foreground_game, status.foreground_game.is_none() && win::foreground_is_own());
+    #[cfg(not(windows))]
+    on_foreground(app, status.foreground_game, false);
 }
 
 /// Registers the Act Tracker key (after `unregister_all`); a failure is logged, never blocks price check.
