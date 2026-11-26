@@ -15,6 +15,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: "0.21.1",
+    date: "2026-11-26",
+    title: "Smoother navigation, new background",
+    unreleased: true,
+    changes: [
+      "Switching sections no longer shows a loading spinner: section code is loaded in the background ahead of time.",
+      "New minimal background across the whole window: Vaal stonework with a soft light slowly drifting over it.",
+    ],
+  },
+  {
     version: "0.21.0",
     date: "2026-11-26",
     title: "New look: Vaal / Obsidian",

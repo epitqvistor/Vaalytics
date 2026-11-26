@@ -264,69 +264,72 @@
 /*
  * Atmosphere (src/app/Atmosphere.tsx) — the only decorative layer, and the only
  * place gradients and a looping animation are allowed. Panels on top stay solid.
- * - atmo-base   tonal obsidian base with a faint cool wash at the top-left
- * - atmo-glow   warm light behind the pyramid; breathes over 22 s (transform/opacity)
- * - atmo-temple the Vaal pyramid linework, copper at ~16 %, fades in once
- * Measured (2026-11-26): CSS mask-image on the drawing or an SVG-noise grain layer made
- * every animation frame re-raster the window (~25-35 % WebView2 CPU); without them the
- * loop costs less. Even then a 60 fps loop cost 20-40 %, so the light moves in 3 frames/s
- * steps (~1 %). Keep this layer free of masks, filters and blend modes.
+ * - atmo-base     tonal obsidian base with a faint cool wash at the top-left
+ * - atmo-masonry  monumental Vaal ashlar: 64 px courses of large, uneven blocks, whole panel
+ * - atmo-shade    static edge shade so the pattern settles into the corners
+ * - atmo-light    one soft warm light drifting across the stone (PoE 2: crimson)
+ * Performance (measured 2026-11-26): a CSS mask-image or SVG-noise filter here made every
+ * animation frame re-raster the window (~25-35 % WebView2 CPU), and a 60 fps loop cost
+ * 20-40 % even without them. So: static layers stay static (plain SVG tile, no masks,
+ * filters or blend modes) and only atmo-light moves, in 3 frames/s steps (~1 %).
  */
 :root {
-  --atmo-glow: rgb(192 138 78 / 0.17);
+  --atmo-glow: rgb(192 138 78 / 0.12);
   --atmo-wash: rgb(120 140 160 / 0.035);
 }
 :root[data-game="poe2"] {
-  --atmo-glow: rgb(184 72 58 / 0.16);
+  --atmo-glow: rgb(184 72 58 / 0.11);
 }
 .atmo-base {
   background:
     radial-gradient(1100px 620px at 12% -12%, var(--atmo-wash), transparent 70%),
     linear-gradient(180deg, #121316 0%, var(--color-bg) 55%, #0e0f11 100%);
 }
-.atmo-glow {
-  right: -18%;
-  bottom: -38%;
-  width: 85%;
-  height: 100%;
+.atmo-masonry {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='720' height='192'><path d='M0 .5H720M0 64.5H720M0 128.5H720M.5 0V64M260.5 0V64M470.5 0V64M130.5 64V128M380.5 64V128M600.5 64V128M60.5 128V192M300.5 128V192M540.5 128V192' fill='none' stroke='%23a2764b' stroke-opacity='.13' stroke-width='1'/></svg>");
+  background-position: -1px -1px;
+}
+.atmo-shade {
+  background:
+    radial-gradient(140% 120% at 55% 45%, transparent 45%, rgb(9 10 11 / 0.55) 100%),
+    linear-gradient(180deg, rgb(16 17 19 / 0.35), transparent 22%);
+}
+.atmo-light {
+  left: -15%;
+  top: -10%;
+  width: 75vw;
+  height: 80vh;
   background: radial-gradient(closest-side, var(--atmo-glow), transparent);
   will-change: transform, opacity;
-  /* 66 imperceptible steps (3 frames/s): a 60 fps loop cost 20-40 % WebView2 CPU, this ~1 %. */
-  animation: atmo-breathe 22s steps(66, jump-none) infinite alternate;
+  /* 48 s across the panel in 144 imperceptible steps (3 frames/s). */
+  animation: atmo-drift 48s steps(144, jump-none) infinite alternate;
 }
-.atmo-temple {
-  color: var(--color-copper);
-  opacity: 0.16;
-  animation: atmo-reveal 1.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-@keyframes atmo-breathe {
-  from {
-    opacity: 0.7;
-    transform: translate3d(0, 0, 0) scale(1);
+@keyframes atmo-drift {
+  0% {
+    opacity: 0.75;
+    transform: translate3d(0, 0, 0);
   }
-  to {
+  50% {
     opacity: 1;
-    transform: translate3d(-3%, -4%, 0) scale(1.1);
+    transform: translate3d(70%, 30%, 0);
   }
-}
-@keyframes atmo-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
+  100% {
+    opacity: 0.8;
+    transform: translate3d(25%, 60%, 0);
   }
 }
 /* Still when hidden, when the user asks for less motion (in-app or Windows). */
-:root[data-hidden] .atmo-glow {
+:root[data-hidden] .atmo-light {
   animation-play-state: paused;
 }
-:root[data-motion="reduced"] .atmo-glow,
-:root[data-motion="reduced"] .atmo-temple {
+:root[data-motion="reduced"] .atmo-light {
   animation: none !important;
+  transform: translate3d(35%, 20%, 0);
 }
 @media (prefers-reduced-motion: reduce) {
-  .atmo-glow,
-  .atmo-temple {
+  .atmo-light {
     animation: none !important;
+    transform: translate3d(35%, 20%, 0);
   }
 }
 
