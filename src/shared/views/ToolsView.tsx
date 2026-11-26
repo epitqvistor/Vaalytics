@@ -169,7 +169,7 @@ function LinkTile({ icon, title, host, url }: { icon: IconName; title: string; h
     <button
       type="button"
       onClick={() => void openUrl(url)}
-      className="group panel flex items-center gap-3 rounded-lg px-4 py-3.5 text-left transition-[transform,border-color] duration-150 hover:-translate-y-px"
+      className="group panel flex items-center gap-3 rounded-lg px-4 py-3.5 text-left transition-colors duration-120 hover:border-line-strong hover:bg-elevated"
     >
       <span className="flex size-9 items-center justify-center rounded-md bg-accent-soft text-accent-2">
         <Icon name={icon} size={16} />

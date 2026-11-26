@@ -276,7 +276,7 @@ function QuickLink({ title, host, icon, onOpen }: { title: string; host: string;
     <button
       type="button"
       onClick={onOpen}
-      className="group panel flex flex-col gap-2.5 rounded-lg px-4 py-3.5 text-left transition-[transform,border-color] duration-150 hover:-translate-y-0.5"
+      className="group panel flex flex-col gap-2.5 rounded-lg px-4 py-3.5 text-left transition-colors duration-120 hover:border-line-strong hover:bg-elevated"
     >
       <span className="flex size-8 items-center justify-center rounded-md bg-accent-soft text-accent-2">
         <Icon name={icon} size={16} />

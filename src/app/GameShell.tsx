@@ -37,7 +37,7 @@ export function GameShell({ game }: { game: GameId }) {
       active={current === m.id}
       onSelect={() => setSection(m.id)}
       indicatorId="main-nav"
-      trailing={statusFor(m.id, game) === "planned" ? <span className="text-2xs text-fg-disabled">Soon</span> : undefined}
+      trailing={statusFor(m.id, game) === "planned" ? <span className="text-2xs text-fg-subtle">Soon</span> : undefined}
     />
   );
 

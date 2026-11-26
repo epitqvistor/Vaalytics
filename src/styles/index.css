@@ -40,7 +40,7 @@
   /* ---- Colour: text (warm bone → stone) ---- */
   --color-fg: #e7e3db;
   --color-fg-muted: #a09b91;
-  --color-fg-subtle: #78756e;
+  --color-fg-subtle: #88857d;    /* metadata; ≥ 4.5:1 on bg, surface and elevated */
   --color-fg-disabled: #4b4a47;
 
   /* ---- Colour: status (functional, deliberately outside the Vaal palette) ---- */

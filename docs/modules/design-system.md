@@ -22,7 +22,7 @@ work with every ornament removed.
 - **Bronze.** `bronze` #795536 (identity marks) · `copper` #A2764B (focus ring, selected outline) · `accent`
   #C08A4E (primary button, active indicator, selected data point, chart line) · `accent-2` #D0A36D (accent text).
   Not for headings, borders of ordinary panels, or every icon.
-- **Text.** `fg` #E7E3DB · `fg-muted` #A09B91 · `fg-subtle` #78756E (metadata only) · `fg-disabled` #4B4A47.
+- **Text.** `fg` #E7E3DB · `fg-muted` #A09B91 · `fg-subtle` #88857D (metadata only; ≥ 4.5:1 on `bg`, `surface`, `elevated`) · `fg-disabled` #4B4A47.
 - **Status** stays functional: `success` #5BB287 · `danger` #D8665C · `warning` #D3A64A · `info` #6E9FD6.
 - **Typography.** Segoe UI Variable Text/Display (native, best ClearType rendering; no bundled fonts). Page title
   20 px semibold; panel title 13 px semibold; headline figures 24 px display, `tabular`; labels 12 px sentence case,
