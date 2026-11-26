@@ -90,7 +90,7 @@ export function ItemSummary({ item, searched, icon, collapsed }: { item: ParsedI
                   .map((m) => (
                     <li key={m.id} className={cn("flex gap-2", g.tone, !searched.has(m.id) && searched.size > 0 && "opacity-60")}>
                       <span className="min-w-0 flex-1">{m.text}</span>
-                      {m.tier != null && <span className="shrink-0 font-mono text-2xs text-fg-subtle">T{m.tier}</span>}
+                      {m.tier != null && <span className="shrink-0 tabular text-2xs text-fg-subtle">T{m.tier}</span>}
                       {g.label !== "Explicit" && <span className="shrink-0 text-2xs text-fg-subtle">{g.label.toLowerCase()}</span>}
                     </li>
                   )),

@@ -65,7 +65,7 @@ export function ValueSummary({
   return (
     <section aria-label="Price summary" className="rounded-md border border-line bg-bg-2 px-3 py-2.5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span className="text-2xs font-medium tracking-wide text-fg-subtle uppercase">Estimate</span>
+        <span className="text-xs font-medium text-fg-muted">Estimate</span>
         <div className="flex min-h-8 items-center">
           {loading && !v ? (
             <Spinner size={16} className="text-fg-subtle" />

@@ -232,7 +232,7 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
 
   if (marketOnly) {
     return (
-      <div className={cn("grid items-start gap-3", compact ? "grid-cols-1" : "grid-cols-[minmax(300px,380px)_minmax(0,1fr)] gap-5")}>
+      <div className={cn("grid items-start gap-3", compact ? "grid-cols-1" : "grid-cols-[minmax(300px,380px)_minmax(0,1fr)] gap-4")}>
         <ItemSummary item={item} searched={NOTHING_SEARCHED} icon={cardRow?.icon ?? null} collapsed={compact} />
         <MarketValue
           row={cardRow}
@@ -302,7 +302,7 @@ export function PriceCheckSession({ item, league, config, compact }: PriceCheckS
   );
 
   return (
-    <div className={cn("grid items-start gap-3", compact ? "grid-cols-1" : "grid-cols-[minmax(300px,380px)_minmax(0,1fr)] gap-5")}>
+    <div className={cn("grid items-start gap-3", compact ? "grid-cols-1" : "grid-cols-[minmax(300px,380px)_minmax(0,1fr)] gap-4")}>
       <div className="flex min-w-0 flex-col gap-3">
         <ItemSummary item={item} searched={searchedIds} icon={icon} collapsed={compact} />
         {compact && summary}

@@ -154,7 +154,7 @@ function FilterRow({ filter: f, editable, onChange }: { filter: StatFilter; edit
               </span>
               {f.source === "pseudo" && <span className="shrink-0 rounded-sm bg-info-soft px-1 text-2xs text-info">total</span>}
               {f.kind !== "explicit" && f.source === "mod" && <span className="shrink-0 text-2xs text-fg-subtle">{f.kind}</span>}
-              {f.tier != null && <span className="shrink-0 font-mono text-2xs text-fg-subtle">T{f.tier}</span>}
+              {f.tier != null && <span className="shrink-0 tabular text-2xs text-fg-subtle">T{f.tier}</span>}
             </span>
           }
         />

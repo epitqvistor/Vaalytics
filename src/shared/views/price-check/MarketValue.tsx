@@ -45,7 +45,7 @@ export function MarketValue({
   return (
     <section aria-label="Market price" className="rounded-md border border-line bg-bg-2 px-3 py-2.5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span className="text-2xs font-medium tracking-wide text-fg-subtle uppercase">Market price</span>
+        <span className="text-xs font-medium text-fg-muted">Market price</span>
         <div className="flex min-h-8 items-center">
           {row ? <Price p={value(row.value)} big /> : loading ? <Spinner size={16} className="text-fg-subtle" /> : <span className="font-display text-2xl text-fg-subtle">—</span>}
         </div>
