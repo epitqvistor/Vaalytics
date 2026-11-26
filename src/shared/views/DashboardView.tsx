@@ -13,6 +13,7 @@ import { Sparkline } from "@/shared/charts/Sparkline";
 import { formatAmount, formatCompact } from "@/shared/utilities/format";
 import { Price } from "./common";
 import { DisplayCurrencySelect, FreshnessBar, ItemIcon, LeagueSelect } from "./market-ui";
+import { GameDataPanel, WhatsNewPanel } from "./dashboard/AppNews";
 
 export interface DashboardViewProps extends SectionProps {
   config: GameConfig;
@@ -243,6 +244,11 @@ export function DashboardView({ config, onNavigate }: DashboardViewProps) {
           <p className="-mt-2 text-xs text-fg-subtle">
             {catLabel("currency")} · 7-day change · the more liquid half of items by traded value.
           </p>
+
+          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-12">
+            <WhatsNewPanel className="xl:col-span-8" />
+            <GameDataPanel className="xl:col-span-4" onNavigate={onNavigate} />
+          </div>
         </div>
       )}
     </div>

@@ -10,7 +10,7 @@ Output: `src-tauri/target/release/bundle/nsis/Vaalytics_<version>_x64-setup.exe`
 - Target: **NSIS** `.exe`, `installMode: currentUser` → installs to `%LOCALAPPDATA%\Vaalytics` without admin rights; Start-menu folder and desktop shortcut; Apps & features entry with version/publisher.
 - WebView2: `downloadBootstrapper` (Windows 10/11 normally ship WebView2; the installer fetches it only if missing).
 - Rust release profile: LTO, `opt-level = "s"`, `panic = "abort"`, symbols stripped → no PDB/debug files are shipped. Frontend is the Vite production build (dev-only gallery tree-shaken out).
-- Version: keep `package.json`, `src-tauri/Cargo.toml` and `tauri.conf.json` in sync.
+- Version: keep `package.json`, `src-tauri/Cargo.toml` and `tauri.conf.json` in sync. Add the release notes to `src/core/app/changelog.ts` (shown on the Dashboard; clear `unreleased` on the entry being released).
 
 ## User data across updates
 Settings, the SQLite database and caches live in `%APPDATA%\app.vaalytics.desktop` (logs in `%LOCALAPPDATA%\app.vaalytics.desktop\logs`), outside the install folder. Installing a newer version over an older one, or uninstalling, keeps them (the silent uninstaller does not delete app data).

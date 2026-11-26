@@ -1,13 +1,17 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { readFileSync } from "node:fs";
 import { fileURLToPath, URL } from "node:url";
 
 const host = process.env.TAURI_DEV_HOST;
+/** Installed app version for the Dashboard's "What's new" (package.json is kept in sync with Cargo/tauri.conf). */
+const appVersion = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version as string;
 
 // https://v2.tauri.app/start/frontend/vite/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: { __APP_VERSION__: JSON.stringify(appVersion) },
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },

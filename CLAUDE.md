@@ -73,7 +73,7 @@ See `docs/architecture/overview.md`. Key points:
 - Full spec: `docs/modules/design-system.md`. Build UI from `@/shared/components` and `<Icon>` (`@/shared/icons`); use motion presets from `@/shared/design/motion` — no ad-hoc durations/easings. Dev builds have a live gallery under Settings → Design system.
 - Tokens live in `src/styles/index.css` (`@theme`). Use token classes (`bg-bg-2`, `text-fg-muted`, `border-line`, `text-accent`), never raw hex in components.
 - Art direction "Vaal / Obsidian instrument": solid layered surfaces (`panel`, `bg-surface`, `bg-elevated`), no blur/glass/glow/gradients; bronze `accent` only for primary action, active state and selected data. The Vaal marks are a closed set (`vaal-lintel`, `vaal-step`, `vaal-rule`) — don't add ornaments. Tables use `Table/Th/Tr/Td` from `@/shared/components`; pages use `max-w-page`.
-- Motion: short (150–250 ms), transform/opacity only, `MotionConfig reducedMotion="user"` is set globally. No permanent/looping animations.
+- Motion: short (150–250 ms), transform/opacity only, `MotionConfig reducedMotion="user"` is set globally. No permanent/looping animations — sole exception (user request, 2026-11): the background light in `src/app/Atmosphere.tsx` (one compositor-only loop, paused when hidden, off with Reduce motion / Windows reduced motion). Decoration lives only in that background layer.
 - Avoid: neon, heavy gradients, glow, oversized headings, decorative cards.
 
 ## Performance rules

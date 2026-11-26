@@ -48,6 +48,17 @@ work with every ornament removed.
   `divide-x`); `StatTile` = `Stat` on `panel-raised`. Both keep the PoE 2 `led-edge` (user request; unchanged).
 - **Motion.** Colour transitions 120 ms; no hover lift or press scale; shared-layout indicators use a 180 ms tween
   (no spring); page enter = 4 px rise + fade.
+- **Background (Atmosphere, added on the user's request).** `src/app/Atmosphere.tsx` + `atmo-*` classes in
+  `index.css`: tonal obsidian base with a faint cool wash; an original line drawing of a stepped Vaal pyramid (seven
+  terraces, carved course lines, central stair, shrine) in copper at 16 % behind the content area, masked towards the
+  top, fading in once (1.6 s); static two-scale stone grain; one warm light behind the pyramid (PoE 2: crimson) that
+  breathes over 22 s — the app's only looping animation, transform/opacity only, paused while the window is hidden and
+  removed by Settings → Reduce motion or Windows reduced motion. Panels on top stay solid; this layer is the only
+  place gradients are used.
+- **Dashboard: What's new / Game data.** Release notes come from `src/core/app/changelog.ts` (bundled, written from the
+  release commits; add an entry with every version bump; `unreleased` entries describe changes already in the build).
+  The version is `package.json`'s, injected by Vite (`__APP_VERSION__`). Game data status is the Update Center overview
+  (one read on mount, then its events).
 
 ## 0.6 visual rework (Nov 2026) — superseded
 - **Atmosphere** (`src/app/Atmosphere.tsx`, `atmo-*` utilities): static layers behind the app,
