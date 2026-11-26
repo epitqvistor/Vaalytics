@@ -140,7 +140,7 @@ function PobCard({ game, current }: { game: GameId; current: boolean }) {
                 Reset
               </Button>
             )}
-            <Button variant="primary" icon="external" onClick={launch} loading={busy === "launch"} disabled={status?.running}>
+            <Button variant="secondary" icon="external" onClick={launch} loading={busy === "launch"} disabled={status?.running}>
               {status?.running ? "Running" : "Launch"}
             </Button>
           </>
