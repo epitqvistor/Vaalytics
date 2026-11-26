@@ -267,7 +267,10 @@
  * - atmo-base   tonal obsidian base with a faint cool wash at the top-left
  * - atmo-glow   warm light behind the pyramid; breathes over 22 s (transform/opacity)
  * - atmo-temple the Vaal pyramid linework, copper at ~16 %, fades in once
- * - atmo-grain  static two-scale stone grain
+ * Measured (2026-11-26): CSS mask-image on the drawing or an SVG-noise grain layer made
+ * every animation frame re-raster the window (~25-35 % WebView2 CPU); without them the
+ * loop costs less. Even then a 60 fps loop cost 20-40 %, so the light moves in 3 frames/s
+ * steps (~1 %). Keep this layer free of masks, filters and blend modes.
  */
 :root {
   --atmo-glow: rgb(192 138 78 / 0.17);
@@ -288,19 +291,13 @@
   height: 100%;
   background: radial-gradient(closest-side, var(--atmo-glow), transparent);
   will-change: transform, opacity;
-  animation: atmo-breathe 22s ease-in-out infinite alternate;
+  /* 66 imperceptible steps (3 frames/s): a 60 fps loop cost 20-40 % WebView2 CPU, this ~1 %. */
+  animation: atmo-breathe 22s steps(66, jump-none) infinite alternate;
 }
 .atmo-temple {
   color: var(--color-copper);
   opacity: 0.16;
-  mask-image: linear-gradient(to top, black 25%, transparent 100%);
   animation: atmo-reveal 1.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.atmo-grain {
-  background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 .92  0 0 0 0 .85  0 0 0 .05 0'/></filter><rect width='100%' height='100%' filter='url(%23s)'/></svg>"),
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  mix-blend-mode: soft-light;
 }
 @keyframes atmo-breathe {
   from {

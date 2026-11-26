@@ -51,10 +51,12 @@ work with every ornament removed.
 - **Background (Atmosphere, added on the user's request).** `src/app/Atmosphere.tsx` + `atmo-*` classes in
   `index.css`: tonal obsidian base with a faint cool wash; an original line drawing of a stepped Vaal pyramid (seven
   terraces, carved course lines, central stair, shrine) in copper at 16 % behind the content area, masked towards the
-  top, fading in once (1.6 s); static two-scale stone grain; one warm light behind the pyramid (PoE 2: crimson) that
-  breathes over 22 s — the app's only looping animation, transform/opacity only, paused while the window is hidden and
+  top via its stroke gradient, fading in once (1.6 s); one warm light behind the pyramid (PoE 2: crimson) that
+  breathes over 22 s in 66 imperceptible steps (3 frames/s) — the app's only looping animation, transform/opacity only, paused while the window is hidden and
   removed by Settings → Reduce motion or Windows reduced motion. Panels on top stay solid; this layer is the only
-  place gradients are used.
+  place gradients are used. Measured 2026-11-26 (debug build, WebView2 CPU while visible): 60 fps loop 20–40 %,
+  stepped ~1 %, off ~0 %; a CSS `mask-image` or SVG-noise grain made every frame re-raster — keep masks, filters
+  and blend modes out of this layer.
 - **Dashboard: What's new / Game data.** Release notes come from `src/core/app/changelog.ts` (bundled, written from the
   release commits; add an entry with every version bump; `unreleased` entries describe changes already in the build).
   The version is `package.json`'s, injected by Vite (`__APP_VERSION__`). Game data status is the Update Center overview

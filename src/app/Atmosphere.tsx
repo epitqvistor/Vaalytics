@@ -38,7 +38,7 @@ const TEMPLE = templePath();
 
 /**
  * Static-first background behind the whole app: obsidian tonal base, the Vaal
- * pyramid linework (fades in once), fine stone grain, and one warm light that
+ * pyramid linework (fades in once) and one warm light that
  * slowly breathes (transform/opacity only, composited by the GPU). The light is
  * still when the window is hidden, when Settings → Reduce motion is on, or when
  * Windows asks for reduced motion. Also marks the active game on <html data-game>.
@@ -71,9 +71,15 @@ export function Atmosphere({ game }: { game: GameId | null | undefined }) {
       <div className="atmo-base absolute inset-0" />
       <div className="atmo-glow absolute" />
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMaxYMax meet" className="atmo-temple absolute right-[-3%] bottom-0 h-[72%] max-h-[720px] w-auto">
-        <path d={TEMPLE} fill="none" stroke="currentColor" strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
+        <defs>
+          {/* Fade towards the top in the stroke itself: a CSS mask here re-rasters every frame. */}
+          <linearGradient id="atmo-temple-fade" x1="0" y1={H} x2="0" y2={0} gradientUnits="userSpaceOnUse">
+            <stop offset="0.25" stopColor="currentColor" stopOpacity="1" />
+            <stop offset="1" stopColor="currentColor" stopOpacity="0.05" />
+          </linearGradient>
+        </defs>
+        <path d={TEMPLE} fill="none" stroke="url(#atmo-temple-fade)" strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
       </svg>
-      <div className="atmo-grain absolute inset-0" />
     </div>
   );
 }
