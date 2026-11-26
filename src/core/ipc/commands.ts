@@ -1203,3 +1203,341 @@ export const decksImportStatus = (game: GameId) => invoke<DeckImportStatus>("dec
 export const decksHotkeyStatus = (game: GameId) => invoke<DeckKeyState>("decks_hotkey_status", { game });
 /** Save dialog for a CSV / JSON export; false = cancelled. */
 export const decksSaveExport = (game: GameId, fileName: string, contents: string) => invoke<boolean>("decks_save_export", { game, fileName, contents });
+
+// ---------- Update Center (src-tauri/src/updates) ----------
+
+export type UpdReliability = "official" | "structured" | "community" | "unverified";
+export type UpdValidation = "passed" | "warnings" | "review" | "failed";
+export type UpdDatasetKind = "versioned" | "managed" | "bundled";
+export type UpdGroup = "gameData" | "leagues" | "patchNotes" | "market" | "bundled";
+export type UpdChangeType =
+  | "added"
+  | "modified"
+  | "removed"
+  | "deprecated"
+  | "reclassified"
+  | "price_updated"
+  | "description_updated"
+  | "metadata_updated"
+  | "structural"
+  | "unknown";
+export type UpdConfidence = "confirmed" | "high" | "review" | "unverified";
+
+export interface UpdProviderMeta {
+  id: string;
+  name: string;
+  reliability: UpdReliability;
+  games: GameId[];
+  categories: string[];
+  website: string;
+  endpoints: string[];
+  auth: string;
+  rateLimit: string;
+  cachePolicy: string;
+  terms: string;
+  via: string | null;
+}
+
+export interface UpdSourceState {
+  providerId: string;
+  enabled: boolean;
+  status: "unknown" | "ok" | "warning" | "error";
+  lastAttemptAt: number | null;
+  lastSuccessAt: number | null;
+  lastError: string | null;
+  lastErrorKind: string | null;
+  lastDurationMs: number | null;
+  lastBytes: number | null;
+}
+
+export interface UpdDatasetDef {
+  id: string;
+  game: GameId;
+  label: string;
+  category: string;
+  providerId: string;
+  kind: UpdDatasetKind;
+  policy: "auto" | "review";
+  group: UpdGroup;
+  format: number;
+  minEntries: number;
+  requiredFields: string[];
+  description: string;
+}
+
+export interface UpdValidationNote {
+  level: UpdValidation;
+  message: string;
+}
+
+export interface UpdVersion {
+  id: number;
+  datasetId: string;
+  game: GameId;
+  league: string | null;
+  format: number;
+  label: string;
+  contentHash: string;
+  entryCount: number;
+  providerId: string;
+  sourceUrl: string | null;
+  sourceVersion: string | null;
+  retrievedAt: number;
+  createdAt: number;
+  installedAt: number | null;
+  status: "staged" | "installed" | "previous" | "discarded";
+  origin: "source" | "partial" | "imported";
+  validation: UpdValidation;
+  validationNotes: UpdValidationNote[];
+  parentId: number | null;
+  hasContent: boolean;
+}
+
+export interface UpdDatasetState {
+  etag?: string | null;
+  sourceModified: string | null;
+  lastCheckedAt: number | null;
+  lastError: string | null;
+}
+
+export interface UpdMarketState {
+  league: string;
+  categories: number;
+  oldestFetch: number | null;
+  newestFetch: number | null;
+  errors: number;
+  lastError: string | null;
+  items: number;
+}
+
+export interface UpdDatasetStatus {
+  def: UpdDatasetDef;
+  consumers: string[];
+  installed: UpdVersion | null;
+  staged: UpdVersion | null;
+  state: UpdDatasetState;
+  pending: number;
+  pendingReview: number;
+  market: UpdMarketState | null;
+  cacheWrittenAt: number | null;
+  intervalSecs: number | null;
+}
+
+export interface UpdModuleRegistration {
+  moduleId: string;
+  game: GameId;
+  required: string[];
+  optional: string[];
+  autoUpdate: boolean;
+  manualReview: boolean;
+  note: string;
+}
+
+export interface UpdSettings {
+  schedules: { gameData: string; leagues: string; patchNotes: string };
+  autoApply: boolean;
+  retention: number;
+}
+
+export interface UpdProgress {
+  checkId: number;
+  kind: "check" | "sync";
+  trigger: string;
+  startedAt: number;
+  operation: string;
+  providerId: string | null;
+  game: GameId | null;
+  datasetId: string | null;
+  done: number;
+  total: number;
+  errors: string[];
+}
+
+export interface UpdOverview {
+  now: number;
+  datasets: UpdDatasetStatus[];
+  sources: { meta: UpdProviderMeta; state: UpdSourceState; datasets: string[] }[];
+  modules: UpdModuleRegistration[];
+  lastAttempt: number | null;
+  lastSuccess: number | null;
+  running: UpdProgress | null;
+  settings: UpdSettings;
+  selectedLeagues: Record<GameId, string | null>;
+  articlesUnreviewed: number;
+}
+
+export interface UpdFailure {
+  providerId: string;
+  datasetId: string | null;
+  operation: string;
+  error: string;
+  kind: string;
+  retryable: boolean;
+  existingDataUsable: boolean;
+}
+
+export interface UpdReport {
+  checkId: number;
+  kind: "check" | "sync";
+  status: "ok" | "partial" | "failed";
+  tasks: number;
+  succeeded: number;
+  unchanged: string[];
+  staged: { datasetId: string; versionId: number; changes: number; needsReview: boolean; validation: UpdValidation; summary: string }[];
+  applied: { datasetId: string; versionId: number }[];
+  failures: UpdFailure[];
+  newArticles: number;
+  processedArticles: number;
+  durationMs: number;
+}
+
+export interface UpdChange {
+  id: number;
+  checkId: number;
+  versionId: number | null;
+  datasetId: string;
+  game: GameId;
+  entryKey: string;
+  entryName: string;
+  changeType: UpdChangeType;
+  fields: string[];
+  before: { name: string; data: Record<string, JsonValue> } | null;
+  after: { name: string; data: Record<string, JsonValue> } | null;
+  confidence: UpdConfidence;
+  requiresReview: boolean;
+  status: "pending" | "applied" | "ignored" | "superseded";
+  reviewed: boolean;
+  detectedAt: number;
+  resolvedAt: number | null;
+}
+
+export interface UpdEvent {
+  id: number;
+  ts: number;
+  checkId: number | null;
+  kind: string;
+  game: GameId | null;
+  league: string | null;
+  datasetId: string | null;
+  providerId: string | null;
+  modules: string[];
+  fromVersion: number | null;
+  toVersion: number | null;
+  status: "ok" | "warning" | "error" | "info";
+  message: string;
+  durationMs: number | null;
+}
+
+export interface UpdEventFilter {
+  since?: number;
+  until?: number;
+  game?: GameId;
+  league?: string;
+  module?: string;
+  provider?: string;
+  status?: string;
+  limit?: number;
+}
+
+export interface UpdLeagueProfile {
+  game: GameId;
+  league: string;
+  displayName: string;
+  hardcore: boolean;
+  firstSeenAt: number;
+  lastSeenAt: number;
+  endedDetectedAt: number | null;
+  status: "active" | "ended";
+  providerId: string;
+}
+
+export interface UpdLeagues {
+  profiles: UpdLeagueProfile[];
+  withData: { game: GameId; league: string; historyPoints: number; lastPointAt: number }[];
+  installed: { datasetId: string; game: GameId; versionId: number; label: string; installedAt: number | null }[];
+  selected: Record<GameId, string | null>;
+}
+
+export interface UpdImpact {
+  category: string;
+  lines: number;
+  datasets: string[];
+  modules: string[];
+  action: "data" | "developer" | "info";
+  recommendation: string;
+  confidence: UpdConfidence;
+  examples: string[];
+}
+
+export interface UpdArticleAnalysis {
+  classifier: string;
+  patch: string | null;
+  totalLines: number;
+  classifiedLines: number;
+  sections: { title: string; lines: { text: string; categories: string[] }[] }[];
+  impacts: UpdImpact[];
+}
+
+export interface UpdArticle {
+  providerId: string;
+  articleId: string;
+  game: GameId | null;
+  kind: "patch_notes" | "hotfix" | "announcement" | "news";
+  title: string;
+  url: string;
+  publishedAt: number | null;
+  discoveredAt: number;
+  processedAt: number | null;
+  processError: string | null;
+  analysis: UpdArticleAnalysis | null;
+  reviewed: boolean;
+}
+
+export interface UpdAnalytics {
+  runs: number;
+  runsOk: number;
+  runsPartial: number;
+  runsFailed: number;
+  avgDurationSecs: number | null;
+  changesDetected: number;
+  changesApplied: number;
+  changesIgnored: number;
+  versionsInstalled: number;
+  rollbacks: number;
+  byDataset: [string, number][];
+  activity: [number, number, number][];
+}
+
+export interface UpdAppInfo {
+  version: string;
+  updaterConfigured: boolean;
+  distribution: string;
+}
+
+export const UPDATES_PROGRESS_EVENT = "updates:progress";
+export const UPDATES_FINISHED_EVENT = "updates:finished";
+export const UPDATES_DATASET_CHANGED_EVENT = "updates:dataset-changed";
+
+export const updatesOverview = () => invoke<UpdOverview>("updates_overview");
+/** `check` discovers only; `sync` also applies what the update policy allows. */
+export const updatesRun = (mode: "check" | "sync", groups: ("gameData" | "leagues" | "patchNotes")[] = []) => invoke<UpdReport>("updates_run", { mode, groups });
+export const updatesApply = (datasetId: string, changeIds?: number[]) => invoke<number>("updates_apply", { datasetId, changeIds: changeIds ?? null });
+export const updatesRollback = (datasetId: string, versionId: number) => invoke<number>("updates_rollback", { datasetId, versionId });
+export const updatesChanges = (status?: UpdChange["status"], datasetId?: string, limit?: number) =>
+  invoke<UpdChange[]>("updates_changes", { status: status ?? null, datasetId: datasetId ?? null, limit: limit ?? null });
+export const updatesSetChangeStatus = (ids: number[], status?: "ignored" | "pending", reviewed?: boolean) =>
+  invoke<number>("updates_set_change_status", { ids, status: status ?? null, reviewed: reviewed ?? null });
+export const updatesVersions = (datasetId: string) => invoke<UpdVersion[]>("updates_versions", { datasetId });
+export const updatesHistory = (filter: UpdEventFilter) => invoke<UpdEvent[]>("updates_history", { filter });
+export const updatesLeagues = () => invoke<UpdLeagues>("updates_leagues");
+export const updatesArticles = (limit?: number) => invoke<UpdArticle[]>("updates_articles", { limit: limit ?? null });
+export const updatesProcessArticle = (providerId: string, articleId: string) => invoke<UpdArticleAnalysis>("updates_process_article", { providerId, articleId });
+export const updatesSetArticleReviewed = (providerId: string, articleId: string, reviewed: boolean) =>
+  invoke<void>("updates_set_article_reviewed", { providerId, articleId, reviewed });
+export const updatesSetSourceEnabled = (providerId: string, enabled: boolean) => invoke<void>("updates_set_source_enabled", { providerId, enabled });
+export const updatesTestSource = (providerId: string) =>
+  invoke<{ ok: boolean; message: string; kind: string | null; durationMs: number }>("updates_test_source", { providerId });
+export const updatesSetSettings = (settings: UpdSettings) => invoke<UpdSettings>("updates_set_settings", { settings });
+export const updatesRefreshManaged = (datasetId: string) => invoke<string>("updates_refresh_managed", { datasetId });
+export const updatesAnalytics = () => invoke<UpdAnalytics>("updates_analytics");
+export const updatesAppInfo = () => invoke<UpdAppInfo>("updates_app_info");

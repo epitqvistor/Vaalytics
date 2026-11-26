@@ -1092,9 +1092,11 @@ fn require_decks_game(game: GameId) -> AppResult<()> {
 #[tauri::command]
 pub async fn decks_cards(state: State<'_, AppState>, game: GameId, force: bool) -> AppResult<crate::decks::cards::CardDbResponse> {
     require_decks_game(game)?;
-    let r = state.decks.cards.get(force).await?;
+    // The card list is an Update Center dataset (validated, versioned); Deck Intelligence only reads it.
+    let (v, cards, stale_error) = state.updates.divination_cards(force, state.decks.cards.cached()).await?;
     state.decks.reset_matcher();
-    Ok(r)
+    let checked_at = crate::updates::store::dataset_state(&state.db, "poe1.divination-cards")?.last_checked_at.unwrap_or(v.retrieved_at);
+    Ok(crate::decks::cards::CardDbResponse { cards, checked_at, source: "RePoE (game files) via Update Center", source_modified: v.source_version, stale_error })
 }
 
 #[tauri::command]
@@ -1337,4 +1339,183 @@ pub async fn decks_save_export(app: tauri::AppHandle, game: GameId, file_name: S
     let path = file.into_path().map_err(|_| crate::error::AppError::InvalidInput("Unsupported file location.".into()))?;
     std::fs::write(path, contents)?;
     Ok(true)
+}
+
+// ---------- Update Center (src-tauri/src/updates) ----------
+
+use crate::updates::{self, registry::Group, store as upd_store, RunKind};
+
+#[tauri::command]
+pub fn updates_overview(state: State<'_, AppState>) -> AppResult<Value> {
+    state.updates.overview()
+}
+
+/// `mode`: "check" (discover only) or "sync" (discover + apply what the policy allows).
+/// `groups`: any of "gameData", "leagues", "patchNotes"; empty = all.
+#[tauri::command]
+pub async fn updates_run(state: State<'_, AppState>, mode: String, groups: Vec<String>) -> AppResult<updates::Report> {
+    let kind = match mode.as_str() {
+        "check" => RunKind::Check,
+        "sync" => RunKind::Sync,
+        _ => return Err(crate::error::AppError::InvalidInput("Unknown mode.".into())),
+    };
+    let mut gs: Vec<Group> = groups
+        .iter()
+        .filter_map(|g| match g.as_str() {
+            "gameData" => Some(Group::GameData),
+            "leagues" => Some(Group::Leagues),
+            "patchNotes" => Some(Group::PatchNotes),
+            _ => None,
+        })
+        .collect();
+    if gs.is_empty() {
+        gs = vec![Group::GameData, Group::Leagues, Group::PatchNotes];
+    }
+    state.updates.run(kind, "user", &gs, None, false).await
+}
+
+#[tauri::command]
+pub async fn updates_apply(state: State<'_, AppState>, dataset_id: String, change_ids: Option<Vec<i64>>) -> AppResult<i64> {
+    state.updates.apply(&dataset_id, change_ids).await
+}
+
+#[tauri::command]
+pub async fn updates_rollback(state: State<'_, AppState>, dataset_id: String, version_id: i64) -> AppResult<i64> {
+    state.updates.rollback(&dataset_id, version_id).await
+}
+
+#[tauri::command]
+pub fn updates_changes(state: State<'_, AppState>, status: Option<String>, dataset_id: Option<String>, limit: Option<i64>) -> AppResult<Vec<upd_store::ChangeRow>> {
+    upd_store::changes(&state.db, status.as_deref(), dataset_id.as_deref(), limit.unwrap_or(2000).clamp(1, 20_000))
+}
+
+/// `status`: "ignored" | "pending" (un-ignore); `reviewed`: mark as reviewed.
+#[tauri::command]
+pub fn updates_set_change_status(state: State<'_, AppState>, ids: Vec<i64>, status: Option<String>, reviewed: Option<bool>) -> AppResult<usize> {
+    if let Some(s) = status.as_deref() {
+        if s != "ignored" && s != "pending" {
+            return Err(crate::error::AppError::InvalidInput("Unknown status.".into()));
+        }
+    }
+    let now = crate::market::http::unix_now();
+    let n = upd_store::set_change_status(&state.db, &ids, status.as_deref(), reviewed, now)?;
+    let kind = if status.as_deref() == Some("ignored") { "ignored" } else { "reviewed" };
+    if n > 0 && (status.as_deref() == Some("ignored") || reviewed == Some(true)) {
+        upd_store::event(&state.db, upd_store::NewEvent { kind, status: "info", message: format!("{} change(s) {kind}", ids.len()), ..Default::default() }, now)?;
+    }
+    Ok(n)
+}
+
+#[tauri::command]
+pub fn updates_versions(state: State<'_, AppState>, dataset_id: String) -> AppResult<Vec<upd_store::VersionInfo>> {
+    upd_store::versions(&state.db, &dataset_id, 200)
+}
+
+#[tauri::command]
+pub fn updates_history(state: State<'_, AppState>, filter: upd_store::EventFilter) -> AppResult<Vec<upd_store::EventRow>> {
+    upd_store::events(&state.db, &filter)
+}
+
+#[tauri::command]
+pub fn updates_checks(state: State<'_, AppState>, limit: Option<i64>) -> AppResult<Vec<upd_store::CheckRow>> {
+    upd_store::checks(&state.db, limit.unwrap_or(50).clamp(1, 500))
+}
+
+#[tauri::command]
+pub fn updates_leagues(state: State<'_, AppState>) -> AppResult<Value> {
+    let profiles = upd_store::league_profiles(&state.db)?;
+    let with_data: Vec<Value> = upd_store::leagues_with_data(&state.db)?
+        .into_iter()
+        .map(|(game, league, points, last)| serde_json::json!({ "game": game, "league": league, "historyPoints": points, "lastPointAt": last }))
+        .collect();
+    let installed: Vec<Value> = updates::registry::DATASETS
+        .iter()
+        .filter_map(|d| upd_store::installed(&state.db, d.id).ok().flatten().map(|v| serde_json::json!({ "datasetId": d.id, "game": d.game, "versionId": v.id, "label": v.label, "installedAt": v.installed_at })))
+        .collect();
+    Ok(serde_json::json!({
+        "profiles": profiles,
+        "withData": with_data,
+        "installed": installed,
+        "selected": { "poe1": state.updates.selected_league(GameId::Poe1), "poe2": state.updates.selected_league(GameId::Poe2) },
+    }))
+}
+
+#[tauri::command]
+pub fn updates_articles(state: State<'_, AppState>, limit: Option<i64>) -> AppResult<Vec<upd_store::ArticleRow>> {
+    upd_store::articles(&state.db, limit.unwrap_or(200).clamp(1, 1000))
+}
+
+#[tauri::command]
+pub async fn updates_process_article(state: State<'_, AppState>, provider_id: String, article_id: String) -> AppResult<Value> {
+    state.updates.process_article(&provider_id, &article_id).await
+}
+
+#[tauri::command]
+pub fn updates_set_article_reviewed(state: State<'_, AppState>, provider_id: String, article_id: String, reviewed: bool) -> AppResult<()> {
+    upd_store::set_article_reviewed(&state.db, &provider_id, &article_id, reviewed)
+}
+
+#[tauri::command]
+pub fn updates_set_source_enabled(state: State<'_, AppState>, provider_id: String, enabled: bool) -> AppResult<()> {
+    state.updates.set_source_enabled(&provider_id, enabled)
+}
+
+#[tauri::command]
+pub async fn updates_test_source(state: State<'_, AppState>, provider_id: String) -> AppResult<Value> {
+    state.updates.test_source(&provider_id).await
+}
+
+#[tauri::command]
+pub fn updates_set_settings(state: State<'_, AppState>, settings: updates::Settings) -> AppResult<updates::Settings> {
+    state.updates.set_settings(settings)
+}
+
+/// Asks the engine that owns a managed dataset to refresh it (Market engine: only expired
+/// categories of the selected league; Crafting service: a conditional re-check of RePoE).
+#[tauri::command]
+pub async fn updates_refresh_managed(state: State<'_, AppState>, dataset_id: String) -> AppResult<String> {
+    let now = crate::market::http::unix_now();
+    let msg = match dataset_id.as_str() {
+        "poe1.crafting-data" => {
+            let r = state.crafting.get(GameId::Poe1, true).await?;
+            match r.stale_error {
+                Some(e) => format!("Crafting data couldn't be refreshed ({e}); the cached copy stays in use."),
+                None => format!("Crafting data checked: {} modifiers, {} bases.", r.data.mods.len(), r.data.bases.len()),
+            }
+        }
+        "poe1.market-prices" | "poe2.market-prices" => {
+            let game = if dataset_id.starts_with("poe2") { GameId::Poe2 } else { GameId::Poe1 };
+            let league = state.updates.selected_league(game).ok_or_else(|| crate::error::AppError::InvalidInput("No league known yet.".into()))?;
+            let mut started = 0;
+            for c in catalog::categories(game) {
+                if state.market.refresh_if_expired(game, &league, c.id)? {
+                    started += 1;
+                }
+            }
+            if started == 0 {
+                format!("All {league} price categories are within their cache time; nothing to refresh.")
+            } else {
+                format!("Refreshing {started} expired price categor{} for {league}.", if started == 1 { "y" } else { "ies" })
+            }
+        }
+        _ => return Err(crate::error::AppError::InvalidInput("This dataset can't be refreshed from here.".into())),
+    };
+    upd_store::event(&state.db, upd_store::NewEvent { kind: "source_ok", dataset_id: Some(&dataset_id), status: "info", message: msg.clone(), ..Default::default() }, now)?;
+    Ok(msg)
+}
+
+#[tauri::command]
+pub fn updates_analytics(state: State<'_, AppState>) -> AppResult<upd_store::Analytics> {
+    upd_store::analytics(&state.db, crate::market::http::unix_now())
+}
+
+/// Application updates are a separate system from game data. No updater is configured:
+/// see docs/development/release.md, "Application updates".
+#[tauri::command]
+pub fn updates_app_info() -> Value {
+    serde_json::json!({
+        "version": env!("CARGO_PKG_VERSION"),
+        "updaterConfigured": false,
+        "distribution": "NSIS installer (unsigned)",
+    })
 }

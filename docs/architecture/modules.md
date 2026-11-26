@@ -29,6 +29,7 @@ module never touches the shell.
 | Parse a pasted item | `src/games/<id>/parser` | shared core `src/shared/item-parser` |
 | Patch rules for the league | `usePatch(game)` / `patchFor` | `src/core/game-data` |
 | Game data (mods, bases…) | Rust `crafting_data` (RePoE) | cached on disk, refreshed daily |
+| Versioned game data (cards, leagues…) | Update Center (`src-tauri/src/updates`, `useDatasetChanged`) | register dependencies in `updates/registry.rs`; never fetch the source yourself |
 
 ## Registry (`src/core/modules/registry.ts`)
 

@@ -40,6 +40,7 @@ export type ModuleId =
   | "loot-journal"
   | "browser"
   // Application
+  | "update-center"
   | "settings";
 
 export type ModuleGroupId = "overview" | "economy" | "endgame" | "character" | "tools";
@@ -226,6 +227,14 @@ export const MODULES: readonly ModuleMeta[] = [
   },
   { id: "browser", label: "Browser", icon: "browser", group: "tools", summary: "Web pages inside Vaalytics, with your own sign-ins.", availability: BOTH },
 
+  {
+    id: "update-center",
+    label: "Update Center",
+    icon: "refresh",
+    group: null,
+    summary: "Check, review, apply and roll back game-data updates for both games — sources, league profiles, official patch notes and history in one place.",
+    availability: BOTH,
+  },
   { id: "settings", label: "Settings", icon: "settings", group: null, summary: "Preferences, per-game settings and diagnostics.", availability: BOTH },
 ];
 

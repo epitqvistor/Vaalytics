@@ -12,6 +12,7 @@ const shared = {
   tools: lazy(() => import("@/shared/views/ToolsView")),
   browser: lazy(() => import("@/browser/BrowserView")),
   settings: lazy(() => import("@/core/settings/SettingsPage")),
+  "update-center": lazy(() => import("@/shared/views/update-center")),
 };
 
 /** Honest page for modules that are registered but not built yet. */

@@ -17,6 +17,7 @@ owns (tables, settings keys), and known limitations.
 | Map Lab (PoE 1) | `src/games/poe1/map-lab` | [map-lab.md](map-lab.md) |
 | Ultimatum Checker (PoE 1) | `src/games/poe1/ultimatum` | [ultimatum-checker.md](ultimatum-checker.md) |
 | Deck Intelligence (PoE 1) | `src/games/poe1/deck-intelligence`, `src-tauri/src/decks/` | [deck-intelligence.md](deck-intelligence.md) |
+| Update Center (both games) | `src/shared/views/update-center`, `src/core/updates`, `src-tauri/src/updates/` | [update-center.md](update-center.md) |
 | REGEX (PoE 1) | `src/games/poe1/regex`, `src-tauri/src/regex_library.rs` | [regex.md](regex.md) |
 | Session Intelligence (PoE 2) | `src/games/poe2/session-intelligence`, `src-tauri/src/session/` | [session-intelligence.md](session-intelligence.md) |
 | Loot Journal (PoE 2) | `src/games/poe2/loot-journal`, `src-tauri/src/loot/` | [loot-journal.md](loot-journal.md) |

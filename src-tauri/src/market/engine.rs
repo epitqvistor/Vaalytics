@@ -172,6 +172,18 @@ impl MarketEngine {
         Ok(cached)
     }
 
+    /// Checks the league index now (conditional request) and returns the stored list.
+    /// Used by the Update Center; errors are recorded like any other league refresh.
+    pub async fn refresh_leagues(self: &Arc<Self>, game: GameId) -> Result<Vec<League>, String> {
+        self.fetch_leagues(game).await?;
+        store::leagues(&self.db, game).map_err(|e| e.to_string())
+    }
+
+    /// Last successful league-index fetch and last error, for source health.
+    pub fn leagues_meta(&self, game: GameId) -> AppResult<FetchMeta> {
+        store::fetch_meta(&self.db, game, "", LEAGUES_KEY)
+    }
+
     // ---------- refresh ----------
 
     fn is_in_flight(&self, key: &Key) -> bool {

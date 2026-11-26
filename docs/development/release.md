@@ -28,6 +28,23 @@ Settings, the SQLite database and caches live in `%APPDATA%\app.vaalytics.deskto
 ## Code signing
 **Not configured.** The installer and executable are unsigned, so Windows SmartScreen will show an "unknown publisher" warning on first run ("More info → Run anyway"). Signing requires a code-signing certificate (OV/EV or Azure Trusted Signing) configured via `bundle.windows.certificateThumbprint` / `signCommand`.
 
+## Application updates
+**Not implemented.** Game-data updates are handled in-app by the Update Center (no reinstall needed,
+docs/modules/update-center.md); the Update Center's Settings tab shows the installed version and this status.
+A safe self-updater (`tauri-plugin-updater`) needs, before any code:
+1. **A public release source.** Releases are published to `epitqvistor/Vaalytics`, which is **private**
+   (checked 2026-11-26): anonymous requests can't read its release assets, and a GitHub token must never be
+   embedded in the app. Options: a separate public repository (or static host) that holds only the installer
+   and `latest.json`, or making the repository public.
+2. **An update-signing keypair** (`npx tauri signer generate`). This is separate from Windows code signing and
+   doesn't remove the SmartScreen warning. The public key goes into `tauri.conf.json` (`plugins.updater.pubkey`);
+   the **private key and its password stay with the maintainer** (never committed, never in CI logs) and are
+   given to the build via `TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`.
+   `bundle.createUpdaterArtifacts` then produces the `.sig` next to the NSIS installer.
+3. **UX rules:** check on startup/on demand only (configurable, honouring GitHub rate limits), show the release
+   notes, download and install only after an explicit click, never silently.
+User data (database, settings, league profiles, history) lives in app data and survives installs either way.
+
 ## Not included yet
-- Auto-update (Tauri updater plugin + signed update manifests).
+- Application self-update (see above).
 - A third-party licence notice file for Vaalytics' own dependencies (npm/cargo) in the installer.

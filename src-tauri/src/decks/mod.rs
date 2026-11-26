@@ -261,7 +261,9 @@ impl DeckService {
                 return Arc::clone(m);
             }
         }
-        let mut names: Vec<String> = self.cards.cached().map(|d| d.cards.into_iter().map(|c| c.name).collect()).unwrap_or_default();
+        let mut names: Vec<String> = crate::updates::installed_card_names(&self.db)
+            .or_else(|| self.cards.cached().map(|d| d.cards.into_iter().map(|c| c.name).collect()))
+            .unwrap_or_default();
         if let Some(l) = league {
             if let Ok(items) = crate::market::store::items(&self.db, GAME, l, MARKET_CATEGORY) {
                 names.extend(items.into_iter().map(|i| i.name));

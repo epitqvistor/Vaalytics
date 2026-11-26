@@ -20,6 +20,7 @@ mod pob;
 mod session;
 mod settings;
 mod trade;
+mod updates;
 
 use std::sync::Arc;
 use tauri::Manager;
@@ -34,6 +35,7 @@ pub struct AppState {
     pub sessions: session::SessionService,
     pub loot: loot::LootService,
     pub decks: std::sync::Arc<decks::DeckService>,
+    pub updates: Arc<updates::UpdateService>,
 }
 
 pub fn run() {
@@ -76,7 +78,19 @@ pub fn run() {
             loot.start(app.handle().clone());
             let decks = decks::DeckService::new(Arc::clone(&db), data_dir.clone());
             decks.start(app.handle().clone());
-            app.manage(AppState { db, diagnostics: diagnostics::Diagnostics::new(), market, trade, pob: pob::PobService::new(), crafting: crafting::CraftingService::new(data_dir.clone()), sessions, loot, decks });
+            // Update Center: game-data synchronisation. Modules are notified when a dataset they read changes.
+            let updates = updates::UpdateService::new(Arc::clone(&db), Arc::clone(&market));
+            updates.set_data_dir(data_dir.clone());
+            {
+                let decks = Arc::clone(&decks);
+                updates.on_dataset_changed(move |ev| {
+                    if ev.dataset_id == "poe1.divination-cards" {
+                        decks.reset_matcher();
+                    }
+                });
+            }
+            updates.start(app.handle().clone());
+            app.manage(AppState { db, diagnostics: diagnostics::Diagnostics::new(), market, trade, pob: pob::PobService::new(), crafting: crafting::CraftingService::new(data_dir.clone()), sessions, loot, decks, updates });
             app.manage(overlay::OverlayState::default());
             overlay::init(app)?;
             Ok(())
@@ -228,6 +242,25 @@ pub fn run() {
             commands::loot_inventory_delete,
             commands::loot_inventory_from_file,
             commands::loot_inventory_item_names,
+            commands::updates_overview,
+            commands::updates_run,
+            commands::updates_apply,
+            commands::updates_rollback,
+            commands::updates_changes,
+            commands::updates_set_change_status,
+            commands::updates_versions,
+            commands::updates_history,
+            commands::updates_checks,
+            commands::updates_leagues,
+            commands::updates_articles,
+            commands::updates_process_article,
+            commands::updates_set_article_reviewed,
+            commands::updates_set_source_enabled,
+            commands::updates_test_source,
+            commands::updates_set_settings,
+            commands::updates_refresh_managed,
+            commands::updates_analytics,
+            commands::updates_app_info,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Vaalytics");

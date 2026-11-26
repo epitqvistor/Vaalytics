@@ -21,6 +21,7 @@ import {
 } from "@/core/ipc/commands";
 import { useMarketOverview } from "@/core/market/hooks";
 import type { PriceBook } from "./analytics";
+import { useDatasetChanged } from "@/core/updates/hooks";
 
 export const GAME = "poe1" as const;
 
@@ -84,6 +85,8 @@ export function useDeckSession(id: number | null) {
 }
 
 /** The card database (RePoE), loaded once per mount; cached on disk by Rust. */
+const CARD_DATASETS = ["poe1.divination-cards"] as const;
+
 export function useCardDb() {
   const [db, setDb] = useState<DivinationCardDb | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +97,8 @@ export function useCardDb() {
       .catch((e) => setError(String(e)));
   }, []);
   useEffect(() => load(false), [load]);
+  // The card list is an Update Center dataset: follow applied updates and rollbacks.
+  useDatasetChanged(CARD_DATASETS, () => load(false));
   return { db, error, refresh: () => load(true) };
 }
 
