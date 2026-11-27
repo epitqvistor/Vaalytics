@@ -42,7 +42,7 @@ export type ModuleId =
   | "update-center"
   | "settings";
 
-export type ModuleGroupId = "overview" | "economy" | "endgame" | "character" | "tools";
+export type ModuleGroupId = "overview" | "economy" | "intelligence" | "endgame" | "character" | "tools";
 export type ModuleStatus = "ready" | "planned";
 
 export interface ModuleMeta {
@@ -62,6 +62,7 @@ export interface ModuleMeta {
 export const MODULE_GROUPS: { id: ModuleGroupId; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "economy", label: "Economy" },
+  { id: "intelligence", label: "Intelligence" },
   { id: "endgame", label: "Endgame" },
   { id: "character", label: "Character" },
   { id: "tools", label: "Tools" },
@@ -79,7 +80,7 @@ export const MODULES: readonly ModuleMeta[] = [
     id: "market-intelligence",
     label: "Market Intelligence",
     icon: "chart",
-    group: "economy",
+    group: "intelligence",
     summary: "Trends, movers, liquidity and price alerts across every market category, from data Vaalytics already caches.",
     availability: BOTH,
   },
@@ -88,7 +89,7 @@ export const MODULES: readonly ModuleMeta[] = [
     id: "deck-intelligence",
     label: "Deck Intelligence",
     icon: "cards",
-    group: "economy",
+    group: "intelligence",
     summary: "Track your Stacked Deck openings from Client.txt and ground screenshots, with a permanent history, valuations and statistics.",
     availability: { poe1: "ready" },
   },
@@ -96,7 +97,7 @@ export const MODULES: readonly ModuleMeta[] = [
     id: "mercenary-intelligence",
     label: "Mercenary Intelligence",
     icon: "journal",
-    group: "economy",
+    group: "intelligence",
     summary: "Value a Mercenary Warrant for sale: family, skills and bound supports read from Ctrl+C, comparable listings from the official Trade site, an asking range with its confidence and the evidence behind it.",
     availability: { poe1: "ready" },
   },
@@ -140,7 +141,7 @@ export const MODULES: readonly ModuleMeta[] = [
     id: "loot-intelligence",
     label: "Loot Intelligence",
     icon: "gem",
-    group: "endgame",
+    group: "intelligence",
     summary: "Which drops are worth picking up in this league, from live prices, with a matching loot-filter block.",
     availability: { poe1: "ready" },
   },

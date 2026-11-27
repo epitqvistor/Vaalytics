@@ -29,9 +29,15 @@ describe("module registry", () => {
     const ids = (n: typeof off) => n.groups.flatMap((g) => g.items.map((m) => m.id));
     expect(ids(off)).not.toContain("thread-planner");
     expect(ids(on)).toContain("thread-planner");
-    expect(off.groups.map((g) => g.id)).toEqual(["overview", "economy", "endgame", "character", "tools"]);
-    expect(off.groups.find((g) => g.id === "endgame")!.items.map((m) => m.id)).toEqual(["loot-intelligence", "ultimatum-checker"]);
-    expect(on.groups.map((g) => g.id)).toEqual(["overview", "economy", "endgame", "character", "tools"]);
+    expect(off.groups.map((g) => g.id)).toEqual(["overview", "economy", "intelligence", "endgame", "character", "tools"]);
+    expect(off.groups.find((g) => g.id === "endgame")!.items.map((m) => m.id)).toEqual(["ultimatum-checker"]);
+    expect(off.groups.find((g) => g.id === "intelligence")!.items.map((m) => m.id)).toEqual([
+      "market-intelligence",
+      "deck-intelligence",
+      "mercenary-intelligence",
+      "loot-intelligence",
+    ]);
+    expect(on.groups.map((g) => g.id)).toEqual(["overview", "economy", "intelligence", "endgame", "character", "tools"]);
     expect(off.footer.map((m) => m.id)).toEqual(["update-center", "settings"]);
     expect(off.groups.find((g) => g.id === "overview")!.items.map((m) => m.id)).toEqual(["dashboard"]);
   });

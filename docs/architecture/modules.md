@@ -34,7 +34,7 @@ module never touches the shell.
 ## Registry (`src/core/modules/registry.ts`)
 
 ```ts
-{ id, label, icon, group: "overview" | "economy" | "endgame" | "character" | "tools" | null,
+{ id, label, icon, group: "overview" | "economy" | "intelligence" | "endgame" | "character" | "tools" | null,
   summary,                       // one sentence, shown as the page description
   availability: { poe1?: "ready" | "planned", poe2?: … },   // absent = not offered
   plan?: { scope: string[], data: string[] } }              // required when planned
@@ -51,8 +51,9 @@ Current groups:
 | Group | PoE 1 | PoE 2 |
 |---|---|---|
 | Overview | Dashboard | Dashboard |
-| Economy | Price Checker, Currency Tracker, Trade, Market Intelligence, Deck Intelligence, Mercenary Intelligence | Price Checker, Currency Tracker, Trade, Market Intelligence |
-| Endgame | Loot Intelligence, Ultimatum Checker, *Atlas Planner, Thread Planner, Fate Planner* | — |
+| Economy | Price Checker, Currency Tracker, Trade | Price Checker, Currency Tracker, Trade |
+| Intelligence | Market Intelligence, Deck Intelligence, Mercenary Intelligence, Loot Intelligence | Market Intelligence |
+| Endgame | Ultimatum Checker, *Atlas Planner, Thread Planner, Fate Planner* | — |
 | Character | Location Atlas, Builds, Path of Building & Tools | Campaign Intelligence, Builds, Path of Building & Tools |
 | Tools | Crafting, REGEX, Browser | *Crafting*, Session Intelligence, Loot Journal, Browser |
 
